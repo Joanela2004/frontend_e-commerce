@@ -1,0 +1,187 @@
+:root{
+     --color-green-primary:#28A458;
+    --color-green-secondary:#5EBB82;
+   --color-text-dark: #3d3b3b;
+    --color-background-light:#F5F0E1;
+    --color-shadow:rgba(22, 163, 74, 0.2);
+    --color-marron:#8B5E3C;
+    --font-size-base: 16px;
+     --color-background-white:#FFFF;
+     --box-shadow:0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.pointsFort-section{
+padding: 10px 80px 40px 80px;
+background-color: var(--color-background-white);
+
+}
+.pointsFort-header{
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 50px;
+}
+.pointsFort-section h3{
+ color: var(--color-green-primary);
+ font-size: 1.5em;
+ padding: 10px 20px;
+ 
+}
+.pointsFort-section p{
+ width: 400px;
+
+}
+.pointsFort-grid{
+
+ display:flex;
+ flex-direction: row;
+ flex-wrap: wrap;
+ align-items: center;
+ justify-content: center;
+ gap: 5em;
+}
+.pointsFort-card{
+ background-color: var(--color-background-white);
+ padding: 20px 20px;
+ border-radius: 20px;
+ overflow: hidden;
+ position: relative;
+ transition:all 0.4s ease;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ cursor: pointer;
+ width: 250px;
+ height: 100%;
+ box-shadow: var(--box-shadow);
+ gap: 10px;
+
+}
+.pointsFort-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.pointsFort-image-container img{
+    object-fit: contain;
+    width: 100%;
+    height: 100px;
+    display: block;
+    overflow: hidden;
+   
+}
+.pointsFort-text{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    
+   
+}
+
+.pointsFort-text h2{
+
+border-radius: 20px;
+width: 80px;
+color: var(--color-green-primary);
+font-size:larger;
+text-align:center;
+
+}
+
+.pointsFort-card p{
+color:  var(--color-green-primary);
+font-size: 16px;
+width: 200px;
+
+}
+@media (max-width:900px){
+    .pointsFort-section{
+        padding: 5px 20px 20px 20px;
+    }
+    .pointsFort-header{
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.pointsFort-section h3{
+ color: var(--color-green-primary);
+ font-size: 1.5em;
+ padding: 0;
+ 
+}
+.pointsFort-section p{
+ width: 200px;
+
+}
+ .pointsFort-grid{
+ 
+ display: flex;
+ flex-direction: row;
+justify-content: center; 
+align-items: center;
+ gap:2em;
+ 
+    }
+    .pointsFort-card{
+ background-color: var(--color-background-white);
+ padding: 0px 50px;
+ border-radius: 20px;
+ position: relative;
+ transition:all 0.4s ease;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ cursor: pointer;
+ width: 150px;
+ height: 180px;
+ box-shadow: var(--box-shadow);
+ gap: 5px;
+
+}
+.pointsFort-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+.pointsFort-image-container img{
+    object-fit: contain;
+    width: 75px;
+    height: 75px;
+   
+    
+}
+.pointsFort-text{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+    
+   
+}
+
+.pointsFort-text h2{
+
+border-radius: 20px;
+width: 80px;
+color: var(--color-green-primary);
+font-size: 10px;
+text-align:center;
+
+}
+
+.pointsFort-card p{
+color:  var(--color-green-primary);
+font-size: 10px;
+width: 100px;
+
+}
+}

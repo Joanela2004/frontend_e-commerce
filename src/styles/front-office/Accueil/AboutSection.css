@@ -1,0 +1,118 @@
+:root{
+     --color-green-primary:#28A458;
+    --color-green-secondary:#5EBB82;
+   --color-text-dark: #3d3b3b;
+    --color-background-light:#F5F0E1;
+    --color-shadow:rgba(22, 163, 74, 0.2);
+    --color-marron:#8B5E3C;
+    --font-size-base: 16px;
+     --color-background-white:#FFFF;
+     --box-shadow:0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.about-section{
+   padding: 50px 80px;
+  flex-wrap: wrap-reverse;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+  flex-direction: row;
+   background-color: var(--color-background-light);
+   gap: 200px;
+   width: 100%;
+   
+}
+.about-text{
+   
+   width: 400px;
+     display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+}
+.about-text h3{
+     color: var(--color-green-primary);
+ font-size: 1.5em;
+ padding: 10px 20px;
+ 
+}
+.about-text p{
+   width:400px;
+  
+}
+
+.about-images{
+   margin-top: 75px;
+   margin-bottom: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+}
+
+.panier img{
+   
+   width: 150px;
+   height: 150px;
+}
+.cercle{
+    position: absolute;
+    width: 300px;
+    height: 300px;
+}
+.panierViande{
+    position: relative;
+    top: 10px;
+    left: -80px;
+    animation: imageEnterLeft 1s ease-in forwards;
+     animation-delay: 0.3s;
+}
+.panierLegume{
+    position: relative;
+    bottom:  20px;
+    right: -80px;
+    animation: imageEnterRight 1s ease-in forwards;
+  animation-delay: 0.3s;
+}
+@keyframes imageEnterRight{
+  from{
+    opacity: 0;
+    transform: translateX(200px);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes imageEnterLeft{
+  from{
+    opacity: 0;
+    transform: translateX(-200px);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@media (max-width:900px){
+ 
+  
+.about-section{
+  flex-direction: row;
+  gap: 50px;
+  padding: 5px 20px 40px 20px;
+  
+}
+.about-text {
+    width: 100%; 
+    color: var(--color-text-dark);
+    font-weight: 600;
+    gap: 5px;
+  }
+  .about-text p{
+     
+    color: var(--color-text-dark);
+    font-weight: 600;
+  }
+}

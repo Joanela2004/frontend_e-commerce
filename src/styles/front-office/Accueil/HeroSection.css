@@ -1,0 +1,133 @@
+:root{
+     --color-green-primary:#28A458;
+    --color-green-secondary:#5EBB82;
+    --color-text-dark:#161616;
+    --color-background-light:#F5F0E1;
+    --color-background-white:#FFFF;
+    --color-shadow:rgba(22, 163, 74, 0.2);
+    --font-main:"Poppins", sans-serif;
+    --font-size-base: 16px;
+}
+
+.hero{
+
+ margin-top: 100px;
+  left: 0;
+  width: 100%;
+  padding: 15px 80px;
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 100px;
+  background-color: var(--color-background-wh);
+  
+  max-width: 100vw; 
+ 
+  align-items: center;
+  font-size: larger;
+  
+  
+}
+.hero-text{
+
+ display: flex ;
+ align-items: flex-start;
+ justify-content: flex-start;
+ flex-direction: column;
+ max-width: 500px;
+ 
+ 
+}
+.hero-text h1{
+  
+  font-size: 2em;
+  color:var(--color-text-dark);
+  text-align:left;
+  width: 550px ;
+ 
+
+}
+.hero-text .green{
+
+  color: var(--color-green-primary);
+  font-size: 2em;
+  margin-right: 10px;
+  
+}
+.hero-image{
+    display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+ 
+}
+.hero-image .image{
+  width: 500px;
+  max-width: auto;
+  height: auto;
+  object-fit: contain;
+  animation: imageEnter 1s ease-in forwards;
+  animation-delay: 0.3s;
+}
+@keyframes imageEnter{
+  from{
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width:900px){
+  .hero{
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    gap: 40px;
+    padding: 10px 20px;
+    background-image: url("../../../assets/images/market-Photoroom.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    display: flex; 
+    background-position: center;
+    color: var(--color-background-white);
+    z-index: 0;
+    overflow: hidden;
+    animation: imageEnter 1s ease-in forwards;
+   animation-delay: 0.3s;
+}
+@keyframes imageEnter{
+  from{
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+   
+  .hero-text h1{
+    align-items: center;
+    text-align: center;
+    width: auto;
+    
+  }
+ 
+  .hero-image .image{
+    display: none;
+   
+   
+  }
+  .hero-text{
+   display: flex;
+  align-items: center;
+  justify-content: center;
+   font-size: 12px;
+  }
+
+}
+
