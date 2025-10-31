@@ -11,7 +11,7 @@ import logo from "../assets/icones/log.png";
 const FooterSection = () => {
   return (
     <div>
-      <footer>
+      <footer id="footer">
         <div className="footer-top">
           {/* partie gauche */}
           <div className="footer-contact">

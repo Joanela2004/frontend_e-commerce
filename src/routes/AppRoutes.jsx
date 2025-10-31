@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 //front-office
 import Accueil from "../pages/front-office/Accueil";
 import Actualite from "../pages/front-office/Actualite";
-import ContenuArticle from "../pages/front-office/ContenuArticle";
+import ActualiteDetails from "../pages/front-office/ActualiteDetails";
 import Panier from "../pages/front-office/Panier";
 import Produit from "../pages/front-office/Produit";
 import Profil from "../pages/front-office/Profil";
@@ -29,14 +29,14 @@ export default function AppRoutes(){
 <Router>
     <Routes>
         {/* front-office */}
-        <Route path="/" element={<Accueil/>}></Route>
+        <Route path="/" element={<Accueil />}></Route>
         <Route path="/actualite" element ={<Actualite/>}></Route>
-        <Route path="/actualite/:id" element ={<ContenuArticle/>}></Route>
+        <Route path="/actualite/:id" element ={<ActualiteDetails/>}></Route>
         <Route path="/produit" element ={<Produit/>}></Route>
         <Route path="/profil" element ={<Profil/>}></Route>
         <Route path="/Panier" element ={<Panier/>}></Route>
-        <Route path="/suivi-commande" element ={<SuiviCommande/>}></Route>
-        <Route path="/suivi-livraison" element ={<SuiviLivraison/>}></Route>
+        <Route path="/commandes" element ={<SuiviCommande/>}></Route>
+        <Route path="/livraisons/:id" element ={<SuiviLivraison/>}></Route>
 
 
         {/* back-office */}

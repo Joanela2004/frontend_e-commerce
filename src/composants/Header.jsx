@@ -4,6 +4,7 @@ import panier from "../assets/icones/panier.png";
 import profil from "../assets/icones/profil1.png";
 import "../styles/front-office/global.css";
 
+import {NavLink, Link } from "react-router-dom";
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -17,22 +18,73 @@ const Header = () => {
       
       <div className="header-nav">
       <nav className={`header-nav-toggle ${menuOpen ? "active" : ""}`}>
-        <ul>
-          <li><a href="#accueil">Accueil</a></li>
-          <li><a href="#produits">Produits</a></li>
-          <li><a href="#actus">Actualités</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
+  <ul>
+    <li>
+      <NavLink
+        to="/"
+        className={({ isActive }) =>
+          isActive ? "nav-link active" : "nav-link"
+        }
+      >
+        Accueil
+      </NavLink>
+    </li>
+    <li>
+      <NavLink
+        to="/produit"
+        className={({ isActive }) =>
+          isActive ? "nav-link active" : "nav-link"
+        }
+      >
+        Produits
+      </NavLink>
+    </li>
+    <li>
+      <NavLink
+        to="/actualite"
+        className={({ isActive }) =>
+          isActive ? "nav-link active" : "nav-link"
+        }
+      >
+        Actualités
+      </NavLink>
+    </li>
+    
+    <li>
+      <a 
+    href="#footer" 
+    onClick={(e) => {
+      e.preventDefault(); 
+      const footer = document.getElementById("footer");
+      footer?.scrollIntoView({ behavior: "smooth" });
+    }}
+    className="nav-link"
+  >
+    Contact
+  </a>
+    </li>
+     <li>
+      <NavLink
+        to="/commandes"
+        className={({ isActive }) =>
+          isActive ? "nav-link active" : "nav-link"
+        }
+      >
+       Mes commandes
+      </NavLink>
+    </li>
+  </ul>
+</nav>
+
 
       
       <div className="header-icons">
-        <a href="#panier">
+        <Link to="/panier">
         <img src={panier} alt="Panier" />
-        </a>
-         <a href="#profil">
+        </Link>
+         <Link to="/profil">
         <img src={profil} alt="Profil" />
-        </a>
+        </Link>
       </div>
      
       <div className="bouton-toggle" onClick={toggleMenu}>

@@ -6,18 +6,17 @@ import PointsFortSection from "../../composants/Accueil/PointsFortSection";
 import AProposSection from "../../composants/Accueil/AboutSection";
 import ServiceSection from "../../composants/Accueil/ServiceSection";
 import NewsLetterSection from "../../composants/Accueil/NewsLetterSection";
-import ContactSection from "../../composants/ContactSection";
 import FooterSection from "../../composants/FooterSection";
 export default function Accueil(){
     return (
-        <div className="accueil">
+        <div>
         <Header/>
         <HeroSection/>
         <ProduitsSection/>
         <PointsFortSection/>
         <AProposSection/>
         <ServiceSection/>
-         <NewsLetterSection/>
+        <NewsLetterSection/>
         <FooterSection/>
        
         </div>

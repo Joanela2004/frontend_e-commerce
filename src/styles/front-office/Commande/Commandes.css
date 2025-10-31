@@ -1,0 +1,292 @@
+.filtres-commandes-conteneur {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 40px;
+    margin:40px;
+    background-color: var(--color-background-white);
+    border-radius: 8px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.filtre-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filtre-item input[type="date"], .filtre-item select {
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.filtre-item input[type="date"]:focus, .filtre-item select:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+}
+
+.filtre-item p {
+    font-weight: bold;
+    color: var(--color-text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-date, .select-statut {
+    padding: 10px;
+    border: 1px solid var(--color-background-light);
+    border-radius: 20px;
+    width: 100%;
+    outline: none;
+    background-color: var(--color-background-white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 900px) {
+    .filtres-commandes-conteneur {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
+
+.statut-livre {
+   width: 100%;
+}
+
+.statut-en-cours {
+    background-color: var(--color-marron);
+}
+
+
+
+.grille-commandes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    width: 100%;
+    padding: 0 40px;
+}
+
+.carte-commande {
+    border: 1px solid var(--color-background-light);
+    border-radius: 12px;
+    background-color: var(--color-background-white);
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    padding: 20px;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.carte-commande:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+   
+}
+
+.en-tete-carte {
+    padding: 0 0 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.info-commande {
+    flex: 1;
+    min-width: 0;
+}
+
+.info-commande p {
+    margin: 0 0 5px 0;
+    font-size: 0.85em;
+}
+
+.id-commande {
+    font-weight: bold;
+    color: #333;
+}
+
+.statut-total-commande {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.total-commande {
+    display: block;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--color-green-primary);
+    white-space: nowrap;
+}
+
+.badge-statut {
+    border-radius: 20px;
+    font-size: 0.7em;
+    padding: 6px 10px;
+    text-align: center;
+    color: var(--color-background-light);
+    font-weight: 600;
+    
+    white-space: nowrap;
+ 
+}
+
+.statut-livre .badge-statut {
+    background-color: var(--color-green-primary);
+    box-shadow: 0 2px 6px rgba(46, 125, 50, 0.25);
+}
+
+.statut-en-cours .badge-statut {
+    background-color: var(--color-marron);
+    
+    box-shadow: 0 2px 6px rgba(139, 69, 19, 0.25);
+}
+
+.separateur-carte {
+    border: none;
+    border-top: 1px solid var(--color-background-light);
+   
+}
+
+.conteneur-carrousel-produits {
+    position: relative;
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.grille-produits-commande {
+    display: flex;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    gap: 15px;
+    padding: 5px 10px;
+    flex-grow: 1;
+    -ms-overflow-style: none;
+    scrollbar-width: none; 
+}
+
+.element-produit {
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+
+
+.conteneur-image-produit {
+    width: 85px;
+    height: 85px;
+    margin: 0 auto 8px;
+    overflow: hidden;
+    border-radius: 8px;
+   
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+
+
+.image-produit {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.nom-produit {
+    font-size: 0.8em;
+    font-weight: 500;
+    margin: 0 0 3px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    color: #333;
+}
+
+.prix-produit {
+    font-size: 0.75em;
+    color: #777;
+    margin: 0;
+}
+
+.bouton-carrousel {
+    position: absolute;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    color: var(--color-marron);
+}
+
+.bouton-carrousel:hover {
+   
+    color:  var(--color-marron);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+   }
+
+.bouton-carrousel.gauche {
+    left: -20px;
+}
+
+.bouton-carrousel.droite {
+    right: -20px;
+}
+
+.pied-carte {
+    
+    text-align: center;
+    padding: 10px;
+
+}
+
+.bouton-suivre-commande {
+    padding: 10px 24px;
+    background-color: var(--color-green-secondary);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.3px;
+}
+
+.bouton-suivre-commande:hover {
+    background-color: var(--color-green-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+}
+
+.bouton-suivre-commande:active {
+    transform: translateY(0);
+}
+
+.historique-commandes {
+    width: 100%;
+    margin-top: 40px;
+    padding:10px 40px;
+}
+

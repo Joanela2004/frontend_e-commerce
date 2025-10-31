@@ -1,0 +1,71 @@
+:root {
+  --color-green-primary: #28a458;
+  --color-green-secondary: #5ebb82;
+  --color-text-dark: #3d3b3b;
+  --color-background-light: #f5f0e1;
+  --color-shadow: rgba(22, 163, 74, 0.2);
+  --font-main: "Poppins", sans-serif;
+  --font-size-base: 16px;
+  --color-text-footer: #575555;
+  --color-background-white: #ffff;
+}
+
+.categorie-menu{
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 20px;
+box-shadow: var(--color-shadow);
+}
+.categorie-menu p{
+    font-size: 16px;
+    color: var(--color-green-secondary);
+}
+.categorie-filter{
+    border:  none;
+    font-size: 24px;
+    color: var(--color-green-primary);
+}
+.categorie-menu ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  list-style: none;
+  
+  justify-content: flex-start;
+  margin: 20px 0;
+  padding: 0;
+}
+
+.categorie-btn {
+  flex-wrap: wrap;
+  background-color: var(--color-background-white);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  cursor: pointer;
+  color: var(--color-text-dark);
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.categorie-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  color: var(--color-green-primary);
+  background-color: var(--color-background-light);
+}
+
+.categorie-btn.active {
+  background-color: var(--color-green-primary);
+  color: var(--color-background-white);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
+}
+@media (max-width: 600px) {
+  .categorie-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+}

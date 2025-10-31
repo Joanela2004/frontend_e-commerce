@@ -1,0 +1,218 @@
+:root {
+  --color-green-primary: #28a458;
+  --color-green-secondary: #5ebb82;
+  --color-text-dark: #161616;
+  --color-background-light: #f5f0e1;
+  --color-background-white: #ffffff;
+  --color-shadow: rgba(22, 163, 74, 0.2);
+  --font-main: "Poppins", sans-serif;
+  --font-size-base: 16px;
+}
+.actualite-section{
+    gap: 40px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+.actualite-header{
+  
+  width: 100%;
+   
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   flex-direction: column;
+   gap: 20px;
+}
+ .actualite-header h2{
+  padding: 20px 40px;
+    margin-top: 80px;
+     font-size: 24px;
+   width: 600px;
+
+   color: var(--color-text-dark);
+  text-align: center;
+}
+.actualite-form{
+   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  border-radius: 20px;
+  border: 2px solid var(--color-green-primary);
+  background-color: var(--color-background-white);
+  box-shadow: 0 3px 8px var(--color-shadow);
+  overflow: hidden;
+ 
+}
+.actualite-header input{
+   flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 15px;
+ 
+  font-size: 16px;
+  color: var(--color-text-dark);
+}
+.actualite-header input::placeholder{
+    color: #888;
+}
+.actualite-form button{
+   border: none;
+  background-color: var(--color-green-primary);
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.actualite-form button:hover{
+   background-color: var(--color-green-secondary);
+  transform: scale(1.05);
+}
+.recherche-icon{
+  color: var(--color-background-white);
+  width: 100%;
+}
+.articles-grid{
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 4em;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.categorie-menu {
+ display: flex;
+align-items: center;
+justify-content: center;
+
+gap: 20px;
+box-shadow: var(--color-shadow);
+}
+
+.categorie-btn {
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background-color: #f5f0e1;
+  color: #161616;
+  transition: all 0.3s;
+}
+
+.categorie-btn.active, .categorie-btn:hover {
+  background-color: #28a458;
+  color: #fff;
+}
+
+
+
+.article-card {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  background-color: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+}
+.image-container{
+    display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-card:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+.article-card img {
+  width: 100%;
+ 
+  object-fit: cover;
+}
+
+.article-info {
+  padding: 10px 20px;
+   display: flex;
+  flex-direction: column;
+gap: 5px;
+}
+
+.article-info h3 {
+  font-size: 1.1rem;
+ 
+  color: var(--color-green-primary);
+}
+.article-info-extrait{
+height:100px;
+}
+
+.article-info p {
+   
+  font-size: 0.9rem;
+ 
+  color: #3d3b3b;
+ 
+  
+}
+
+.article-info span {
+  font-size: 0.8rem;
+  color: #999;
+}
+.lire-btn {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--color-green-primary);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.lire-btn:hover {
+  text-decoration: underline;
+  
+}
+
+@media (max-width: 900px) {
+  .article-card{
+     background-color: var(--color-background-white);
+  
+    border-radius: 20px;
+
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    min-width: 180px;
+    max-width: 180px;
+    height: 350px;
+    box-shadow: var(--box-shadow);
+    gap: 2px;
+  }
+  .article-info-extrait{
+height:auto;
+}
+  .articles-grid{
+     padding: 10px 10px;
+    display: flex;
+    justify-content: center;
+ 
+    gap: 20px;
+  }
+  .actualite-header h2{
+  padding: 20px 40px;
+    margin-top: 80px;
+     font-size: 16px;
+   width: 500px;
+   color: var(--color-text-dark);
+  text-align: center;
+}
+}

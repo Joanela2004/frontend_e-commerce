@@ -1,0 +1,121 @@
+:root {
+  --color-green-primary: #28a458;
+  --color-green-secondary: #5ebb82;
+  --color-text-dark: #161616;
+  --color-background-light: #f5f0e1;
+  --color-background-white: #ffffff;
+  --color-shadow: rgba(22, 163, 74, 0.2);
+  --font-main: "Poppins", sans-serif;
+  --font-size-base: 16px;
+}
+.heroProduit section{
+    
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+ 
+.heroProduit {
+    gap: 5px;
+    
+  margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroProduit-header{
+    width: 100%;
+   padding: 20px 40px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+  
+ 
+}
+
+.heroProduit-header-text{
+  
+  font-size: 24px;
+  width: 600px;
+   color: var(--color-text-dark);
+  text-align: center;
+ 
+}
+
+
+.heroProduit-middle {
+  background-color: var(--color-background-white);
+  padding: 10px 20px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.heroProduit-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  border-radius: 20px;
+  border: 2px solid var(--color-green-primary);
+  background-color: var(--color-background-white);
+  box-shadow: 0 3px 8px var(--color-shadow);
+  overflow: hidden;
+ 
+}
+
+.heroProduit-form input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 15px;
+ 
+  font-size: 16px;
+  color: var(--color-text-dark);
+}
+
+.heroProduit-form input::placeholder {
+  color: #888;
+}
+
+.heroProduit-form button {
+  border: none;
+  background-color: var(--color-green-primary);
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.heroProduit-form button:hover {
+  background-color: var(--color-green-secondary);
+  transform: scale(1.05);
+}
+
+.heroProduit-search {
+  color: var(--color-background-white);
+  width: 100%;
+}
+
+
+@media (max-width: 900px) {
+  .heroProduit-header h2 {
+    font-size: 16px;
+  }
+
+  .heroProduit-middle {
+    max-width: 90%;
+  }
+
+  .heroProduit-form input {
+    font-size: 14px;
+  }
+
+}

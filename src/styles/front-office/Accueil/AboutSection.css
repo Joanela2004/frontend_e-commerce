@@ -16,7 +16,7 @@
    align-items: center;
    justify-content: center;
   flex-direction: row;
-   background-color: var(--color-background-light);
+  
    gap: 200px;
    width: 100%;
    
