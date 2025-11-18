@@ -25,6 +25,8 @@ import CommandeDetails from "../composants/back-office/Commande/CommandeDetails"
 import Clients from "../composants/back-office/Client/Clients";
 import Livraisons from "../composants/back-office/Livraison/Livraisons";
 import FraisLivraison from "../composants/back-office/Livraison/FraisLivraison";
+import Paiements from "../composants/back-office/Paiements/paiements";
+import ModesPaiement from "../composants/back-office/Paiements/ModesPaiement";
 
 export default function AppRoutes() {
   return (
@@ -73,19 +75,21 @@ export default function AppRoutes() {
           } 
         />
 
-        {/* --- Pages admin protégées --- */}
         <Route path="/admin" element={<PrivateRoute role="admin"><TableauLayout /></PrivateRoute>}>
           <Route index element={<TableauDeBord />} />
           <Route path="produits" element={<Produits />} />
           <Route path="articles" element={<Articles />} />
           <Route path="commandes" element={<Commandes />} />
+          <Route path="paiements" element={<Paiements />} />
+          <Route path="paiements/modes" element={<ModesPaiement />} />
+   
           <Route path="commandes/:id" element={<CommandeDetails />} />
           <Route path="paiement" element={<Paiement />} />
           <Route path="promotion" element={<Promotion />} />
           <Route path="clients" element={<Clients />} />
           <Route path="livraisons" element={<Livraisons />} />
           <Route path="livraisons/frais" element={<FraisLivraison />} />
-                  <Route path="livraisons/lieux" element={<LieuxLivraison />} />
+            <Route path="livraisons/lieux" element={<LieuxLivraison />} />
 
           <Route path="change-password" element={<ChangePasswordAdmin />} />
         </Route>
