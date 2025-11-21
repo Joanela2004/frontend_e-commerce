@@ -20,71 +20,69 @@ export const CartProvider = ({ children }) => {
     } catch {}
   }, [cartItems]);
 
-  const addToCart = (item) => {
-    setCartItems((prev) => {
-      const existingIndex = prev.findIndex((ci) =>
-        ci.numProduit && item.numProduit
-          ? ci.numProduit === item.numProduit
-          : ci.nom === item.nom
-      );
+ const addToCart = (item) => {
+  setCartItems((prev) => {
+    const existingIndex = prev.findIndex((i) =>
+      i.numProduit && item.numProduit ? i.numProduit === item.numProduit : i.nom === item.nom
+    );
 
-      if (existingIndex !== -1) {
-        const next = [...prev];
-        next[existingIndex].quantityKg =
-          (Number(next[existingIndex].quantityKg) || 0) +
-          (Number(item.quantityKg) || 1);
-        return next;
-      }
+    if (existingIndex !== -1) {
+      const next = [...prev];
+      next[existingIndex].poids = Number(next[existingIndex].poids || 0) + Number(item.poids || 1);
+      return next;
+    }
 
-      const generatedId = `${Date.now()}-${Math.random()}`;
+    return [
+      ...prev,
+      {
+        ...item,
+        id: `${Date.now()}-${Math.random()}`,
+      prixApresDecoupe: item.prixPerKg * (item.coefficient || 1)
+ 
+      },
+    ];
+  });
+};
 
-      return [
-        ...prev,
-        {
-          ...item,
-          id: generatedId
-        }
-      ];
-    });
-  };
 
   const removeFromCart = (itemId) => {
     setCartItems((prev) => prev.filter((i) => i.id !== itemId));
   };
 
-  const updateQuantity = (itemId, newQuantity, newCuttingOption) => {
-    setCartItems((prev) =>
-      prev.map((i) => {
-        if (i.id === itemId) {
-          return {
-            ...i,
-            quantityKg: Number(newQuantity),
-            cuttingOption:
-              newCuttingOption !== undefined
-                ? newCuttingOption
-                : i.cuttingOption
-          };
-        }
-        return i;
-      })
-    );
-  };
+const updateQuantity = (id, newPoids, newCuttingOption, newPrixApresDecoupe) => { // 👈 AJOUTER newPrixApresDecoupe
+  setCartItems(prev =>
+    prev.map(item => {
+      if (item.id === id) {
+        // Si le prix est passé (c'est-à-dire lors du changement de découpe), utiliser le nouveau prix.
+        const finalPrix = newPrixApresDecoupe !== undefined 
+            ? newPrixApresDecoupe 
+            : item.prixApresDecoupe; 
+            
+        return {
+          ...item,
+          poids: newPoids,
+          cuttingOption: newCuttingOption || item.cuttingOption,
+          // Stocker le prix unitaire calculé par PanierSection
+          prixApresDecoupe: finalPrix, 
+        };
+      }
+      return item;
+    })
+  );
+};
 
   const clearCart = () => {
     setCartItems([]);
   };
 
   const totalWeight = cartItems.reduce(
-    (sum, item) => sum + Number(item.quantityKg || 0),
+    (sum, item) => sum + Number(item.poids || 0),
     0
   );
 
   const subtotal = cartItems.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.prixPerKg || item.prix || 0) *
-        Number(item.quantityKg || 0),
-    0
+    (total, item) => total + item.prixApresDecoupe * Number(item.poids),
+  0
   );
 
   return (

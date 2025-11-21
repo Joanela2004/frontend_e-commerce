@@ -6,10 +6,7 @@ const getConfig = () => {
   return { headers: { Authorization: `Bearer ${token}` } };
 };
 
-export const getClientsAvecCommandes = async () => {
-  const res = await api.get("/clientsCommandes", getConfig());
-  return res.data;
-};
+
 
 export const sendPromoEmail = async (email) => {
   const res = await api.post("/send-email", { email }, getConfig());

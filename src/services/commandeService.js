@@ -12,29 +12,35 @@ const getConfig = (isFormData = false) => {
 
   return { headers, withCredentials: true };
 };
-
-// Créer une commande (client)
+export const fetchCommandesClient = async () => {
+  const res = await api.get(MES_COMMANDES_URL, getConfig());
+  return res.data;
+};
+export const fetchCommandeClientById = async (id) => {
+  const res = await api.get(`${MES_COMMANDES_URL}/${id}`, getConfig());
+  return res.data;
+};
 export const createCommande = async (data) => {
   const res = await api.post(COMMANDE_URL, data, getConfig());
   return res.data;
 };
 
-// Récupérer toutes les commandes du client
-export const fetchMesCommandes = async () => {
-  const res = await api.get(MES_COMMANDES_URL, getConfig());
+export const fetchCommandes = async () => {
+  const res = await api.get(COMMANDE_URL, getConfig());
   return res.data;
 };
-
-// Récupérer une seule commande du client
 export const fetchCommandeById = async (id) => {
-  const res = await api.get(`${MES_COMMANDES_URL}/${id}`, getConfig());
+  const res = await api.get(`${COMMANDE_URL}/${id}`, getConfig());
+  return res.data;
+};
+export const getClientsAvecCommandes = async () => {
+  const res = await api.get("/clients/avec-commandes", getConfig());
   return res.data;
 };
 
-// Modifier une commande du client (adresse, mode paiement…)
-export const updateCommande = async (id, data) => {
+export const updateCommandeAdmin = async (id, data) => {
   const res = await api.post(
-    `${MES_COMMANDES_URL}/${id}?_method=PUT`,
+    `${COMMANDE_URL}/${id}?_method=PUT`,
     data,
     getConfig()
   );

@@ -1,21 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react'; // Retirer useState et useEffect car l'état est géré par le parent
 import '../../../styles/front-office/Accueil/Pagination.css';
 
-const PaginationProduits = ({ totalProduits, produitsParPage, onPageChange }) => {
-  const [pageActuelle, setPageActuelle] = useState(1);
+const PaginationProduits = ({ totalProduits, produitsParPage, currentPage, onPageChange }) => {
+  
   const totalPages = Math.ceil(totalProduits / produitsParPage);
 
   const handlePageChange = (nouvellePage) => {
-    setPageActuelle(nouvellePage);
-    onPageChange(nouvellePage);
+      onPageChange(nouvellePage);
   };
+
+    if (totalPages <= 1) {
+    return null;
+  }
 
   return (
     <div className="pagination">
       <button
         className="pagination-btn"
-        disabled={pageActuelle === 1}
-        onClick={() => handlePageChange(pageActuelle - 1)}
+        // Utilisation de currentPage directement
+        disabled={currentPage === 1}
+        onClick={() => handlePageChange(currentPage - 1)}
       >
         &lt;
       </button>
@@ -23,7 +27,8 @@ const PaginationProduits = ({ totalProduits, produitsParPage, onPageChange }) =>
       {Array.from({ length: totalPages }, (_, i) => (
         <button
           key={i + 1}
-          className={`pagination-btn ${pageActuelle === i + 1 ? 'active' : ''}`}
+          // Utilisation de currentPage pour l'état actif
+          className={`pagination-btn ${currentPage === i + 1 ? 'active' : ''}`}
           onClick={() => handlePageChange(i + 1)}
         >
           {i + 1}
@@ -32,8 +37,9 @@ const PaginationProduits = ({ totalProduits, produitsParPage, onPageChange }) =>
 
       <button
         className="pagination-btn"
-        disabled={pageActuelle === totalPages}
-        onClick={() => handlePageChange(pageActuelle + 1)}
+        // Utilisation de currentPage directement
+        disabled={currentPage === totalPages}
+        onClick={() => handlePageChange(currentPage + 1)}
       >
         &gt;
       </button>

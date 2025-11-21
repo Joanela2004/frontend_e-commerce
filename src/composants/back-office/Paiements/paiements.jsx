@@ -65,7 +65,7 @@ const Paiements = () => {
       alert("Erreur lors de l'enregistrement du paiement");
     }
   };
-
+  
   const handleEdit = (p) => {
     setForm({
       numCommande: p.numCommande,
@@ -104,7 +104,39 @@ const Paiements = () => {
         </div>
       </div>
 
-     
+      {/* Formulaire */}
+      <form onSubmit={handleSubmit} className="frais-form">
+        <div className="form-row">
+          <div className="form-group">
+            <label>Numéro de commande</label>
+            <input type="text" name="numCommande" value={form.numCommande} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label>Montant</label>
+            <input type="number" name="montantApayer" value={form.montantApayer} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label>Mode de paiement</label>
+            <select name="modePaiementId" value={form.modePaiementId} onChange={handleChange} required>
+              <option value="">-- Choisir --</option>
+              {modes.map((m) => (
+                <option key={m.id} value={m.id}>{m.nomMode}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Statut</label>
+            <select name="statut" value={form.statut} onChange={handleChange}>
+              <option value="effectué">effectué</option>
+              <option value="en attente">en attente</option>
+              <option value="échoué">échoué</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" className="btn-save">
+          {editingId ? "Mettre à jour" : "Ajouter"}
+        </button>
+      </form>
 
       {/* Recherche */}
       <div className="frais-search-bar">

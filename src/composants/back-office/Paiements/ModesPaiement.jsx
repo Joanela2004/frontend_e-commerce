@@ -21,7 +21,7 @@ const ModesPaiement = () => {
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
-  const IMAGE_PAIEMENT = import.meta.env.VITE_IMAGE_PAIEMENT;
+  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
   useEffect(() => {
     loadModes();
@@ -214,13 +214,12 @@ const ModesPaiement = () => {
               <td>
     {m.image ? (
         <img
-            src={`${IMAGE_PAIEMENT}${m.image}`}
+            src={`${IMAGE_BASE_URL}${m.image}`}
             alt={m.nomModePaiement}
             style={{ width: 50, height: 50, objectFit: 'contain' }}
         />
     ) : "—"}
 </td>
-
               <td>{m.nomModePaiement}</td>
               
               <td>

@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import { getCategories, createCategorie, updateCategorie, deleteCategorie } from "../../../services/categorieService";
+import { fetchDecoupes, createDecoupe, updateDecoupe, deleteDecoupe } from "../../../services/DecoupeService";
 import "../../../styles/back-office/fraisLivraison.css";
 import {useNavigate} from "react-router-dom";
-const Categorie = () => {
+const Decoupes = () => {
     const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-  const [form, setForm] = useState({ nomCategorie: "" });
+  const [decoupes, setDecoupes] = useState([]);
+  const [form, setForm] = useState({ 
+    nomDecoupe: "", 
+    coefficient: "" 
+  });
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadCategories();
+    loadDecoupes();
   }, []);
 
-  const loadCategories = async () => {
+  const loadDecoupes = async () => {
     try {
-      const data = await getCategories();
-      setCategories(data);
+      const data = await fetchDecoupes();
+      setDecoupes(data);
     } catch (error) {
-      console.error("Erreur chargement catégories:", error);
-      alert("Erreur lors du chargement des catégories");
+      console.error("Erreur chargement découpes:", error);
+      alert("Erreur lors du chargement des découpes");
     }
   };
 
@@ -33,16 +36,19 @@ const Categorie = () => {
 
     try {
       if (editingId) {
-        await updateCategorie(editingId, form.nomCategorie);
-        alert("Catégorie mise à jour !");
+        await updateDecoupe(editingId, form);
+        alert("Découpe mise à jour !");
       } else {
-        await createCategorie(form.nomCategorie);
-        alert("Catégorie ajoutée !");
+        await createDecoupe(form);
+        alert("Découpe ajoutée !");
       }
       
-      setForm({ nomCategorie: "" });
+      setForm({ 
+        nomDecoupe: "", 
+        coefficient: "" 
+      });
       setEditingId(null);
-      loadCategories();
+      loadDecoupes();
 
     } catch (err) {
       console.error("Erreur détaillée:", err);
@@ -50,39 +56,42 @@ const Categorie = () => {
     }
   };
 
-  const handleEdit = (categorie) => {
-    setForm({ nomCategorie: categorie.nomCategorie });
-    setEditingId(categorie.numCategorie);
+  const handleEdit = (decoupe) => {
+    setForm({ 
+      nomDecoupe: decoupe.nomDecoupe, 
+      coefficient: decoupe.coefficient 
+    });
+    setEditingId(decoupe.numDecoupe);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer cette catégorie ?")) return;
+    if (!window.confirm("Supprimer cette découpe ?")) return;
     try {
-      await deleteCategorie(id);
-      loadCategories();
-      alert("Catégorie supprimée !");
+      await deleteDecoupe(id);
+      loadDecoupes();
+      alert("Découpe supprimée !");
     } catch (error) {
       console.error("Erreur suppression:", error);
       alert("Erreur lors de la suppression");
     }
   };
 
-  const filteredCategories = categories.filter(c =>
-    c.nomCategorie.toLowerCase().includes(search.toLowerCase())
+  const filteredDecoupes = decoupes.filter(d =>
+    d.nomDecoupe.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="frais-container">
-      <div className="frais-header">
-        <h2>Gestion des Catégories</h2>
+     <div className="frais-header">
+        <h2>Gestion des Découpes</h2>
         <div className="livraison-tabs">
           <button className="tab-inactive" onClick={() => navigate("/admin/produits")}>
             Produits
           </button>
-          <button className="tab-active">Catégories</button>
-          <button className="tab-inactive" onClick={() => navigate("/admin/decoupes")}>
-            Découpes
+          <button className="tab-inactive" onClick={() => navigate("/admin/categories")}>
+            Catégories
           </button>
+          <button className="tab-active">Découpes</button>
         </div>
       </div>
 
@@ -90,14 +99,28 @@ const Categorie = () => {
       <form onSubmit={handleSubmit} className="frais-form">
         <div className="form-row">
           <div className="form-group">
-            <label>Nom de la catégorie</label>
+            <label>Nom de la découpe</label>
             <input
               type="text"
-              name="nomCategorie"
-              value={form.nomCategorie}
+              name="nomDecoupe"
+              value={form.nomDecoupe}
               onChange={handleChange}
               required
-              placeholder="Nom de la catégorie"
+              placeholder="Ex: Entier, Tranches, Dés..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Coefficient</label>
+            <input
+              type="number"
+              name="coefficient"
+              value={form.coefficient}
+              onChange={handleChange}
+              required
+              placeholder="1.0"
+              step="0.1"
+              min="0.1"
             />
           </div>
         </div>
@@ -112,7 +135,10 @@ const Categorie = () => {
             className="btn-cancel"
             onClick={() => {
               setEditingId(null);
-              setForm({ nomCategorie: "" });
+              setForm({ 
+                nomDecoupe: "", 
+                coefficient: "" 
+              });
             }}
           >
             Annuler
@@ -125,7 +151,7 @@ const Categorie = () => {
         <FaSearch />
         <input
           type="text"
-          placeholder="Rechercher une catégorie..."
+          placeholder="Rechercher une découpe..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -138,18 +164,20 @@ const Categorie = () => {
           <tr>
             <th>ID</th>
             <th>Nom</th>
+            <th>Coefficient</th>
             <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
-          {filteredCategories.map((c) => (
-            <tr key={c.numCategorie}>
-              <td>{c.numCategorie}</td>
-              <td>{c.nomCategorie}</td>
+          {filteredDecoupes.map((d) => (
+            <tr key={d.numDecoupe}>
+              <td>{d.numDecoupe}</td>
+              <td>{d.nomDecoupe}</td>
+              <td>{d.coefficient}</td>
               <td>
-                <button className="btn-edit" onClick={() => handleEdit(c)}>✏️</button>
-                <button className="btn-delete" onClick={() => handleDelete(c.numCategorie)}>🗑️</button>
+                <button className="btn-edit" onClick={() => handleEdit(d)}>✏️</button>
+                <button className="btn-delete" onClick={() => handleDelete(d.numDecoupe)}>🗑️</button>
               </td>
             </tr>
           ))}
@@ -159,4 +187,4 @@ const Categorie = () => {
   );
 };
 
-export default Categorie;
+export default Decoupes;

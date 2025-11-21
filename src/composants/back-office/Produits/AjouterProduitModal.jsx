@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createProduit, updateProduit } from '../../../services/produitService';
-import { fetchPromotions } from '../../../services/promotionService';
 
-const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categories }) => {
+const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categories, promotions }) => {
     const [nom, setNom] = useState('');
     const [prix, setPrix] = useState('');
     const [poids, setPoids] = useState('');
@@ -11,62 +10,37 @@ const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categori
     const [imageFileName, setImageFileName] = useState('');
     const [numCategorie, setNumCategorie] = useState('');
     const [numPromotion, setNumPromotion] = useState('');
-    const [promotions, setPromotions] = useState([]);
-    useEffect(() => {
-        console.log("produitAEditer reçu :", produitAEditer);
-    }, [produitAEditer]);
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const data = await fetchPromotions();
-                setPromotions(data || []);
-            } catch (err) {
-                console.error("Erreur promotions:", err);
-            }
-        };
-        load();
-    }, []);
-    useEffect(() => {
-        if (!produitAEditer) {
-            setNom('');
-            setPrix('');
-            setPoids('');
-            setQuantiteStock('');
-            setImage(null);
-            setImageFileName('');
-            setNumCategorie(categories[0]?.numCategorie || '');
-            setNumPromotion('');
-            return;
-        }
-        setNom(produitAEditer.nomProduit || '');
-        setPrix(produitAEditer.prix?.toString() || '');
-        setPoids(produitAEditer.poids?.toString() || '');
-        setQuantiteStock(produitAEditer.quantiteStock?.toString() || '');
-        setNumCategorie(produitAEditer.numCategorie || categories[0]?.numCategorie || '');
-        setNumPromotion(produitAEditer.numPromotion || '');
-        setImage(null);
-        setImageFileName(produitAEditer.image ? produitAEditer.image.split('/').pop() : '');
 
-        console.log("Inputs remplis avec :", {
-            nom: produitAEditer.nomProduit,
-            prix: produitAEditer.prix,
-            categorie: produitAEditer.numCategorie
-        });
-    }, [produitAEditer, categories]);
     useEffect(() => {
         if (!isOpen) {
-            setNom('');
-            setPrix('');
-            setPoids('');
-            setQuantiteStock('');
-            setImage(null);
-            setImageFileName('');
-            setNumCategorie('');
-            setNumPromotion('');
+            resetForm();
+            return;
         }
-    }, [isOpen]);
 
-    if (!isOpen) return null;
+        if (produitAEditer) {
+            setNom(produitAEditer.nomProduit || '');
+            setPrix(produitAEditer.prix?.toString() || '');
+            setPoids(produitAEditer.poids?.toString() || '');
+            setQuantiteStock(produitAEditer.quantiteStock?.toString() || '');
+            setNumCategorie(produitAEditer.numCategorie || '');
+            setNumPromotion(produitAEditer.numPromotion || '');
+            setImage(null);
+            setImageFileName(produitAEditer.image ? produitAEditer.image.split('/').pop() : '');
+        } else {
+            resetForm();
+        }
+    }, [isOpen, produitAEditer]);
+
+    const resetForm = () => {
+        setNom('');
+        setPrix('');
+        setPoids('');
+        setQuantiteStock('');
+        setImage(null);
+        setImageFileName('');
+        setNumCategorie(categories[0]?.numCategorie || '');
+        setNumPromotion('');
+    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -83,12 +57,6 @@ const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categori
         e.preventDefault();
 
         const produitId = produitAEditer?.id ?? produitAEditer?.numProduit;
-        console.log("ID pour update :", produitId);
-
-        if (produitAEditer && !produitId) {
-            alert("ID manquant !");
-            return;
-        }
 
         const formData = new FormData();
         formData.append('nomProduit', nom);
@@ -105,55 +73,95 @@ const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categori
         try {
             let result;
             if (produitAEditer) {
-                  result = await updateProduit(produitId, formData);
+                result = await updateProduit(produitId, formData);
             } else {
-                    result = await createProduit(formData);
+                result = await createProduit(formData);
             }
             onSave(result);
             onClose();
         } catch (error) {
             console.error("Erreur sauvegarde:", error);
-            alert("Erreur ! Vérifie la console.");
+            alert("Erreur lors de la sauvegarde !");
         }
     };
 
-    const boutonTexte = produitAEditer ? 'Confirmer' : 'Créer';
+    if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay-bo" onClick={onClose}>
-            <div className="modal-container-bo" onClick={e => e.stopPropagation()}>
-                <div className="modal-header-bo">
-                    <h2 className="modal-titre-bo">
-                        {produitAEditer ? 'Modifier le produit' : 'Ajouter un produit'}
-                    </h2>
-                    <button onClick={onClose} className="modal-fermer-bo">×</button>
-                </div>
+        <div className="modal-overlay" onClick={onClose}>
+            
 
-                <form onSubmit={handleSubmit} className="modal-form-bo">
-                    <div className="form-groupe-bo">
-                        <label>Nom *</label>
-                        <input type="text" value={nom} onChange={e => setNom(e.target.value)} required />
-                    </div>
+                <form onSubmit={handleSubmit} className="frais-form" encType="multipart/form-data">
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Image</label>
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleFileChange} 
+                            />
+                            {imageFileName && <small>Fichier: {imageFileName}</small>}
+                        </div>
 
-                    <div className="form-row-bo">
-                        <div className="form-groupe-bo">
+                        <div className="form-group">
+                            <label>Nom du produit *</label>
+                            <input
+                                type="text"
+                                value={nom}
+                                onChange={(e) => setNom(e.target.value)}
+                                required
+                                placeholder="Nom du produit"
+                            />
+                        </div>
+
+                        <div className="form-group">
                             <label>Prix (Ar) *</label>
-                            <input type="number" value={prix} onChange={e => setPrix(e.target.value)} required min="0" step="0.01" />
-                        </div>
-                        <div className="form-groupe-bo">
-                            <label>Stock *</label>
-                            <input type="number" value={quantiteStock} onChange={e => setQuantiteStock(e.target.value)} required min="0" />
+                            <input
+                                type="number"
+                                value={prix}
+                                onChange={(e) => setPrix(e.target.value)}
+                                required
+                                placeholder="Prix"
+                                step="0.01"
+                                min="0"
+                            />
                         </div>
                     </div>
 
-                    <div className="form-row-bo">
-                        <div className="form-groupe-bo">
+                    <div className="form-row">
+                        <div className="form-group">
                             <label>Poids (kg) *</label>
-                            <input type="number" value={poids} onChange={e => setPoids(e.target.value)} required min="0" step="0.01" />
+                            <input
+                                type="number"
+                                value={poids}
+                                onChange={(e) => setPoids(e.target.value)}
+                                required
+                                placeholder="Poids"
+                                step="0.01"
+                                min="0"
+                            />
                         </div>
-                        <div className="form-groupe-bo">
+
+                        <div className="form-group">
+                            <label>Quantité en stock *</label>
+                            <input
+                                type="number"
+                                value={quantiteStock}
+                                onChange={(e) => setQuantiteStock(e.target.value)}
+                                required
+                                placeholder="Quantité"
+                                min="0"
+                            />
+                        </div>
+
+                        <div className="form-group">
                             <label>Catégorie *</label>
-                            <select value={numCategorie} onChange={e => setNumCategorie(e.target.value)} required>
+                            <select
+                                value={numCategorie}
+                                onChange={(e) => setNumCategorie(e.target.value)}
+                                required
+                            >
+                                <option value="">Sélectionnez une catégorie</option>
                                 {categories.map(cat => (
                                     <option key={cat.numCategorie} value={cat.numCategorie}>
                                         {cat.nomCategorie}
@@ -161,36 +169,38 @@ const AjouterProduitModal = ({ isOpen, onClose, onSave, produitAEditer, categori
                                 ))}
                             </select>
                         </div>
+
+                        <div className="form-group">
+                            <label>Promotion</label>
+                            <select
+                                value={numPromotion}
+                                onChange={(e) => setNumPromotion(e.target.value)}
+                            >
+                                <option value="">Aucune promotion</option>
+                                {promotions.map(promo => (
+                                    <option key={promo.numPromotion} value={promo.numPromotion}>
+                                        {promo.nomPromotion} ({promo.valeur}%)
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
-                    <div className="form-groupe-bo">
-                        <label>Image {produitAEditer ? '' : '*'}</label>
-                        <input type="file" accept="image/*" onChange={handleFileChange} />
-                        {imageFileName && <p className="image-info-bo">Fichier : {imageFileName}</p>}
-                    </div>
-
-                    <div className="form-groupe-bo">
-                        <label>Promotion</label>
-                        <select value={numPromotion || ''} onChange={e => setNumPromotion(e.target.value)}>
-                            <option value="">Aucune</option>
-                            {promotions.map(promo => (
-                                <option key={promo.numPromotion} value={promo.numPromotion}>
-                                    {promo.nomPromotion} — {promo.valeur}{promo.typePromotion === "Pourcentage" ? "%" : "Ar"}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-actions-bo">
-                        <button type="button" onClick={onClose} className="btn-annuler-bo">
-                            Annuler
+                    <div className="modal-footer">
+                        <button className="btn-save" type="submit">
+                            {produitAEditer ? "Mettre à jour" : "Ajouter"}
                         </button>
-                        <button type="submit" className="btn-enregistrer-bo">
-                            {boutonTexte}
+                        
+                        <button 
+                            type="button" 
+                            className="btn-cancel"
+                            onClick={onClose}
+                        >
+                            Annuler
                         </button>
                     </div>
                 </form>
-            </div>
+           
         </div>
     );
 };

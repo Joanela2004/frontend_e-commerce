@@ -1,46 +1,89 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../../styles/back-office/commandes.css";
+import { fetchCommandeById } from "../../../services/commandeService";
 
 const CommandeDetails = () => {
   const { id } = useParams();
+  const [commande, setCommande] = useState(null);
+  const [loading, setLoading] = useState(true);
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-  const commande = {
-    numCommande: id,
-    client: "John Doe",
-    date: "2025-11-05",
-    statut: "Livré",
-    produits: [
-      { nom: "Produit A", quantite: 2, prix: 100 },
-      { nom: "Produit B", quantite: 1, prix: 200 },
-    ],
-  };
+  useEffect(() => {
+    const loadCommande = async () => {
+      try {
+        const data = await fetchCommandeById(id);
+        setCommande(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la commande", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCommande();
+  }, [id]);
+
+  if (loading) return <p>Chargement...</p>;
+  if (!commande) return <p>Commande introuvable.</p>;
 
   return (
     <div className="details-container">
-      <h2>Détails de la commande {commande.numCommande}</h2>
-      <p><strong>Client :</strong> {commande.client}</p>
-      <p><strong>Date :</strong> {commande.date}</p>
-      <p><strong>Statut :</strong> {commande.statut}</p>
-      <h3>Produits</h3>
+
+      <h2>Détails de la commande n° {commande.numCommande}</h2>
+
+      <div className="commande-info">
+        <p><strong>Client :</strong> {commande.utilisateur?.nomUtilisateur || 'Inconnu'}</p>
+        <p><strong>Date :</strong> {commande.dateCommande}</p>
+        <p><strong>Statut :</strong> {commande.statut}</p>
+        
+      </div>
+
+      
+
       <table className="table-produits">
         <thead>
           <tr>
-            <th>Nom</th>
-            <th>Quantité</th>
-            <th>Prix</th>
+            <th>Image</th>
+            <th>Nom du produit</th>
+            <th>Poids</th>
+            <th>Decoupe</th>
+            <th>Prix unitaire</th>
+            <th>Promotion</th>
+            <th>Sous Total</th>
           </tr>
         </thead>
+
         <tbody>
-          {commande.produits.map((p, index) => (
-            <tr key={index}>
-              <td>{p.nom}</td>
-              <td>{p.quantite}</td>
-              <td>{p.prix} Ar</td>
+          {commande.detail_commandes?.map((item) => (
+            <tr key={item.numDetailCommande}>
+              <td>
+                <img
+                  src={`${IMAGE_BASE_URL}/${item.produit?.image}`}
+                  alt={item.produit?.nomProduit}
+                  className="img-produit"
+                />
+              </td>
+
+              <td>{item.produit?.nomProduit}</td>
+
+              <td>{item.poids} kg</td>
+              <td>{item.decoupe} </td>
+              <td>{item.prixUnitaire} Ar</td>
+
+              <td>
+                {item.promotion
+                  ? `${item.promotion.reduction}%`
+                  : "Aucune"}
+              </td>
+
+              <td>{item.poids * item.prixUnitaire} Ar</td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <h3>Total Commande : {commande.montantTotal} Ar</h3>
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useState } from 'react'
 export const usePagination = (data, rowPerPage) => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Safety checks
   const safeData = Array.isArray(data) ? data : [];
   const safeRowPerPage = rowPerPage > 0 ? rowPerPage : 1;
 

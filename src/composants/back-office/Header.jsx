@@ -1,13 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { FaUserCircle, FaCaretDown, FaSignOutAlt, FaLock } from "react-icons/fa";
+import { FaUserCircle, FaCaretDown, FaSignOutAlt, FaLock, FaBell } from "react-icons/fa";
 import profile from '../../assets/icones/log.png';
 import ChangePasswordModal from "../../composants/front-office/Profil/ChangePasswordModal";
 import "../../styles/back-office/Header.css";
+import { fetchCommandes } from "../../services/commandeService";
 
 const Header = () => {
   const [userData, setUserData] = useState(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  const [newOrders, setNewOrders] = useState(0); 
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const commandes = await fetchCommandes(); 
+        setNewOrders(commandes.length);
+      } catch (e) {
+        console.error("Erreur chargement commandes");
+      }
+    };
+
+    loadOrders();
+  }, []);
 
   useEffect(() => {
     const userDataFromStorage = localStorage.getItem('userData');
@@ -31,13 +47,27 @@ const Header = () => {
     <>
       <header className="dashboard-header">
         <div className="header-content">
+          
           <div className="header-left">
             <div className="header-logo-mobile">
               <img src={profile} alt="admin-profile" />
             </div>
           </div>
-          
+
           <div className="header-right">
+
+            <div 
+              className="notification-icon"
+              onClick={() => window.location.href = "/admin/commandes"}
+            >
+              <FaBell className="bell-icon" />
+
+              {newOrders > 0 && (
+                <span className="notification-badge">{newOrders}</span>
+              )}
+            </div>
+
+            {/* 👤 Menu profil */}
             <div className="profile-menu-container">
               <div 
                 className="profile-toggle"
@@ -74,6 +104,7 @@ const Header = () => {
                 </div>
               )}
             </div>
+
           </div>
         </div>
       </header>

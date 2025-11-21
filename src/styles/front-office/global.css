@@ -67,7 +67,20 @@ body {
   gap: 30px;
   list-style: none;
 }
-
+.header-nav .btn {
+  margin: 0;
+  background-color: var(--color-green-primary);
+  color: var(--color-background-light);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px var(--color-shadow);
+  font-size: 14px;
+   width: auto;
+  min-width: 120px;
+}
 .nav-link {
   position: relative;
   color: var(--color-text-dark);
@@ -150,11 +163,16 @@ footer{
   justify-content: center;
   padding: 50px 40px;
   flex-wrap: wrap-reverse;
+  
+}
+.footer-contact h3{
+  color: var(--color-background-light);
 }
 .footer-info p {
   gap: 20px;
   display: flex;
   align-items: center;
+  color: var(--color-background-light);
 }
 
 .footer-form form {
@@ -169,6 +187,8 @@ footer{
   border-radius: 10px;
   border: 2px solid transparent;
   outline: none;
+
+  margin: 10px 20px;
   padding: 20px 200px 20px 20px;
   transition: border 0.3s ease;
   box-shadow: 5px 5px 5px 5px var(--color-background-light);
@@ -177,6 +197,7 @@ footer{
 .footer-form input::placeholder,
 .footer-form textarea::placeholder {
   text-align: left;
+ 
 }
 .footer-form input:focus,
 .footer-form textarea:focus {
@@ -374,7 +395,18 @@ footer{
     opacity: 1;
     visibility: visible;
   }
+.footer-form input,
+.footer-form textarea {
+  border-radius: 10px;
+  border: 2px solid transparent;
+  outline: none;
 
+  margin: 10px 20px;
+  padding: 20px 50px 20px 20px;
+  transition: border 0.3s ease;
+  box-shadow: 5px 5px 5px 5px var(--color-background-light);
+  color: var(--color-text-dark);
+}
    .header-nav-toggle {
     position: fixed;
     top: 0;
@@ -458,7 +490,6 @@ footer{
     left: 15px;
   }
 
-  
 
   .icone-profil {
     width: 28px;
@@ -501,4 +532,37 @@ footer{
   .header-nav > nav {
     display: block;
   }
+}
+
+
+/* Styles pour le badge de notification dans le Header */
+
+.panier-icon-wrapper {
+  position: relative; /* Point d'ancrage pour le badge */
+  display: inline-block;
+}
+
+.cart-notification {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  border-radius:100%;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: var(--color-background-light);
+  text-align: center;
+  z-index: 20; 
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-badge-total {
+    background-color: var(--color-red-error); 
+    box-shadow: 0 0 5px var(--color-shadow); 
 }

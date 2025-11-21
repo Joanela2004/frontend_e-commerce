@@ -55,7 +55,7 @@ export const deleteFrais = async (id) => {
 };
 
 export const fetchLieux = async () => {
-  const res = await api.get(LIEUX_URL, getConfig());
+  const res = await api.get(LIEUX_URL);
   return res.data;
 };
 

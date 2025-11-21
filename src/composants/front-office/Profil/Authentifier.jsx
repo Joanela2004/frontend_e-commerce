@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiUser, FiMail, FiPhone, FiLock } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../../services/AuthService';
 import "../../../styles/front-office/Profil/profil.css";
@@ -11,19 +11,53 @@ const Authentifier = () => {
   const [motDePasse, setMotDePasse] = useState('');
   const [confirmerMotDePasse, setConfirmerMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
+  const [afficherConfirmation, setAfficherConfirmation] = useState(false);
+  const [validationMotDePasse, setValidationMotDePasse] = useState({
+    longueur: false,
+    majuscule: false,
+    chiffre: false
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('userToken');
-    if (token) navigate('/profil'); // redirige si déjà connecté
+    if (token) navigate('/profil'); 
   }, [navigate]);
+
+  // Validation du mot de passe en temps réel
+  useEffect(() => {
+    setValidationMotDePasse({
+      longueur: motDePasse.length >= 6,
+      majuscule: /[A-Z]/.test(motDePasse),
+      chiffre: /[0-9]/.test(motDePasse)
+    });
+  }, [motDePasse]);
+
+  const handleContactChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Supprimer les non-chiffres
+    if (value.length <= 8) {
+      setContact(value);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErreur('');
 
+    // Vérification de la validation du mot de passe
+    if (!validationMotDePasse.longueur || !validationMotDePasse.majuscule || !validationMotDePasse.chiffre) {
+      setErreur('Le mot de passe ne respecte pas les règles de sécurité.');
+      return;
+    }
+
     if (motDePasse !== confirmerMotDePasse) {
       setErreur('Les mots de passe ne correspondent pas !');
+      return;
+    }
+
+    if (contact.length !== 8) {
+      setErreur('Le numéro de téléphone doit contenir exactement 8 chiffres.');
       return;
     }
 
@@ -38,8 +72,8 @@ const Authentifier = () => {
 
       const response = await registerUser(userData);
 
-      localStorage.setItem('userToken', response.access_token);
-      localStorage.setItem('userData', JSON.stringify(response.user));
+      sessionStorage.setItem('userToken', response.access_token);
+sessionStorage.setItem('userData', JSON.stringify(response.user));
 
       navigate('/profil');
     } catch (err) {
@@ -49,18 +83,21 @@ const Authentifier = () => {
     }
   };
 
+  const toutesLesValidationsPassent = validationMotDePasse.longueur && 
+                                       validationMotDePasse.majuscule && 
+                                       validationMotDePasse.chiffre;
+
   return (
     <div className="conteneur-formulaire">
       <form onSubmit={handleSubmit}>
         <div className='titre'>
           <h1>Vous n'avez pas de compte ?</h1>
-          <h2>Pour commander, nous avons besoin de vos informations de livraison</h2>
+          <p>Pour commander, nous avons besoin de vos informations de livraison</p>
         </div>
 
         <div className='groupe'>
           {/* Nom */}
           <div className="groupe-formulaire">
-            <label>Nom *</label>
             <div className="champ-avec-icone">
               <FiUser className="icone-champ" />
               <input 
@@ -75,7 +112,6 @@ const Authentifier = () => {
 
           {/* Email */}
           <div className="groupe-formulaire">
-            <label>Email *</label>
             <div className="champ-avec-icone">
               <FiMail className="icone-champ" />
               <input 
@@ -90,54 +126,85 @@ const Authentifier = () => {
 
           {/* Contact */}
           <div className="groupe-formulaire">
-            <label>Téléphone *</label>
             <div className="champ-avec-icone">
               <FiPhone className="icone-champ" />
               <input 
                 type="tel" 
-                placeholder="+261 34 00 000 00" 
+                placeholder="34000000" 
                 value={contact} 
-                onChange={(e) => setContact(e.target.value)} 
+                onChange={handleContactChange} 
                 required 
-                maxLength={15} 
+                maxLength={8}
+                pattern="[0-9]{8}"
+                title="Le numéro doit contenir exactement 8 chiffres"
               />
             </div>
           </div>
 
           {/* Mot de passe */}
           <div className="groupe-formulaire">
-            <label>Mot de passe *</label>
-            <p>Votre mot de passe doit contenir au moins 6 caractères.</p>
-            <div className="champ-avec-icone">
+           
+                  <div className="champ-avec-icone">
               <FiLock className="icone-champ" />
               <input 
-                type="password" 
+                type={afficherMotDePasse ? "text" : "password"}
                 value={motDePasse} 
                 onChange={(e) => setMotDePasse(e.target.value)} 
                 required 
                 minLength={6} 
               />
+              <div 
+                className="icone-oeil" 
+                onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
+              >
+                {afficherMotDePasse ? <FiEyeOff /> : <FiEye />}
+              </div>
             </div>
+                     {motDePasse && (
+              <div className={`validation-mot-de-passe ${toutesLesValidationsPassent ? 'valide' : ''}`}>
+                <p className={validationMotDePasse.longueur ? 'valide' : ''}>
+                  Au moins 6 caractères
+                </p>
+                <p className={validationMotDePasse.majuscule ? 'valide' : ''}>
+                  Au moins une lettre majuscule
+                </p>
+                <p className={validationMotDePasse.chiffre ? 'valide' : ''}>
+                  Au moins un chiffre
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Confirmer mot de passe */}
           <div className="groupe-formulaire">
-            <label>Confirmer le mot de passe *</label>
+            
             <div className="champ-avec-icone">
               <FiLock className="icone-champ" />
               <input 
-                type="password" 
+                type={afficherConfirmation ? "text" : "password"}
                 value={confirmerMotDePasse} 
                 onChange={(e) => setConfirmerMotDePasse(e.target.value)} 
                 required 
               />
+              <div 
+                className="icone-oeil" 
+                onClick={() => setAfficherConfirmation(!afficherConfirmation)}
+              >
+                {afficherConfirmation ? <FiEyeOff /> : <FiEye />}
+              </div>
             </div>
           </div>
 
-          {erreur && <p style={{ color: 'red', marginTop: '10px' }}>{erreur}</p>}
+          {erreur && (
+            <div className="message-erreur">
+              {erreur}
+            </div>
+          )}
         </div>
 
-        <button type="submit" className="bouton bouton-primaire fond-vert">CRÉER MON COMPTE</button>
+        <button type="submit" className="bouton bouton-primaire fond-vert">
+          CRÉER MON COMPTE
+        </button>
       </form>
     </div>
   );

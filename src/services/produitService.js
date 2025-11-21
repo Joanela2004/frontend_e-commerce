@@ -21,6 +21,16 @@ export const fetchProduits = async () => {
     throw error;
   }
 };
+
+export const fetchProduitsById = async (id) => {
+  try {
+    const res = await api.get(PRODUIT_URL);
+    return res.data;
+  } catch (error) {
+    console.error("Erreur fetchProduits:", error);
+    throw error;
+  }
+};
 export const createProduit = async (data) => {
   const res = await api.post(PRODUIT_URL, data, getConfig(true));
   return res.data;

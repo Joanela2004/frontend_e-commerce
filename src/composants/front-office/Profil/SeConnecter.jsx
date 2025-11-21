@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiMail, FiLock } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../../../services/AuthService';
 import "../../../styles/front-office/Profil/profil.css";
@@ -8,6 +8,7 @@ const SeConnecter = () => {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -15,11 +16,11 @@ const SeConnecter = () => {
     setErreur('');
 
     try {
-     const response = await loginUser({ email, motDePasse: motDePasse }); 
-
-      localStorage.setItem('userToken', response.access_token);
-        localStorage.setItem('userData', JSON.stringify(response.user));
-
+      const response = await loginUser({ email, motDePasse: motDePasse }); 
+      
+     sessionStorage.setItem('userToken', response.access_token);
+sessionStorage.setItem('userData', JSON.stringify(response.user));
+      
       navigate(response.user?.role === 'admin' ? '/admin' : '/');
     } catch (err) {
       if (err.response?.status === 401) {
@@ -38,17 +39,17 @@ const SeConnecter = () => {
       <form onSubmit={handleSubmit}>
         <div className='titre'>
           <h1>Déjà client ?</h1>
-          <h2>Connectez-vous</h2>
+          <p>Connectez-vous</p>
         </div>
 
         <div className='groupe'>
+         
           <div className="groupe-formulaire">
-            <label>Email*</label>
-            <div className="champ-avec-icone">
+                        <div className="champ-avec-icone">
               <FiMail className="icone-champ" />
               <input 
                 type="email" 
-                placeholder="votre@Email.com" 
+                placeholder="votre@courriel.com" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 required 
@@ -56,25 +57,44 @@ const SeConnecter = () => {
             </div>
           </div>
 
+          {/* Mot de passe */}
           <div className="groupe-formulaire">
-            <label>Mot de passe*</label>
-            <p>Votre mot de passe doit contenir au moins 6 caractères.</p>
+            
             <div className="champ-avec-icone">
               <FiLock className="icone-champ" />
               <input 
-                type="password" 
-                placeholder="********" 
+                type={afficherMotDePasse ? "text" : "password"}
+                placeholder="••••••••" 
                 value={motDePasse} 
                 onChange={(e) => setMotDePasse(e.target.value)} 
                 required 
                 minLength={6} 
               />
+              <div 
+                className="icone-oeil" 
+                onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
+              >
+                {afficherMotDePasse ? <FiEyeOff /> : <FiEye />}
+              </div>
             </div>
+            
+
           </div>
 
-          {erreur && <p style={{ color: 'red', marginBottom: '15px' }}>{erreur}</p>}
+          <div className="lien-mot-de-passe">
+            <a href="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+          </div>
 
-          <button type="submit" className="bouton bouton-primaire fond-vert">S'IDENTIFIER</button>
+         
+
+          <button type="submit" className="bouton bouton-primaire fond-vert">
+            S'IDENTIFIER
+          </button>
+           {erreur && (
+            <div className="message-erreur">
+              {erreur}
+            </div>
+          )}
         </div>
       </form>
     </div>
