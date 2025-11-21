@@ -1,10 +1,12 @@
 import React from 'react';
 import AppRoutes from "./routes/AppRoutes";
-import ErrorBoundary from "./composants/ErrorBoundary";
+import { NouvelleCommandeProvider } from './contexts/Actualisation';
 export default function App(){
   return (
-    <ErrorBoundary>
+  
+    <NouvelleCommandeProvider>
     <AppRoutes/>
-    </ErrorBoundary>
+    </NouvelleCommandeProvider>
+    
   )
 };

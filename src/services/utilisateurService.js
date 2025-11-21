@@ -1,14 +1,28 @@
+
 import api from "./api";
 
-const getConfig = () => {
-  const token = localStorage.getItem("userToken");
-  if (!token) throw new Error("Utilisateur non authentifié");
-  return { headers: { Authorization: `Bearer ${token}` } };
-};
+export const getClients = async () => {
+  try {
+    const token = localStorage.getItem("userToken");
+    if (!token) throw new Error("Utilisateur non authentifié");
 
+    const res = await api.get("/utilisateurs", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
+    const clients = res.data
+      .filter(user => user.role !== "admin")
+      .map(user => ({
+        id: user.numUtilisateur,
+        nom: user.nomUtilisateur,
+        email: user.email,
+        contact: user.contact || "-",
+        dateInscription: new Date(user.created_at).toISOString().slice(0, 10)
+      }));
 
-export const sendPromoEmail = async (email) => {
-  const res = await api.post("/send-email", { email }, getConfig());
-  return res.data;
+    return clients;
+  } catch (err) {
+    console.error("Erreur lors de la récupération des clients :", err);
+    throw err;
+  }
 };

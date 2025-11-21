@@ -23,7 +23,7 @@ const SideBar = () => {
     { label: "Produits", path: "/admin/produits", icon: FaBox },
     { label: "Articles", path: "/admin/articles", icon: FaNewspaper },
     { label: "Commandes", path: "/admin/commandes", icon: FaShoppingBag },
-    { label: "Paiements", path: "/admin/paiement", icon: FaCreditCard },
+    { label: "Paiements", path: "/admin/paiements", icon: FaCreditCard },
     { label: "Promotions", path: "/admin/promotion", icon: FaTag },
     { label: "Clients", path: "/admin/clients", icon: FaUsers },
     { label: "Livraisons", path: "/admin/livraisons", icon: FaTruck },

@@ -28,7 +28,7 @@ import Livraisons from "../composants/back-office/Livraison/Livraisons";
 import FraisLivraison from "../composants/back-office/Livraison/FraisLivraison";
 import Categorie from "../composants/back-office/Produits/Categorie";
 import Decoupes from "../composants/back-office/Produits/Decoupes";
-
+import CommandesClient from "../composants/back-office/Client/CommandeClient";
 // Composant pour les routes de l'application
 export default function AppRoutes() {
   return (
@@ -90,6 +90,7 @@ const AdminRoutes = () => {
         <Route path="decoupes" element={<Decoupes />} />
         <Route path="promotion" element={<Promotion />} />
         <Route path="clients" element={<Clients />} />
+        <Route path="clients/:id/commandes" element={<CommandesClient />} />
         <Route path="livraisons" element={<Livraisons />} />
         <Route path="livraisons/frais" element={<FraisLivraison />} />
         <Route path="livraisons/lieux" element={<LieuxLivraison />} />

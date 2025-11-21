@@ -191,7 +191,7 @@ const fraisLivraisonTotal = fraisParPoids+fraisParLieu;
       lieuNom: lieuNom,
       dateLivraisonSouhaitee: dateLivraison,
       payerLivraison: payerLivraisonChecked,
-      statut: "en cours",
+      statut: "en attente ",
       sousTotal: sousTotalCommande.toFixed(2),
       fraisLivraison: fraisLivraisonCommande.toFixed(2),
       montantTotal: montantTotalCommande.toFixed(2),
@@ -391,7 +391,8 @@ const fraisLivraisonTotal = fraisParPoids+fraisParLieu;
                       -
                     </button>
                     <span>{Number(produit.poids || produit.poids)} kg</span>
-                    <button onClick={() => handleQuantityChange(produit.id, 1)}>
+                    <button onClick={() => handleQuantityChange(produit.id, 1)}
+                      >
                       +
                     </button>
                   </div>

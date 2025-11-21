@@ -155,9 +155,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
                         <h1 className="quantity">{cartItem.poids}</h1>
 
                         <button
-                          onClick={() =>
-                            updateQuantity(cartItem.id, cartItem.poids + 1)
-                          }
+                         onClick={() => handleAddToCart(produit)}
                           className="quantity-btn"
                         >
                           +

@@ -3,27 +3,15 @@ import { FaUserCircle, FaCaretDown, FaSignOutAlt, FaLock, FaBell } from "react-i
 import profile from '../../assets/icones/log.png';
 import ChangePasswordModal from "../../composants/front-office/Profil/ChangePasswordModal";
 import "../../styles/back-office/Header.css";
-import { fetchCommandes } from "../../services/commandeService";
+import { useNouvelleCommande } from "../../contexts/Actualisation"; // 👈 IMPORT DU HOOK
 
 const Header = () => {
   const [userData, setUserData] = useState(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  const [newOrders, setNewOrders] = useState(0); 
-
-  useEffect(() => {
-    const loadOrders = async () => {
-      try {
-        const commandes = await fetchCommandes(); 
-        setNewOrders(commandes.length);
-      } catch (e) {
-        console.error("Erreur chargement commandes");
-      }
-    };
-
-    loadOrders();
-  }, []);
+  // Utilisation du compteur global du Context
+  const { newOrdersCount, loading } = useNouvelleCommande(); 
 
   useEffect(() => {
     const userDataFromStorage = localStorage.getItem('userData');
@@ -62,12 +50,12 @@ const Header = () => {
             >
               <FaBell className="bell-icon" />
 
-              {newOrders > 0 && (
-                <span className="notification-badge">{newOrders}</span>
+              {/* Affichage du compteur global */}
+              {newOrdersCount > 0 && !loading && (
+                <span className="notification-badge">{newOrdersCount}</span>
               )}
             </div>
 
-            {/* 👤 Menu profil */}
             <div className="profile-menu-container">
               <div 
                 className="profile-toggle"

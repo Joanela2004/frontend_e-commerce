@@ -1,163 +1,209 @@
 import React, { useState, useEffect } from "react";
 import "../../../styles/back-office/commandes.css";
 import { Link } from "react-router-dom";
+import { useNouvelleCommande } from '../../../contexts/Actualisation';
 import { usePagination } from "../../../pages/hooks/hooks";
 import { fetchCommandes, updateCommandeAdmin } from "../../../services/commandeService";
+import ModalLivraison from './ModalLivraison';
 
 const Commandes = () => {
-  const [commandes, setCommandes] = useState([]);
+    const [commandes, setCommandes] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentDeliveryData, setCurrentDeliveryData] = useState({});
+    const [currentCmd, setCurrentCmd] = useState(null);
 
-  const { currentRows, currentPage, totalPages, goToPage } = usePagination(
-    commandes,
-    5
-  );
+    const { refreshOrders } = useNouvelleCommande(); 
 
-  useEffect(() => {
     const fetchData = async () => {
-      try {
-        const data = await fetchCommandes();
-        setCommandes(data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des commandes", error);
-      }
+        try {
+            const data = await fetchCommandes(); 
+            setCommandes(data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des commandes", error);
+        }
     };
 
-    fetchData();
-  }, []);
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-  // 🔥 Changer le statut
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      await updateCommandeAdmin(id, { statut: newStatus });
+    const { currentRows, currentPage, totalPages, goToPage } = usePagination(commandes, 5);
 
-      setCommandes((prev) =>
-        prev.map((cmd) =>
-          cmd.numCommande === id ? { ...cmd, statut: newStatus } : cmd
-        )
-      );
-    } catch (error) {
-      console.error("Erreur update statut :", error);
-    }
-  };
+    const handleValidate = async (id, currentStatut) => {
+        let newStatus;
+        if (currentStatut === 'en attente') newStatus = 'validée';
+        else if (currentStatut === 'validée') newStatus = 'annulée';
+        else return;
 
-  // 🔥 Changer payerLivraison
-  const handleLivraisonPaid = async (id, value) => {
-    try {
-      await updateCommandeAdmin(id, { payerLivraison: value });
+        try {
+            await updateCommandeAdmin(id, { statut: newStatus });
+            setCommandes(prev =>
+                prev.map(cmd => cmd.numCommande === id ? { ...cmd, statut: newStatus } : cmd)
+            );
+        } catch (error) {
+            console.error("Erreur mise à jour statut :", error);
+        }
+    };
 
-      setCommandes((prev) =>
-        prev.map((cmd) =>
-          cmd.numCommande === id ? { ...cmd, payerLivraison: value } : cmd
-        )
-      );
-    } catch (error) {
-      console.error("Erreur update livraison :", error);
-    }
-  };
+    const handleDeliveryClick = (cmd) => {
+        setCurrentCmd(cmd);
+        setCurrentDeliveryData({
+            numCommande: cmd.numCommande,
+            transporteur: cmd.livraisons?.[0]?.transporteur || 'Arato Express',
+            referenceColis: cmd.livraisons?.[0]?.referenceColis || `COLIS-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,        
+            lieuLivraison: cmd.livraisons?.[0]?.lieuLivraison || '',
+            contactTransporteur: cmd.livraisons?.[0]?.contactTransporteur || '',
+        });
+        setIsModalOpen(true);
+    };
 
-  return (
-    <div className="commandes-container">
-      <h2>Liste des Commandes</h2>
+    const handleDeliverySubmit = async (data) => {
+        if (!currentCmd) return;
+        const newStatut = currentCmd.statut === "validée" ? "expédiée" : currentCmd.statut;
 
-      <table className="table-commandes">
-        <thead>
-          <tr>
-            <th>N° Commande</th>
-            <th>Client</th>
-            <th>Date</th>
+        try {
+            const { numCommande, ...deliveryDetails } = data;
+            await updateCommandeAdmin(numCommande, {
+                ...deliveryDetails,
+                statut: newStatut,
+                dateExpedition: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            });
 
-            {/* Statut modifiable */}
-            <th>Statut</th>
+            setCommandes(prev =>
+                prev.map(cmd => cmd.numCommande === numCommande ? { ...cmd, statut: newStatut } : cmd)
+            );
 
-            <th>Sous-total</th>
-            <th>Frais livraison</th>
-            <th>Total</th>
-            <th>Code promo</th>
-            <th>Promotion</th>
+            setIsModalOpen(false);
+            setCurrentCmd(null);
+        } catch (error) {
+            console.error("Erreur lors de la soumission de la livraison:", error);
+        }
+    };
 
-            {/* Livraison payée modifiable */}
-            <th>Livraison payée ?</th>
+    const handleViewClick = async (id) => {
+        try {
+            setCommandes(prev => prev.map(cmd => cmd.numCommande === id ? { ...cmd, estConsulte: 1 } : cmd));
+            await updateCommandeAdmin(id, { estConsulte: 1 });
+            refreshOrders();
+        } catch (error) {
+            console.error("Erreur lors de la consultation de la commande:", error);
+        }
+    };
 
-            <th>Action</th>
-          </tr>
-        </thead>
+    const newOrdersCount = commandes.filter(cmd => !cmd.estConsulte).length;
 
-        <tbody>
-          {currentRows.map((cmd) => (
-            <tr key={cmd.numCommande}>
-              <td>{cmd.numCommande}</td>
-              <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
-              <td>{cmd.dateCommande}</td>
+    return (
+        <div className="commandes-container">
+            <h2>Liste des Commandes</h2>
 
-              {/* 🔥 Liste déroulante statut */}
-              <td>
-                <select
-                  value={cmd.statut}
-                  onChange={(e) =>
-                    handleStatusChange(cmd.numCommande, e.target.value)
-                  }
-                  className="status-select"
-                >
-                  <option value="en attente">En attente</option>
-                  <option value="validée">Validée</option>
-                  <option value="en cours">En cours</option>
-                  <option value="livrée">Livrée</option>
-                  <option value="annulée">Annulée</option>
-                </select>
-              </td>
+            {newOrdersCount > 0 && (
+                <p className="new-orders-indicator">
+                    **{newOrdersCount}** nouvelle(s) commande(s) non consultée(s).
+                </p>
+            )}
 
-              <td>{cmd.sousTotal} Ar</td>
-              <td>{cmd.fraisLivraison} Ar</td>
-              <td>{cmd.montantTotal} Ar</td>
-
-              <td>{cmd.codePromo ?? "—"}</td>
-              <td>{cmd.numPromotion ?? "—"}</td>
-
-              {/* 🔥 Checkbox frais de livraison */}
-              <td>
-                <input
-                  type="checkbox"
-                  checked={cmd.payerLivraison}
-                  onChange={(e) =>
-                    handleLivraisonPaid(cmd.numCommande, e.target.checked)
-                  }
-                />
-              </td>
-
-              <td>
-                <Link
-                  to={`/admin/commandes/${cmd.numCommande}`}
-                  className="btn-voir"
-                >
-                  Voir
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="pagination">
-        <button
-          className="pagination-btn"
-          disabled={currentPage === 1}
-          onClick={() => goToPage(currentPage - 1)}
+            <table className="table-commandes">
+                <thead>
+                    <tr>
+                        <th>N° Commande</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Frais de livraison </th>
+                        <th>Actions</th> 
+                        
+                    </tr>
+                </thead>
+               <tbody>
+  {currentRows.map((cmd) => (
+    <tr key={cmd.numCommande} className={!cmd.estConsulte ? 'new-order-row' : ''}>
+      <td>{cmd.numCommande}</td>
+      <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
+      <td>{cmd.dateCommande}</td>
+      <td>
+        <span className={`status-badge status-${cmd.statut.replace(/\s/g, '-')}`}>
+          {cmd.statut}
+        </span>
+      </td>
+      <td>
+        {cmd.payerLivraison
+          ? <span className="badge-paid"> payé</span>
+          : <span className="badge-unpaid"> non payé</span>
+        }
+      </td>
+      <td>
+        <Link
+          to={`/admin/commandes/${cmd.numCommande}`}
+          onClick={() => handleViewClick(cmd.numCommande)}
+          className={cmd.estConsulte ? "btn-voir consultée" : "btn-voir non-consultée"} 
         >
-          &lt;
-        </button>
+          Voir
+        </Link>
 
-        <button className="pagination-btn active">{currentPage}</button>
+        {cmd.statut === 'en attente' && (
+          <button
+            onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
+            className="btn-action btn-validate"
+          >
+            Valider
+          </button>
+        )}
 
-        <button
-          className="pagination-btn"
-          disabled={currentPage === totalPages}
-          onClick={() => goToPage(currentPage + 1)}
-        >
-          &gt;
-        </button>
-      </div>
-    </div>
-  );
+        {cmd.statut === 'validée' && (
+          <>
+            <button
+              onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
+              className="btn-action btn-cancel"
+            >
+              Annuler
+            </button>
+
+            <button
+              onClick={() => handleDeliveryClick(cmd)}
+              className="btn-action btn-delivery"
+              title="Saisir les informations d'expédition"
+            >
+              Livrer
+            </button>
+          </>
+        )}
+
+        {cmd.statut === 'annulée' && (
+          <button className="btn-action cancel" disabled>
+            Annulée
+          </button>
+        )}
+
+        {cmd.statut === 'expédiée' && (
+          <button className="btn-action btn-delivery" disabled>
+            En cours
+          </button>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+            </table>
+
+            <div className="pagination">
+                <button className="pagination-btn" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>
+                    &lt;
+                </button>
+                <button className="pagination-btn active">{currentPage}</button>
+                <button className="pagination-btn" disabled={currentPage === totalPages} onClick={() => goToPage(currentPage + 1)}>
+                    &gt;
+                </button>
+            </div>
+
+            <ModalLivraison
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleDeliverySubmit}
+                initialData={currentDeliveryData}
+            />
+        </div>
+    );
 };
 
 export default Commandes;

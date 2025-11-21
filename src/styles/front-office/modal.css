@@ -10,7 +10,26 @@
   --color-border-medium: #ddd;
   --color-red-error: #d9534f;
 }
+ * {
+    box-sizing: border-box;
+    
+    font-family: var(--font-main);
+    font-size: 12px;
+  }
+  .modal-actions {
+    margin-top: 25px;
+    text-align: right;
+}
 
+.modal-actions button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -78,8 +97,26 @@
 .btn-primary:hover {
   background-color:var(--color-green-secondary);
 }
-
+.modal-body{
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ 
+ 
+}
+.modal-body h1{
+ text-align: center;
+  width: 100%;
+}
 @media (max-width: 768px) {
+   * {
+    box-sizing: border-box;
+    
+    font-family: var(--font-main);
+    font-size: 12px;
+  }
+
   .modal-content {
     width: 95%;
     margin: 20px;
