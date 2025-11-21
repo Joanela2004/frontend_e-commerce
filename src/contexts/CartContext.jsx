@@ -62,8 +62,7 @@ const updateQuantity = (id, newPoids, newCuttingOption, newPrixApresDecoupe) => 
           ...item,
           poids: newPoids,
           cuttingOption: newCuttingOption || item.cuttingOption,
-          // Stocker le prix unitaire calculé par PanierSection
-          prixApresDecoupe: finalPrix, 
+               prixApresDecoupe: finalPrix, 
         };
       }
       return item;

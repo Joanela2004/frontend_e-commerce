@@ -1,0 +1,26 @@
+:root{
+   --color-green-primary: #28a458;
+  --color-green-secondary: #5ebb82;
+  --color-text-dark: #3d3b3b;
+  --color-text-medium: #555;
+  --color-text-light: #888;
+  --color-background-white: #ffffff;
+  --color-shadow-light: rgba(0, 0, 0, 0.08);
+  --color-border-light: #eee;
+  --color-border-medium: #ddd;
+  --color-red-error: #d9534f;
+}
+.date-input-custom {
+       width: 100%; 
+    padding: 10px 15px; 
+    border: 1px solid var(--color-border-light); 
+    border-radius: 5px;
+    font-size: 1em;
+    height: 40px;
+    box-sizing: border-box; 
+}
+.date-input-custom:focus {
+    border-color:var(--color-green-primary);
+    box-shadow: 0 0 0 0.2rem var(--color-shadow-light);
+    outline: none; 
+}

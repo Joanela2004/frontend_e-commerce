@@ -21,7 +21,15 @@ import { fetchFrais, fetchLieux } from "../../../services/livraisonService";
 import { useNavigate } from "react-router-dom";
 import ModalConnexion from "../ModalConnexion";
 import { fetchDecoupes } from "../../../services/DecoupeService";
-
+import ModalConfirmation from "./ModalConfirmation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import DatePicker, { registerLocale } from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { fr } from 'date-fns/locale'; 
+import { parseISO, format } from 'date-fns'; 
+import "../../../styles/calendrier.css";
+registerLocale('fr', fr);
 const PanierSection = () => {
   const {
     cartItems,
@@ -33,16 +41,16 @@ const PanierSection = () => {
   } = useContext(CartContext);
   const navigate = useNavigate();
   const [decoupesList, setDecoupesList] = useState([]);
- const [payerLivraisonChecked, setPayerLivraisonChecked] = useState(true);
- const [errorModalData, setErrorModalData] = useState(null); 
-  const [showErrorModal, setShowErrorModal] = useState(false); 
+  const [payerLivraisonChecked, setPayerLivraisonChecked] = useState(true);
+  const [errorModalData, setErrorModalData] = useState(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = cartItems.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(cartItems.length / itemsPerPage);
-
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [dateLivraison, setDateLivraison] = useState("");
   const [codePromo, setCodePromo] = useState("");
   const [remise, setRemise] = useState(0);
@@ -55,21 +63,24 @@ const PanierSection = () => {
   const [modesPaiementList, setModesPaiementList] = useState([]);
   const [error, setError] = useState(null);
   const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
-  
-  
+  const [erreurLieu, setErreurLieu] = useState(null);
+  const [erreurPaiement, setErreurPaiement] = useState(null);
+  const [erreurDate, setErreurDate] = useState(null);
   const getPrixApresDecoupe = (produit, option = produit.cuttingOption) => {
     const prixDeBase = Number(produit.prixPerKg);
-    const decoupeSelected = option; 
-    
+    const decoupeSelected = option;
+
     if (decoupeSelected) {
-               const decoupe = decoupesList.find((d) => d.nomDecoupe === decoupeSelected);
-        if (decoupe && decoupe.coefficient) {
-            const coefficient = Number(decoupe.coefficient);
-            return prixDeBase * coefficient; 
-        }
+      const decoupe = decoupesList.find(
+        (d) => d.nomDecoupe === decoupeSelected
+      );
+      if (decoupe && decoupe.coefficient) {
+        const coefficient = Number(decoupe.coefficient);
+        return prixDeBase * coefficient;
+      }
     }
-    return prixDeBase; 
-}
+    return prixDeBase;
+  };
   const handleRedirectToLogin = () => {
     setShowLoginModal(false);
     navigate("/profil");
@@ -87,9 +98,6 @@ const PanierSection = () => {
 
         const lieuxData = await fetchLieux();
         setLieuxList(lieuxData);
-        if (lieuxData.length > 0) {
-          setSelectedLieuNum(lieuxData[0].numLieu || "");
-        }
 
         const modesData = await fetchModesActifs();
         const modesActifs = modesData.filter((mode) => mode.actif === true);
@@ -108,16 +116,22 @@ const PanierSection = () => {
   }, []);
 
   const totalPoids = totalWeight;
-  const tranche = fraisList.find(
+  const fraisSelonPoids = fraisList.find(
     (f) => totalPoids >= Number(f.poidsMin) && totalPoids <= Number(f.poidsMax)
   );
-  const fraisLivraison = tranche ? Number(tranche.frais) : 0;
+  const fraisParPoids = fraisSelonPoids ? Number(fraisSelonPoids.frais) : 0;
+  const lieuSelectionne = lieuxList.find(
+    (l) => (l.numLieu || l.id) == selectedLieuNum
+);
+
+const fraisParLieu = lieuSelectionne ? Number(lieuSelectionne.fraisLieu || 0) : 0;
+const fraisLivraisonTotal = fraisParPoids+fraisParLieu;
+
   const sousTotal = subtotal;
-  const montantBrut = sousTotal + (payerLivraisonChecked ? fraisLivraison : 0);
+  const montantBrut = sousTotal + (payerLivraisonChecked ? fraisLivraisonTotal : 0);
 
   const montantAPayer = montantBrut - remise;
   const formattedMontant = montantAPayer.toFixed(2).replace(".", ",");
- 
 
   const handleApplyCodePromo = () => {
     const code = codePromo.trim().toUpperCase();
@@ -133,15 +147,14 @@ const PanierSection = () => {
     }
   };
 
- const getMinDate = () => {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
-};
-
+  const getMinDate = () => {
+    const today = new Date(); 
+     return format(today, 'yyyy-MM-dd');
+    };
 
   const handleConfirmCommande = async () => {
+    setShowConfirmationModal(false);
     if (cartItems.length === 0 || !selectedLieuNum || !dateLivraison) {
-      alert("Panier vide ou informations de livraison manquantes.");
       return;
     }
     if (!selectedModePaiement) {
@@ -150,7 +163,7 @@ const PanierSection = () => {
     }
 
     const sousTotalCommande = subtotal;
-    const fraisLivraisonCommande = fraisLivraison;
+    const fraisLivraisonCommande = fraisLivraisonTotal;
     const montantTotalCommande = montantAPayer;
 
     const numLieuSelectionne = selectedLieuNum;
@@ -167,8 +180,7 @@ const PanierSection = () => {
         prix: Number(item.prixPerKg || item.prix),
         decoupe: isViande ? item.cuttingOption || "entier" : "entier",
         sousTotal: (
-          Number(item.prixPerKg || item.prix) *
-          Number(item.poids || item.poids)
+          Number(item.prixPerKg || item.prix) * Number(item.poids || item.poids)
         ).toFixed(2),
       };
     });
@@ -190,10 +202,14 @@ const PanierSection = () => {
     try {
       setIsCreating(true);
       const res = await createCommande(payload);
-      alert(
-        "Commande créée avec succès (numCommande: " +
+      toast.success(
+        "Commande envoyée avec succès (numéro: " +
           (res.numCommande || res.id) +
-          ")"
+          ")",
+        {
+          position: "top-center",
+          autoClose: 8000,
+        }
       );
       clearCart();
       navigate("/mesCommandes");
@@ -203,78 +219,76 @@ const PanierSection = () => {
         err?.message ||
         "Erreur lors de la création de la commande";
       setError(msg);
-      alert("Erreur : " + msg);
+      toast.error("Erreur de commande : " + msg);
     } finally {
       setIsCreating(false);
     }
   };
 
+  const handlePasserCommandeClick = () => {
+    setErreurLieu(null);
+    setErreurDate(null);
+    setErreurPaiement(null);
+    setError(null);
+    let hasError = false;
 
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    if (!selectedLieuNum) {
+      setErreurLieu("Veuillez sélectionner un lieu");
+      hasError = true;
+    }
+    if (!dateLivraison) {
+      setErreurDate("veuillez sélectionner une date");
+      hasError = true;
+    }
+
+    if (!selectedModePaiement) {
+      const paiementSection = document.querySelector(".paiement-section");
+      if (paiementSection)
+        paiementSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      setErreurPaiement("Veuillez sélectionner un mode de paiement.");
+      hasError = true;
+    }
+    if (!hasError) {
+      setShowConfirmationModal(true);
+    }
+  };
   const handleQuantityChange = (itemId, increment) => {
     const item = cartItems.find((i) => i.id === itemId);
-    
-    if (!item) return; 
-const poidsDisponible = Number(item.poidsDisponible); 
-    const currentPoids = Number(item.poids); 
+
+    if (!item) return;
+    const poidsDisponible = Number(item.poidsDisponible);
+    const currentPoids = Number(item.poids);
     const nextPoids = currentPoids + increment;
-   
-if (increment > 0 && nextPoids > poidsDisponible) {
-        setErrorModalData({
-            nom: item.nom,
-            maxPoids: poidsDisponible
-        });
-        setShowErrorModal(true); // On ouvre le modal
-        return; 
+
+    if (increment > 0 && nextPoids > poidsDisponible) {
+      setErrorModalData({
+        nom: item.nom,
+        maxPoids: poidsDisponible,
+      });
+      setShowErrorModal(true);
+      return;
     }
-       updateQuantity(
-      itemId,
-      nextPoids 
-    );
+    updateQuantity(itemId, nextPoids);
   };
-
-
 
   const handleCuttingOptionChange = (itemId, newOption) => {
     const item = cartItems.find((i) => i.id === itemId);
     if (!item) return;
-      const newPrixUnit = getPrixApresDecoupe(item, newOption); // 👈 Calcul du prix unitaire corrigé
-     updateQuantity(
-        itemId, 
-        Number(item.poids || 1), 
-        newOption, 
-        newPrixUnit 
-    );
-};
+    const newPrixUnit = getPrixApresDecoupe(item, newOption); // 👈 Calcul du prix unitaire corrigé
+    updateQuantity(itemId, Number(item.poids || 1), newOption, newPrixUnit);
+  };
 
   const handleDelete = (itemId) => {
     removeFromCart(itemId);
     if (currentItems.length === 1 && totalPages > 1) {
       setCurrentPage(Math.max(1, currentPage - 1));
     }
-  };
-
-  const handlePasserCommandeClick = () => {
-    const token = localStorage.getItem("userToken");
-    if (!token) {
-      setShowLoginModal(true);
-      return;
-    }
-    if (cartItems.length === 0) {
-      alert("Votre panier est vide.");
-      return;
-    }
-    if (!selectedLieuNum || !dateLivraison) {
-      alert("Veuillez sélectionner un lieu et une date de livraison.");
-      return;
-    }
-    if (!selectedModePaiement) {
-      const paiementSection = document.querySelector(".paiement-section");
-      if (paiementSection)
-        paiementSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      alert("Veuillez sélectionner un mode de paiement.");
-      return;
-    }
-    handleConfirmCommande();
   };
 
   const getLogoContent = (mode) => {
@@ -372,15 +386,11 @@ if (increment > 0 && nextPoids > poidsDisponible) {
                   <div className="quantite-control-group">
                     <button
                       onClick={() => handleQuantityChange(produit.id, -1)}
-                      disabled={
-                        Number(produit.poids || produit.poids) <= 1
-                      }
+                      disabled={Number(produit.poids || produit.poids) <= 1}
                     >
                       -
                     </button>
-                    <span>
-                      {Number(produit.poids || produit.poids)} kg
-                    </span>
+                    <span>{Number(produit.poids || produit.poids)} kg</span>
                     <button onClick={() => handleQuantityChange(produit.id, 1)}>
                       +
                     </button>
@@ -389,9 +399,7 @@ if (increment > 0 && nextPoids > poidsDisponible) {
 
                 <div className="produit-final-row">
                   <p className="total-item-prix">
-                    {(
-                     getPrixApresDecoupe(produit)* Number(produit.poids)
-                    )
+                    {(getPrixApresDecoupe(produit) * Number(produit.poids))
                       .toFixed(2)
                       .replace(".", ",")}
                     Ar
@@ -434,12 +442,21 @@ if (increment > 0 && nextPoids > poidsDisponible) {
             <h3>
               <FaTruck /> Informations de Livraison
             </h3>
-                               
+               {" "}
+            {erreurLieu && (
+              <div className="message-erreur-inline">{erreurLieu}</div>
+            )}
+                           
             <div className="livraison-input-group">
                           <FaMapMarkerAlt className="input-icon" />           
               <select
                 value={selectedLieuNum}
-                onChange={(e) => setSelectedLieuNum(e.target.value)}
+                onChange={(e) => {
+                  setSelectedLieuNum(e.target.value);
+                  if (erreurLieu) {
+                    setErreurLieu(null);
+                  }
+                }}
               >
                              
                 <option value="" disabled>
@@ -458,30 +475,48 @@ if (increment > 0 && nextPoids > poidsDisponible) {
               </select>
                        
             </div>
+                     {" "}
+            {erreurDate && (
+              <div className="message-erreur-inline">{erreurDate}</div>
+            )}{" "}
                                 
             <div className="livraison-input-group">
                           <FaCalendarAlt className="input-icon" />
                          
-              <input
-                type="date"
-                value={dateLivraison}
-                onChange={(e) => setDateLivraison(e.target.value)}
-                min={getMinDate()}
+              <DatePicker
+            selected={dateLivraison ? parseISO(dateLivraison) : null}
+                dateFormat="dd/MM/yyyy"
+                locale="fr"
+                placeholderText="JJ/MM/AAAA"
+                onChange={(date) => {
+                  const isoString = date ? format(date, 'yyyy-MM-dd') : "";
+                  setDateLivraison(isoString);
+                  if (erreurDate) {
+                    setErreurDate(null);
+                  }
+                }}
+                minDate={new Date(getMinDate())}
+                className="date-input-custom"
                 required
               />
-                       
             </div>
-            <div className="livraison-input-group" style={{ marginTop: "10px" }}>
-  <label style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-    <input
-      type="checkbox"
-      checked={payerLivraisonChecked}
-      onChange={() => setPayerLivraisonChecked(!payerLivraisonChecked)}
-    />
-    Payer les frais de livraison ?
-  </label>
-</div>
-
+            <div
+              className="livraison-input-group"
+              style={{ marginTop: "10px" }}
+            >
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={payerLivraisonChecked}
+                  onChange={() =>
+                    setPayerLivraisonChecked(!payerLivraisonChecked)
+                  }
+                />
+                Payer les frais de livraison ?
+              </label>
+            </div>
                      
           </div>
                  
@@ -527,21 +562,34 @@ if (increment > 0 && nextPoids > poidsDisponible) {
                   <h2>Poids total du panier </h2>
                   {totalPoids > 0 && <p> {totalPoids.toFixed(2)} kg</p>}       
                 </div>
-                             
-                <div className="text">
+                 
+                          {payerLivraisonChecked && (
+                  <div className="text">
+                    <h2> Frais de poids</h2>
+                    <p>{fraisParPoids.toFixed(2).replace(".", ",")} Ar</p>
+                  </div>
+                )}       
+            
+                       {payerLivraisonChecked && fraisParLieu > 0 && (
+    <div className="text">
+        <h2> Frais de distance ({lieuSelectionne?.nomLieu})</h2>
+        <p>{fraisParLieu.toFixed(2).replace(".", ",")} Ar</p>
+    </div>
+)}      
+
+              <hr />  
+                   {payerLivraisonChecked && fraisParPoids > 0 && fraisParLieu > 0 && (
+    <div className="text total-line">
+        <h2> Total Frais Livraison</h2>
+        <p>{fraisLivraisonTotal.toFixed(2).replace(".", ",")} Ar</p>
+    </div>
+    
+)}          
+<div className="text total-line">
                                   <h2>Sous-Total</h2>               
                   <p>{sousTotal.toFixed(2).replace(".", ",")} Ar</p>           
                    
                 </div>
-                             
-               {payerLivraisonChecked && (
-  <div className="text">
-    <h2> Frais de Livraison</h2>
-    <p>{fraisLivraison.toFixed(2).replace(".", ",")} Ar</p>
-  </div>
-)}
-
-                             
                 {remise > 0 && (
                   <div className="text discount-line">
                                       <h2>Remise Code Promo</h2>               
@@ -551,7 +599,8 @@ if (increment > 0 && nextPoids > poidsDisponible) {
                 )}
                            
               </div>
-                          <hr />           
+               <hr />
+                                    
               <div className="text total-line">
                               <h2>Montant total</h2>             
                 <p className="total-prix-to-pay">{formattedMontant} Ar</p>     
@@ -573,9 +622,10 @@ if (increment > 0 && nextPoids > poidsDisponible) {
                       ? "active-payment"
                       : ""
                   }`}
-                  onClick={() =>
-                    setSelectedModePaiement(mode.numModePaiement || mode.id)
-                  }
+                  onClick={() => {
+                    setSelectedModePaiement(mode.numModePaiement || mode.id);
+                    setErreurPaiement(null);
+                  }}
                 >
                                  
                   <div className="logo-container">
@@ -596,6 +646,9 @@ if (increment > 0 && nextPoids > poidsDisponible) {
               </p>
             )}
                    
+            {erreurPaiement && (
+              <div className="message-erreur-inline">{erreurPaiement}</div>
+            )}
           </div>
                  
           <button
@@ -617,13 +670,30 @@ if (increment > 0 && nextPoids > poidsDisponible) {
         onLoginRedirect={handleRedirectToLogin}
       />
       {showErrorModal && errorModalData && (
-          <ModalAvertissement
-              show={showErrorModal}
-              onClose={() => setShowErrorModal(false)}
-              nom={errorModalData.nom}
-              maxPoids={errorModalData.maxPoids}
-          />
+        <ModalAvertissement
+          show={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          nom={errorModalData.nom}
+          maxPoids={errorModalData.maxPoids}
+        />
       )}
+      {showConfirmationModal && (
+        <ModalConfirmation
+          show={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+          onConfirm={handleConfirmCommande}
+        />
+      )}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </section>
   );
 };

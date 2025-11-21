@@ -10,7 +10,16 @@
   --color-border-medium: #ddd; 
   --color-red-error: #d9534f; 
 }
-
+.message-erreur-inline {
+    color: var(--color-red-error);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding-left: 25px;
+    
+    
+}
 .panier-section {
   display: flex;
   flex-direction: row;

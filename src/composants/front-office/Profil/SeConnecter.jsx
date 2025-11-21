@@ -18,8 +18,8 @@ const SeConnecter = () => {
     try {
       const response = await loginUser({ email, motDePasse: motDePasse }); 
       
-     sessionStorage.setItem('userToken', response.access_token);
-sessionStorage.setItem('userData', JSON.stringify(response.user));
+      localStorage.setItem('userToken', response.access_token);
+      localStorage.setItem('userData', JSON.stringify(response.user));
       
       navigate(response.user?.role === 'admin' ? '/admin' : '/');
     } catch (err) {
