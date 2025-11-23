@@ -10,6 +10,8 @@
   --color-border-medium: #ddd; 
   --color-red-error: #d9534f; 
   --color-marron: #8b5e3c;
+  --color-orange-active: #ffa500; /* Ajouté pour l'état actif */
+  --color-blue-header: #3498db; /* Bleu pour l'icône d'en-tête */
 }
 
 .suivi-livraison-page {
@@ -18,9 +20,8 @@
   padding: 10px 60px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center; /* Centré pour le h1 et le header de timeline */
   color: var(--color-text-dark);
- 
 }
 
 .suivi-livraison-page h1 {
@@ -29,24 +30,24 @@
   margin-bottom: 40px;
   color: var(--color-green-primary);
   font-weight: 600;
+  width: 100%; /* Permet au titre d'être centré malgré align-items: flex-end */
 }
 
 .bouton-retour {
     display: flex;
     align-items: center;
     justify-content: center;
-  right: 0;
-  gap: 2px;
-  background-color:var(--color-red-error);  
-  color:var(--color-border-light);
-  border: none;
-  padding: 5px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  margin-top: 30px;
+    gap: 8px; /* Plus d'espace pour l'icône */
+    background-color:var(--color-red-error);  
+    color:var(--color-border-light);
+    border: none;
+    padding: 10px 20px; /* Plus grand */
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    margin-top: 30px;
 }
 
 .bouton-retour:hover {
@@ -55,42 +56,69 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
+.conteneur {
+    width: 100%;
+    max-width: 1200px; /* Ajout d'une largeur max pour une meilleure lisibilité */
+}
+
+.suivi-livraison-conteneur {
+    display: flex;
+    gap: 30px; /* Espacement entre les colonnes */
+    flex-wrap: wrap; /* Permet aux colonnes de passer à la ligne sur petit écran */
+}
 
 .bloc {
   display: flex;
-  flex-wrap: wrap;      
-  gap: 20px;             
-  justify-content: flex-start;
-  width: 100%;
+  flex-direction: column; /* Les cards s'empilent dans le bloc */
+  gap: 20px;
+  flex: 1; /* Chaque bloc prend une part égale de l'espace disponible */
+  min-width: 300px; /* Taille minimale pour éviter un étirement excessif */
+}
+
+.info-cards-col {
+    /* Style spécifique si besoin pour la colonne des InfoCard, sinon hérite de .bloc */
+}
+
+.suivi-timeline-bloc {
+    /* Style spécifique si besoin pour la colonne de la timeline */
 }
 
 .info-card {
-  flex: 1 1 calc(50% - 20px); 
-  min-width: 280px;           
   background-color: var(--color-background-white);
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px var(--color-shadow-light); /* Ombre plus douce */
   padding: 20px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  height: auto;              
+  height: auto;
+  border: 1px solid var(--color-border-light); /* Bordure légère */
 }
 
 .info-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transform: translateY(-2px); /* Effet plus subtil */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
 }
 
-.info-card-green {
-  border-left: 5px solid var(--color-green-primary);
+.info-card-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: 10px;
 }
 
 .info-card-title h3 {
-  margin: 0 0 10px;
-  font-size: 1.1rem;
-  color: var(--color-green-primary);
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-text-dark); /* Plus neutre */
   font-weight: 600;
+}
+
+.info-card-icon {
+    font-size: 1.3em;
+    color: var(--color-green-primary); /* Icône verte */
+    margin-right: 10px;
 }
 
 .info-card-content p {
@@ -98,82 +126,163 @@
   font-size: 0.95rem;
   line-height: 1.5;
 }
-
-[class^="statut-badge-"] {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 30px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.85rem;
- 
-  text-transform: capitalize;
+.info-card-content strong {
+    color: var(--color-text-dark);
 }
 
-.statut-badge-livre {
-  background-color: var(--color-green-primary);
+/* --- EN-TÊTE GLOBAL DE LA TIMELINE --- */
+.timeline-header {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-background-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--color-shadow-light);
+    padding: 25px 30px;
+    margin-bottom: 40px;
+    border: 1px solid var(--color-border-light);
 }
 
-.statut-badge-encours {
-  background-color:var(--color-marron);
-  color: var(--color-border-light);
-  margin-left: 10px;
+.timeline-header-icon {
+    font-size: 2.5rem;
+    color: var(--color-blue-header); /* Couleur bleue pour l'icône camion */
+    margin-right: 20px;
+    background-color: #e6f2fa; /* Légèrement coloré */
+    padding: 10px;
+    border-radius: 50%;
 }
 
-.statut-badge-indisponible {
-  background-color: #6c757d;
+.timeline-header-content h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--color-text-dark);
+    font-weight: 600;
 }
 
-.liste-articles {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
+.timeline-header-content p {
+    margin: 5px 0 0;
+    font-size: 1.1rem;
+    color: var(--color-text-medium);
 }
 
-.article {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 10px 15px;
-  border: 1px solid #e9ecef;
-  transition: background 0.2s ease;
+
+/* --- Styles de la TIMELINE PRINCIPALE --- */
+.timeline-list {
+    position: relative;
+    padding: 20px 0 10px 0; /* Espacement intérieur pour la timeline */
 }
 
-.article:hover {
-  background: #e9f8ec;
+/* La ligne verticale de la timeline */
+.timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 20px; /* Position de la ligne */
+    top: 0;
+    width: 2px; /* Épaisseur de la ligne */
+    height: 100%;
+    background-color: var(--color-border-light);
 }
 
-.nom-article {
-  flex: 2;
-  font-weight: 500;
+.timeline-item {
+    display: flex;
+    align-items: flex-start; /* Aligne le contenu en haut */
+    margin-bottom: 30px; /* Espacement entre les items */
+    position: relative;
 }
 
-.quantite-article {
-  flex: 1;
-  text-align: center;
-  font-weight: 500;
+/* Cercle vert/gris pour l'état */
+.timeline-item .timeline-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background-color: var(--color-border-light); /* Couleur par défaut (gris) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 0; /* Positionne le cercle sur la ligne */
+    z-index: 1; /* Au-dessus de la ligne */
+    color: #fff;
+    font-size: 1.2rem;
 }
 
-.prix-article {
-  flex: 1;
-  text-align: right;
-  font-weight: 600;
-  color: var(--color-green-primary);
+/* Icône de coche à l'intérieur du cercle */
+.timeline-item .timeline-icon-wrapper .timeline-icon {
+    font-size: 1.2rem;
+    color: white; /* Couleur de l'icône dans le cercle */
 }
 
+/* L'icône réelle sera celle de la coche si complété */
+.timeline-item.completed .timeline-icon-wrapper {
+    background-color: var(--color-green-primary); /* Vert si complété */
+}
+.timeline-item.completed .timeline-icon-wrapper .timeline-icon {
+    content: '✅'; /* La coche réelle, attention c'est du contenu, pas une icône font-awesome */
+    font-family: 'Arial Unicode MS', sans-serif; /* Pour assurer la visibilité de l'emoji */
+}
+
+/* Styles pour l'étape active/courante */
+.timeline-item.active .timeline-icon-wrapper {
+    background-color: var(--color-orange-active); /* Orange pour l'étape active */
+}
+.timeline-item.active .timeline-icon-wrapper .timeline-icon {
+    color: white; /* Garde la couleur de l'icône blanche */
+}
+
+
+.timeline-item .timeline-content {
+    margin-left: 60px; /* Décalage pour le contenu, après l'icône */
+    padding: 5px 0;
+    flex-grow: 1;
+}
+
+.timeline-item .timeline-label {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    margin-bottom: 2px;
+    font-size: 1rem;
+}
+
+.timeline-item.completed .timeline-label {
+    color: var(--color-green-primary); /* Texte vert si complété */
+}
+
+.timeline-item.active .timeline-label {
+    color: var(--color-orange-active); /* Texte orange si actif */
+}
+
+.timeline-item .timeline-date, .timeline-item .timeline-date-estimated {
+    font-size: 0.9rem;
+    color: var(--color-text-medium);
+}
+
+.timeline-item.active .timeline-date-estimated {
+    font-weight: 600;
+    color: var(--color-orange-active);
+}
+
+/* Ligne verte pour les étapes complétées */
+.timeline-item.completed:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 20px; /* Départ de la ligne après l'icône */
+    height: calc(100% + 10px); /* Ligne entre les cercles */
+    width: 2px;
+    background-color: var(--color-green-primary);
+    z-index: 0;
+}
+
+
+/* Media Queries pour la réactivité */
 @media (max-width: 900px) {
-  .bloc {
+  .suivi-livraison-conteneur {
     flex-direction: column;
   }
-
-  .info-card {
-    flex: 1 1 100%;
+  .bloc {
+    min-width: 100%;
   }
-
-  .suivi-livraison-page h1 {
-    font-size: 1.5rem;
+  .suivi-livraison-page {
+      padding: 10px 20px;
   }
 }

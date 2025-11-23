@@ -18,14 +18,22 @@ export const fetchLivraisons = async () => {
   const res = await api.get(LIVRAISON_URL, getConfig());
   return res.data;
 };
-
+export const fetchLivraisonByCommandeId = async (commandeId) => {
+  try {
+     const res = await api.get(`/commandes/${commandeId}/livraisons`, getConfig());
+    return res.data;
+  } catch (err) {
+    console.error("Erreur fetchLivraisonByCommandeId:", err.response?.data || err.message);
+    throw err;
+  }
+};
 export const createLivraison = async (data) => {
   const res = await api.post(LIVRAISON_URL, data, getConfig());
   return res.data;
 };
 
 export const updateLivraison = async (id, data) => {
-  const res = await api.post(`${LIVRAISON_URL}/${id}?_method=PUT`, data, getConfig());
+  const res = await api.put(`${LIVRAISON_URL}/${id}`, data, getConfig());
   return res.data;
 };
 
@@ -35,7 +43,7 @@ export const deleteLivraison = async (id) => {
 };
 
 export const fetchFrais = async () => {
-  const res = await api.get(FRAIS_URL);
+  const res = await api.get(FRAIS_URL,getConfig());
   return res.data;
 };
 

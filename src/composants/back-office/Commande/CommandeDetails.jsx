@@ -34,7 +34,6 @@ const CommandeDetails = () => {
     return payerLivraison ? "OUI (Payé)" : "NON (Non Payé)";
   };
 
-  // S'assurer que 'commande' existe avant d'essayer d'accéder à ses propriétés
   if (loading) return <p>Chargement...</p>;
   if (!commande) return <p>Commande introuvable.</p>;
 
@@ -46,12 +45,11 @@ const CommandeDetails = () => {
   
   const nombreProduits = commande.detail_commandes?.length || 0; 
   
-  // 👈 CORRECTION CLÉ : Accès au premier élément du tableau 'livraisons'
   const lieuLivraison = commande.livraisons?.[0]?.lieuLivraison || 'Non spécifié';
 
   const livraisonPayee = commande.payerLivraison;
   const codePromo = commande.codePromo;
-  // -----------------------------
+ 
 
   return (
     <div className="details-container">

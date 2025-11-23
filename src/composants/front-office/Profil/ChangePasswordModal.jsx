@@ -1,12 +1,11 @@
-import React from 'react';
-import ChangePasswordAdmin from './ChangePasswordAdmin'; // Import de votre composant existant
+import React from 'react'; // ← AJOUTE ÇA EN PREMIÈRE LIGNE (même si pas utilisé directement)
+import ChangePasswordAdmin from './ChangePasswordAdmin';
 import "../../../styles/back-office/ChangePasswordModal.css";
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const handleSuccess = () => {
-    // Fermer le modal après un changement réussi
     setTimeout(() => {
       onClose();
     }, 2000);
@@ -19,8 +18,6 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           <h2>Changer le mot de passe</h2>
           <button className="modal-close-btn" onClick={onClose}>×</button>
         </div>
-        
-       
         <div className="modal-body">
           <ChangePasswordAdmin onSuccess={handleSuccess} />
         </div>
@@ -29,4 +26,4 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default ChangePasswordModal;
+export default ChangePasswordModal; // ← bien présent

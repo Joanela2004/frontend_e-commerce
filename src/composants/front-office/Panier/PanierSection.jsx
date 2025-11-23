@@ -212,7 +212,7 @@ const fraisLivraisonTotal = fraisParPoids+fraisParLieu;
         }
       );
       clearCart();
-      navigate("/mesCommandes");
+      navigate("/client/mesCommandes");
     } catch (err) {
       const msg =
         err?.response?.data?.error ||

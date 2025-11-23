@@ -1,129 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "../../../styles/front-office/Commande/Commandes.css"; 
-import carotte from "../../../assets/images/carotte.png";
-import tomate from "../../../assets/images/tomate.png";
-import chou from "../../../assets/images/chou.png";
-import pommeDeTerre from "../../../assets/images/pommeDeTerre.png";
-import viande from "../../../assets/images/legume3.jpg";
 import "../../../styles/front-office/global.css";
-import SuiviLivraison from "./SuiviLivraison";
-import FiltresCommandes from "./FiltresCommandes"; 
 import { useNavigate } from "react-router-dom";
-const productImages = {
-  Tomate: tomate,
-  Carotte: carotte,
-  Courgette: chou,
-  "Pomme de terre": pommeDeTerre,
-  Viande: viande,
-};
-
-const listeCommandesSimulees = [
-  {
-    id: "12415645",
-    date: "15 septembre 2025",
-    status: "récu",
-    total: "50 000 Ar",
-    lieuLivraison: "15 rue des Jardins, 75015 Paris, France",
-    nomClient: "Marie Dupont",
-    modePaiement: "Carte bancaire **** 4567",
-    dateLivraisonEstimee: "30 octobre 2024",
-    livraison: {
-      statut: "livré(e)s",
-      transporteur: "Chronopost",
-      referenceColis: "CH456789123FR",
-      contactTransporteur: "01 23 45 67 89",
-      dateExpedition: "28 octobre 2024",
-      dateLivraison: "30 octobre 2024",
-    },
-    products: [
-      { name: "Tomate", price: "15 000 Ar", qty: 3 },
-      { name: "Carotte", price: "15 000 Ar", qty: 3 },
-      { name: "Courgette", price: "15 000 Ar", qty: 3 },
-      { name: "Pomme de terre", price: "15 000 Ar", qty: 3 },
-      { name: "Tomate", price: "15 000 Ar", qty: 1 },
-      { name: "Carotte", price: "15 000 Ar", qty: 2 },
-    ],
-  },
-  {
-    id: "12415646",
-    date: "15 septembre 2025",
-    status: "en cours",
-    total: "50 000 Ar",
-    lieuLivraison: "25 Avenue des Fleurs, 69002 Lyon, France",
-    nomClient: "Jean Martin",
-    modePaiement: "Carte bancaire **** 1234",
-    dateLivraisonEstimee: "05 novembre 2025",
-    livraison: {
-      statut: "en préparation",
-      transporteur: "à déterminer",
-      referenceColis: null,
-      contactTransporteur: null,
-      dateExpedition: null,
-      dateLivraison: null,
-    },
-    products: [
-      { name: "Tomate", price: "15 000 Ar", qty: 3 },
-      { name: "Carotte", price: "15 000 Ar", qty: 3 },
-      { name: "Courgette", price: "15 000 Ar", qty: 3 },
-      { name: "Pomme de terre", price: "15 000 Ar", qty: 3 },
-    ],
-  },
-  {
-    id: "12415647",
-    date: "10 septembre 2025",
-    status: "en cours",
-    total: "35 000 Ar",
-    lieuLivraison: "4 Impasse des Tulipes, 13008 Marseille, France",
-    nomClient: "Sophie Petit",
-    modePaiement: "PayPal",
-    dateLivraisonEstimee: "25 octobre 2025",
-    livraison: {
-      statut: "en cours",
-      transporteur: "La Poste",
-      referenceColis: "LP987654321FR",
-      contactTransporteur: "09 87 65 43 21",
-      dateExpedition: "20 octobre 2025",
-      dateLivraison: null,
-    },
-    products: [
-      { name: "Tomate", price: "10 000 Ar", qty: 1 },
-      { name: "Courgette", price: "10 000 Ar", qty: 1 },
-    ],
-  },
-  {
-    id: "12415648",
-    date: "05 septembre 2025",
-    status: "récu",
-    total: "65 000 Ar",
-    lieuLivraison: "2 Allée des Roses, 31000 Toulouse, France",
-    nomClient: "Pierre Dubois",
-    modePaiement: "Carte bancaire **** 5678",
-    dateLivraisonEstimee: "10 septembre 2025",
-    livraison: {
-      statut: "livré(e)s",
-      transporteur: "Colissimo",
-      referenceColis: "CO1122334455FR",
-      contactTransporteur: "04 56 78 90 12",
-      dateExpedition: "08 septembre 2025",
-      dateLivraison: "10 septembre 2025",
-    },
-    products: [
-      { name: "Carotte", price: "15 000 Ar", qty: 4 },
-      { name: "Pomme de terre", price: "15 000 Ar", qty: 5 },
-    ],
-  },
-  { id: "12415649", date: "01 septembre 2025", status: "récu", total: "20 000 Ar", products: [{ name: "Viande", price: "20 000 Ar", qty: 1 }] },
-  { id: "12415650", date: "28 août 2025", status: "en cours", total: "45 000 Ar", products: [{ name: "Tomate", price: "10 000 Ar", qty: 2 }] },
-];
-
-const statusMapping = {
-  'récu': "statut-livre",
-  'en cours': "statut-en-cours",
-};
+import FiltresCommandes from "./FiltresCommandes"; 
+import { fetchMesCommandes } from "../../../services/commandeService";
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const CarteCommande = ({ order }) => {
   const productsGridRef = useRef(null);
- const navigate = useNavigate(); 
+  const navigate = useNavigate(); 
+
   const scroll = (direction) => {
     if (productsGridRef.current) {
       const scrollAmount = 250; 
@@ -135,34 +21,25 @@ const CarteCommande = ({ order }) => {
     }
   };
 
-  const getStatusClass = (status) => {
-    return statusMapping[status] || "";
-  };
-
- const handleTrackOrder = () => {
-       navigate(`/livraisons/${order.id}`, { 
+  const handleTrackOrder = () => {
+    navigate(`/client/livraisons/${order.numCommande}`, { 
       state: { commande: order } 
     });
   };
-  
- 
-  
-  const showNavigation = order.products.length > 4;
+
+  const showNavigation = order.detail_commandes.length > 4;
 
   return (
-    <div className={`carte-commande ${getStatusClass(order.status)}`}>
+    <div className={`carte-commande ${order.statut.replace(/\s/g, '-')}`}>
       <div className="en-tete-carte">
         <div className="info-commande">
-          <p>
-            <strong>Commande numéro :</strong>{" "}
-            <span className="id-commande">{order.id}</span>
-          </p>
-          <p className="date-commande">{order.date}</p>
+          <p><strong>Commande numéro :</strong> <span className="id-commande">{order.referenceCommande}</span></p>
+          <p className="date-commande">{order.dateCommande}</p>
         </div>
         <div className="statut-total-commande">
-          <span className="total-commande">{order.total}</span>
-          <span className={`badge-statut ${getStatusClass(order.status)}`}>
-            {order.status}
+          <span className="total-commande">{Number(order.montantTotal).toLocaleString()} Ar</span>
+          <span className={`badge-statut ${order.statut.replace(/\s/g, '-')}`}>
+            {order.statut}
           </span>
         </div>
       </div>
@@ -172,23 +49,23 @@ const CarteCommande = ({ order }) => {
       <div className="conteneur-carrousel-produits">
         {showNavigation && (
           <button className="bouton-carrousel gauche" onClick={() => scroll('gauche')} aria-label="Précédent">
-            &lt; 
+            &lt;
           </button>
         )}
 
         <div className="grille-produits-commande" ref={productsGridRef}>
-          {order.products.map((product, index) => (
+          {order.detail_commandes?.map((item, index) => (
             <div key={index} className="element-produit">
               <div className="conteneur-image-produit">
                 <img
-                  src={productImages[product.name]}
-                  alt={product.name}
+                  src={item.produit?.image ? `${IMAGE_BASE_URL}/${item.produit.image}` : "/placeholder.png"}
+                  alt={item.produit?.nomProduit || "Produit"}
                   className="image-produit"
                 />
               </div>
-              <p className="nom-produit">{product.name}</p>
+              <p className="nom-produit">{item.produit?.nomProduit}</p>
               <p className="prix-produit">
-                {product.price} × {product.qty}
+                {Number(item.prixUnitaire).toLocaleString()} Ar × {item.poids} kg
               </p>
             </div>
           ))}
@@ -196,57 +73,65 @@ const CarteCommande = ({ order }) => {
 
         {showNavigation && (
           <button className="bouton-carrousel droite" onClick={() => scroll('droite')} aria-label="Suivant">
-            &gt; 
+            &gt;
           </button>
         )}
       </div>
 
       <div className="pied-carte">
-        <button
-          className="bouton-suivre-commande"
-          onClick={handleTrackOrder}
-        >
+        <button className="bouton-suivre-commande" onClick={handleTrackOrder}>
           Suivre Livraison
         </button>
       </div>
-   
     </div>
   );
 };
 
 const HistoriqueCommandes = () => {
+  const [commandes, setCommandes] = useState([]);
   const [filtreStatut, setFiltreStatut] = useState("Tous");
   const [filtreDate, setFiltreDate] = useState("");
-  
-  const commandesFiltrees = listeCommandesSimulees.filter((order) => {
-    const matchStatut = filtreStatut === "Tous" ? true : order.status === filtreStatut;
-    return matchStatut;
-  });
 
-  const commandesAffiches = commandesFiltrees; 
+  const fetchData = async () => {
+    try {
+      const data = await fetchMesCommandes(); 
+      setCommandes(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des commandes :", error);
+    }
+  };
 
   useEffect(() => {
-  }, [filtreStatut, filtreDate]);
+    fetchData();
+  }, []);
 
+  const commandesFiltrees = commandes.filter((order) => {
+    const matchStatut = filtreStatut === "Tous" ? true : order.statut === filtreStatut;
+    const matchDate = filtreDate ? order.dateCommande.startsWith(filtreDate) : true;
+    return matchStatut && matchDate;
+  });
 
   return (
     <div className="historique-commandes">
-    <div className="filtre-commandes">
-       <FiltresCommandes 
-        filtreStatut={filtreStatut}
-        setFiltreStatut={setFiltreStatut}
-        filtreDate={filtreDate}
-        setFiltreDate={setFiltreDate}
-        statutsDisponibles={["Tous", "en cours", "récu"]}
-      />
-    </div>
-    <div className="list-commandes-section">
-      <div className="grille-commandes">
-        {commandesAffiches.map((order) => (
-          <CarteCommande key={order.id} order={order} />
-        ))}
+      <div className="filtre-commandes">
+      <FiltresCommandes 
+  filtreStatut={filtreStatut}
+  setFiltreStatut={setFiltreStatut}
+  filtreDate={filtreDate}
+  setFiltreDate={setFiltreDate}
+  statutsDisponibles={["Tous", "expédiée", "livrée", "validée", "en attente"]}
+/>
+
       </div>
-    </div>
+
+      <div className="list-commandes-section">
+        <div className="grille-commandes">
+          {commandesFiltrees.map((order) => (
+            <CarteCommande key={order.numCommande} order={order} />
+          ))}
+          {commandesFiltrees.length === 0 && <p>Aucune commande trouvée.</p>}
+        </div>
+      </div>
     </div>
   );
 };

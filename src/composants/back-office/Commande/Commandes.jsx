@@ -5,7 +5,7 @@ import { useNouvelleCommande } from '../../../contexts/Actualisation';
 import { usePagination } from "../../../pages/hooks/hooks";
 import { fetchCommandes, updateCommandeAdmin } from "../../../services/commandeService";
 import ModalLivraison from './ModalLivraison';
-
+import { updateLivraison } from "../../../services/livraisonService";
 const Commandes = () => {
     const [commandes, setCommandes] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,40 +45,99 @@ const Commandes = () => {
         }
     };
 
-    const handleDeliveryClick = (cmd) => {
-        setCurrentCmd(cmd);
-        setCurrentDeliveryData({
-            numCommande: cmd.numCommande,
-            transporteur: cmd.livraisons?.[0]?.transporteur || 'Arato Express',
-            referenceColis: cmd.livraisons?.[0]?.referenceColis || `COLIS-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,        
-            lieuLivraison: cmd.livraisons?.[0]?.lieuLivraison || '',
-            contactTransporteur: cmd.livraisons?.[0]?.contactTransporteur || '',
-        });
-        setIsModalOpen(true);
+  const handleDeliveryClick = (cmd) => {
+    const livraison = cmd.livraisons?.[0] || {};
+    setCurrentCmd(cmd);
+    setCurrentDeliveryData({
+        numCommande: cmd.numCommande,
+        referenceColis: livraison.referenceColis || '',
+        lieuLivraison: livraison.lieuLivraison || '',
+        transporteur: '',
+        contactTransporteur: '',
+    });
+    setIsModalOpen(true);
+};
+
+
+const handleDeliverySubmit = async (data) => {
+  if (!currentCmd) {
+    console.error("Aucune commande sélectionnée.");
+    return alert("Aucune commande sélectionnée.");
+  }
+
+  const livraison = currentCmd.livraisons?.[0];
+  if (!livraison?.numLivraison) {
+    console.error("Livraison introuvable pour cette commande.");
+    return alert("Livraison introuvable pour cette commande.");
+  }
+
+  try {
+    // 1️⃣ Mettre à jour la livraison
+    const updatedLivraison = {
+      transporteur: data.transporteur || null,
+      contactTransporteur: data.contactTransporteur || null,
+      statutLivraison: "en cours",
     };
 
-    const handleDeliverySubmit = async (data) => {
-        if (!currentCmd) return;
-        const newStatut = currentCmd.statut === "validée" ? "expédiée" : currentCmd.statut;
+    // La date d'expédition est gérée côté backend dans la table livraisons
+    const livraisonResponse = await updateLivraison(livraison.numLivraison, updatedLivraison);
 
-        try {
-            const { numCommande, ...deliveryDetails } = data;
-            await updateCommandeAdmin(numCommande, {
-                ...deliveryDetails,
-                statut: newStatut,
-                dateExpedition: new Date().toISOString().slice(0, 19).replace('T', ' '),
-            });
+    // 2️⃣ Déterminer le nouveau statut de la commande
+    const newStatut = currentCmd.statut === "validée" ? "expédiée" : currentCmd.statut;
+    await updateCommandeAdmin(currentCmd.numCommande, { statut: newStatut });
 
-            setCommandes(prev =>
-                prev.map(cmd => cmd.numCommande === numCommande ? { ...cmd, statut: newStatut } : cmd)
-            );
+    // 3️⃣ Mettre à jour le state local
+    setCommandes(prev =>
+      prev.map(cmd =>
+        cmd.numCommande === currentCmd.numCommande
+          ? { 
+              ...cmd, 
+              statut: newStatut,
+              livraisons: [{ ...livraison, ...updatedLivraison, dateExpedition: livraisonResponse.dateExpedition }]
+            }
+          : cmd
+      )
+    );
 
-            setIsModalOpen(false);
-            setCurrentCmd(null);
-        } catch (error) {
-            console.error("Erreur lors de la soumission de la livraison:", error);
-        }
-    };
+    // 4️⃣ Fermer le modal
+    setIsModalOpen(false);
+    setCurrentCmd(null);
+
+  } catch (error) {
+    console.error("Erreur lors de la soumission de la livraison :", error.response?.data || error.message);
+    alert("Une erreur est survenue lors de la mise à jour de la livraison.");
+  }
+};
+
+
+const handlePayLivraison = async (numCommande) => {
+  try {
+    const commande = commandes.find(cmd => cmd.numCommande === numCommande);
+    if (!commande) return;
+
+        const montantTotalActuel = parseFloat(commande.montantTotal || 0);
+    const fraisLivraison = parseFloat(commande.fraisLivraison || 0);
+    
+    // Le nouveau montant total est l'ancien montant + les frais de livraison
+    const nouveauMontantTotal = montantTotalActuel + fraisLivraison;
+
+      // 1. Mise à jour du backend
+      await updateCommandeAdmin(numCommande, {
+      payerLivraison: 1, // On marque comme payé
+      montantTotal: nouveauMontantTotal // On met à jour le montant total
+    });
+
+           setCommandes(prev => prev.map(cmd =>
+          cmd.numCommande === numCommande
+              ? { ...cmd, payerLivraison: 1, montantTotal: nouveauMontantTotal } // Utiliser 1 pour correspondre à la structure des données (1 ou 0)
+              : cmd
+      ));
+
+       } catch (error) {
+    console.error("Erreur lors du paiement du frais de livraison :", error);
+      }
+};
+
 
     const handleViewClick = async (id) => {
         try {
@@ -117,7 +176,7 @@ const Commandes = () => {
                <tbody>
   {currentRows.map((cmd) => (
     <tr key={cmd.numCommande} className={!cmd.estConsulte ? 'new-order-row' : ''}>
-      <td>{cmd.numCommande}</td>
+      <td>{cmd.referenceCommande}</td>
       <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
       <td>{cmd.dateCommande}</td>
       <td>
@@ -131,55 +190,71 @@ const Commandes = () => {
           : <span className="badge-unpaid"> non payé</span>
         }
       </td>
-      <td>
-        <Link
-          to={`/admin/commandes/${cmd.numCommande}`}
-          onClick={() => handleViewClick(cmd.numCommande)}
-          className={cmd.estConsulte ? "btn-voir consultée" : "btn-voir non-consultée"} 
+     <td>
+  <Link
+    to={`/admin/commandes/${cmd.numCommande}`}
+    onClick={() => handleViewClick(cmd.numCommande)}
+    className={cmd.estConsulte ? "btn-voir consultée" : "btn-voir non-consultée"} 
+  >
+    Voir
+  </Link>
+
+  {cmd.statut === 'en attente' && (
+    <button
+      onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
+      className="btn-action btn-validate"
+    >
+      Valider
+    </button>
+  )}
+
+  {cmd.statut === 'validée' && (
+    <>
+      <button
+        onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
+        className="btn-action btn-cancel"
+      >
+        Annuler
+      </button>
+
+      {cmd.livraisons?.[0]?.statutLivraison !== 'livrée' ? (
+        <button
+          onClick={() => handleDeliveryClick(cmd)}
+          className="btn-action btn-delivery"
+          title="Saisir les informations d'expédition"
         >
-          Voir
-        </Link>
+          Livrer
+        </button>
+      ) : (
+        <button className="btn-action btn-delivery" disabled>
+          Livrée
+        </button>
+      )}
+    </>
+  )}
 
-        {cmd.statut === 'en attente' && (
-          <button
-            onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
-            className="btn-action btn-validate"
-          >
-            Valider
-          </button>
-        )}
+  {cmd.statut === 'expédiée' && (
+    cmd.livraisons?.[0]?.statutLivraison === 'livrée' ? (
+      <button className="btn-action btn-delivery" disabled>
+        Livrée
+      </button>
+    ) : (
+      <button className="btn-action btn-delivery" disabled>
+        En cours
+      </button>
+    )
+  )}
 
-        {cmd.statut === 'validée' && (
-          <>
-            <button
-              onClick={() => handleValidate(cmd.numCommande, cmd.statut)}
-              className="btn-action btn-cancel"
-            >
-              Annuler
-            </button>
+   {!cmd.payerLivraison && (
+    <button
+      onClick={() => handlePayLivraison(cmd.numCommande)}
+      className="btn-action btn-pay"
+    >
+      Payer frais livraison
+    </button>
+  )}
+</td>
 
-            <button
-              onClick={() => handleDeliveryClick(cmd)}
-              className="btn-action btn-delivery"
-              title="Saisir les informations d'expédition"
-            >
-              Livrer
-            </button>
-          </>
-        )}
-
-        {cmd.statut === 'annulée' && (
-          <button className="btn-action cancel" disabled>
-            Annulée
-          </button>
-        )}
-
-        {cmd.statut === 'expédiée' && (
-          <button className="btn-action btn-delivery" disabled>
-            En cours
-          </button>
-        )}
-      </td>
     </tr>
   ))}
 </tbody>

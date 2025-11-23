@@ -17,7 +17,7 @@ import "../../styles/back-office/SideBar.css";
 const SideBar = () => {
   const menuItems = [
 
-     { label: "Accueil", path: "/", icon: FaHome },
+    { label: "Accueil", path: "/", icon: FaHome },
   
     { label: "Tableau de bord", path: "/admin", icon: FaTachometerAlt },
     { label: "Produits", path: "/admin/produits", icon: FaBox },
@@ -31,8 +31,8 @@ const SideBar = () => {
 
   return (
     <div className="sidebar">
-      {/* Logo et Front-Office en haut */}
-      <div className="sidebar-top">
+ 
+       <div className="sidebar-top">
         <h2 className="sidebar-title"> 
           <img src={profile} alt="admin-profile" style={{width: '38%'}} />
         </h2>

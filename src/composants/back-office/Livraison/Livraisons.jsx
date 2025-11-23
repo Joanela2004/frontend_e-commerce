@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { fetchLivraisons, updateLivraison, deleteLivraison } from "../../../services/livraisonService";
+import { fetchLivraisons, updateLivraison } from "../../../services/livraisonService";
 import { FaTruck, FaSearch } from "react-icons/fa";
 import "../../../styles/back-office/livraison.css";
 import { useNavigate } from "react-router-dom";
+import {  updateCommandeAdmin } from "../../../services/commandeService";
 
 const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
   const [formData, setFormData] = useState({});
@@ -17,20 +18,37 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const updatedData = { ...formData };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const updatedData = { ...formData };
+  if (updatedData.statutLivraison === "livrée" && !updatedData.dateLivraison) {
+    updatedData.dateLivraison = new Date().toISOString().slice(0, 19).replace("T", " ");
+  }
 
-    // Si le statut est passé à "livrée", mettre la date de livraison à maintenant
-    if (updatedData.statutLivraison === "livrée" && !updatedData.dateLivraison) {
-      updatedData.dateLivraison = new Date().toISOString().slice(0, 19).replace("T", " ");
-    }
+  await updateLivraison(updatedData.numLivraison, updatedData);
 
-    await updateLivraison(updatedData.numLivraison, updatedData);
-    onSave();
-    onClose();
-  };
+  let newStatutCommande = null;
+
+
+  if (updatedData.statutLivraison === "livrée") {
+    newStatutCommande = "livrée";
+  }
+
+  if (newStatutCommande) {
+    await updateCommandeAdmin(updatedData.numCommande, {
+      statut: newStatutCommande,
+      dateLivraison:
+        newStatutCommande === "livrée"
+          ? new Date().toISOString().slice(0, 19).replace("T", " ")
+          : undefined,
+    });
+  }
+
+  onSave();
+  onClose();
+};
+
 
   return (
     <div className="modal-overlay">
@@ -143,54 +161,50 @@ const Livraisons = () => {
         />
       </div>
 
-      <table className="livraison-table">
-        <thead>
-          <tr>
-            <th>Commande</th>
-            <th>Transporteur</th>
-            <th>Référence Colis</th>
-            <th>Lieu de livraison</th>
-            <th>Date d'expédition</th>
-            <th>Date de livraison</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((l) => (
-            <tr key={l.numLivraison}>
-              <td>{l.numCommande}</td>
-              <td>{l.transporteur || "-"}</td>
-              <td>{l.referenceColis || "-"}</td>
-              <td>{l.lieuLivraison || "-"}</td>
-              <td>{l.dateExpedition || "-"}</td>
-              <td>{l.dateLivraison || "-"}</td>
-              <td>{l.statutLivraison || "-"}</td>
-              <td>
-                <button
-                  className="btn-edit"
-                  onClick={() => {
-                    setCurrentLivraison(l);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  className="btn-delete"
-                  onClick={() => {
-                    if (window.confirm("Supprimer cette livraison ?")) {
-                      deleteLivraison(l.numLivraison).then(loadData);
-                    }
-                  }}
-                >
-                  🗑️
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+     <table className="livraison-table">
+  <thead>
+    <tr>
+      <th>Commande</th>
+      <th>Client</th>
+      <th>Transporteur</th>
+      <th>Référence Colis</th>
+      <th>Lieu de livraison</th>
+      <th>Date d'expédition</th>
+      <th>Date de livraison</th>
+      <th>Statut</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filtered.map((l) => (
+      <tr key={l.numLivraison}>
+
+              <td>{l.commande?.referenceCommande || l.numCommande}</td>
+
+              <td>{l.commande?.utilisateur?.nomUtilisateur|| "-"}</td>
+
+        <td>{l.transporteur || "-"}</td>
+        <td>{l.referenceColis || "-"}</td>
+        <td>{l.lieuLivraison || "-"}</td>
+        <td>{l.dateExpedition || "-"}</td>
+        <td>{l.dateLivraison || "-"}</td>
+        <td>{l.statutLivraison || "-"}</td>
+        <td>
+          <button
+            className="btn-edit"
+            onClick={() => {
+              setCurrentLivraison(l);
+              setIsModalOpen(true);
+            }}
+          >
+            ✏️
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
 
       {isModalOpen && currentLivraison && (
         <LivraisonModal
