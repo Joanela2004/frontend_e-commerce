@@ -53,12 +53,13 @@ export const deletePromotion = async (id) => {
         throw error;
     }
 };
-export const sendPromoEmail = async () => {
+export const sendPromoEmail = async (emailData) => {
     try {
-        const res = await api.post(`/send-email`, {}, getConfig());
+        // CORRECTION : Utiliser une nouvelle route dédiée à l'envoi ciblé
+        const res = await api.post(`/send-promo-to-client`, emailData, getConfig());
         return res.data;
     } catch (error) {
-        console.error("Erreur envoi e-mails promo:", error.response?.data || error.message);
+        console.error("Erreur envoi e-mails promo ciblé:", error.response?.data || error.message);
         throw error;
     }
 };

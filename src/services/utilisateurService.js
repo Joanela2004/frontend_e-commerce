@@ -45,6 +45,15 @@ export const getClients = async () => {
     throw err;
   }
 };
+export const getUtilisateurById = async (id) => {
+  try {
+    const response = await api.get(`/utilisateurs/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+    throw error;
+  }
+};
 export const getStatistiquesUtilisateurs = async () => {
   try {
     const clients = await getClients();

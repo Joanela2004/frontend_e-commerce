@@ -15,7 +15,7 @@ import ChangePasswordAdmin from "../composants/front-office/Profil/ChangePasswor
 // Pages Back-Office
 import LieuxLivraison from "../composants/back-office/Livraison/LieuxLivraison";
 import TableauLayout from "../pages/back-office/TableauLayout";
-import TableauDeBord from "../composants/back-office/TableauDeBord";
+import TableauDeBord from "../composants/back-office/Tableau/TableauDeBord";
 import Produits from "../composants/back-office/Produits/Produits";
 import Paiements from "../composants/back-office/Paiements/paiements";
 import ModesPaiement from "../composants/back-office/Paiements/ModesPaiement";
