@@ -53,6 +53,11 @@ throw error;
 }
 };
 export const getClientsAvecCommandes = async () => {
-  const res = await api.get("/clients/commandes");
-  return res.data;
+  try {
+    const res = await api.get("/clients/avec-commandes", getConfig());
+    return res.data;
+  } catch (error) {
+    console.error("Erreur getClientsAvecCommandes:", error.response?.data || error.message);
+    throw error;
+  }
 };

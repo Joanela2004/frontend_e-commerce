@@ -14,8 +14,8 @@ const Header = () => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  const token = sessionStorage.getItem("userToken");
-const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  const token = localStorage.getItem("userToken");
+const userData = JSON.parse(localStorage.getItem("userData") || "{}");
  const isAuthenticated = !!token;
   const isClient = isAuthenticated && userData.role !== "admin";
   const { totalWeight } = useContext(CartContext);

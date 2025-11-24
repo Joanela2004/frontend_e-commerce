@@ -11,6 +11,7 @@ const Commandes = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentDeliveryData, setCurrentDeliveryData] = useState({});
     const [currentCmd, setCurrentCmd] = useState(null);
+    const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
     const { refreshOrders } = useNouvelleCommande(); 
 
@@ -161,35 +162,44 @@ const handlePayLivraison = async (numCommande) => {
                 </p>
             )}
 
-            <table className="table-commandes">
-                <thead>
-                    <tr>
-                        <th>N° Commande</th>
-                        <th>Client</th>
-                        <th>Date</th>
-                        <th>Statut</th>
-                        <th>Frais de livraison </th>
-                        <th>Actions</th> 
-                        
-                    </tr>
-                </thead>
-               <tbody>
-  {currentRows.map((cmd) => (
-    <tr key={cmd.numCommande} className={!cmd.estConsulte ? 'new-order-row' : ''}>
-      <td>{cmd.referenceCommande}</td>
-      <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
-      <td>{cmd.dateCommande}</td>
-      <td>
-        <span className={`status-badge status-${cmd.statut.replace(/\s/g, '-')}`}>
-          {cmd.statut}
-        </span>
-      </td>
-      <td>
-        {cmd.payerLivraison
-          ? <span className="badge-paid"> payé</span>
-          : <span className="badge-unpaid"> non payé</span>
-        }
-      </td>
+           
+
+            <thead>
+    <tr>
+        <th>N° Commande</th>
+        <th>Client</th>
+        <th>Date</th>
+        <th>Statut</th>
+        <th>Frais de livraison</th>
+        <th>Mode de paiement</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+
+<tbody>
+{currentRows.map((cmd) => (
+<tr key={cmd.numCommande} className={!cmd.estConsulte ? 'new-order-row' : ''}>
+  <td>{cmd.referenceCommande}</td>
+  <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
+  <td>{cmd.dateCommande}</td>
+  <td>
+    <span className={`status-badge status-${cmd.statut.replace(/\s/g, '-')}`}>
+      {cmd.statut}
+    </span>
+  </td>
+  <td>
+    {cmd.payerLivraison
+      ? <span className="badge-paid"> payé</span>
+      : <span className="badge-unpaid"> non payé</span>
+    }
+  </td>
+  <td>
+    <img
+            src={`${IMAGE_BASE_URL}${cmd.mode_paiement?.image }`}
+            alt={cmd.mode_paiement?.image }
+            style={{ width: 50, height: 50, objectFit: 'contain' }}
+        /></td> 
+  <td>
      <td>
   <Link
     to={`/admin/commandes/${cmd.numCommande}`}
@@ -254,12 +264,11 @@ const handlePayLivraison = async (numCommande) => {
     </button>
   )}
 </td>
-
-    </tr>
-  ))}
+  </td>
+</tr>
+))}
 </tbody>
 
-            </table>
 
             <div className="pagination">
                 <button className="pagination-btn" disabled={currentPage === 1} onClick={() => goToPage(currentPage - 1)}>

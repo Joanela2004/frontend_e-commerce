@@ -1,406 +1,283 @@
 import React, { useState, useEffect } from "react";
-import { sendPromoEmail } from "../../services/promotionService";
-
-import { fetchCommandeById,getClientsAvecCommandes } from "../../services/commandeService"; 
+import { fetchProduits } from "../../services/produitService";
+import { getClients } from "../../services/utilisateurService";
+import { fetchPromotions, sendPromoEmail } from "../../services/promotionService";
+import { fetchModesActifs } from "../../services/paiementService";
+import { fetchCommandeById,fetchCommandes } from "../../services/commandeService";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
-
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, AlertCircle, Mail } from "lucide-react";
 import "../../styles/back-office/TableauDeBord.css";
 
 const COULEURS_PIE = ["#20b2aa", "#ffa500", "#9400d3", "#696969"];
+const COULEURS_BAR = ["#28a458", "#5ebb82", "#ff6347"];
 
 const TableauDeBord = () => {
-  const [clients, setClients] = useState([]);
-  const [clientsSelectionnes, setClientsSelectionnes] = useState([]);
-  const [montantMin, setMontantMin] = useState("");
-  const [envoisEnCours, setEnvoisEnCours] = useState(false);
-  const [emailsEnvoyes, setEmailsEnvoyes] = useState([]);
-  const [commandeAffichee, setCommandeAffichee] = useState(null); 
-  const [clientCommandeId, setClientCommandeId] = useState(null);
-  const [chargementCommande, setChargementCommande] = useState(false);
+const [clients, setClients] = useState([]);
+const [produits, setProduits] = useState([]);
+const [promotions, setPromotions] = useState([]);
+const [modesActifs, setModesActifs] = useState([]);
+const [clientsSelectionnes, setClientsSelectionnes] = useState([]);
+const [montantMin, setMontantMin] = useState("");
+const [commandeAffichee, setCommandeAffichee] = useState(null);
+const [clientCommandeId, setClientCommandeId] = useState(null);
+const [chargementCommande, setChargementCommande] = useState(false);
+const [envoisEnCours, setEnvoisEnCours] = useState(false);
 
-  useEffect(() => {
-    chargerClients();
-  }, []);
+useEffect(() => {
+const chargerDashboard = async () => {
+try {
+const clientsData = await getClients();
+setClients(clientsData);
 
-  const chargerClients = async () => {
-    try {
-      const res = await getClientsAvecCommandes();
-      setClients(res);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  
-  const handleAfficherCommandes = async (clientId, commandeId) => {
-    if (clientCommandeId === clientId && commandeAffichee) {
-      setCommandeAffichee(null);
-      setClientCommandeId(null);
-      return;
-    }
-    
-    setChargementCommande(true);
-    setClientCommandeId(clientId);
-    setCommandeAffichee(null);
+    const produitsData = await fetchProduits();  
+    setProduits(produitsData);  
 
-    try {
-      const client = clients.find(c => c.numUtilisateur === clientId);
-      if (client && client.derniereCommande) { 
-                   const commande = await fetchCommandeById(client.derniereCommande.numCommande);
-          setCommandeAffichee(commande);
-      } else {
-          setCommandeAffichee({ message: "Le client n'a pas de commandes récentes." });
-      }
+    const promotionsData = await fetchPromotions();  
+    setPromotions(promotionsData);  
 
-    } catch (error) {
-      console.error(error);
-      setCommandeAffichee({ error: "Erreur lors du chargement des commandes." });
-    } finally {
-      setChargementCommande(false);
-    }
-  };
+    const modesData = await fetchModesActifs();  
+    setModesActifs(modesData);  
 
-  const handleEnvoyerPromo = async (email) => {
-    try {
-      setEnvoisEnCours(true);
-      await sendPromoEmail({ email });
-      setEmailsEnvoyes(prev => [...prev, email]);
-      setTimeout(() => {
-        setEmailsEnvoyes(prev => prev.filter(e => e !== email));
-      }, 3000);
-    } catch (e) {
-      alert("Erreur lors de l'envoi");
-    } finally {
-      setEnvoisEnCours(false);
-    }
-  };
+  } catch (err) {  
+    console.error("Erreur chargement dashboard:", err);  
+  }  
+};  
+chargerDashboard();  
 
-  const handleEnvoyerSelection = async () => {
-    if (clientsSelectionnes.length === 0) {
-      alert("Veuillez sélectionner au moins un client");
-      return;
-    }
-    
-    try {
-      setEnvoisEnCours(true);
-      for (const clientId of clientsSelectionnes) {
-        const client = clients.find(c => c.numUtilisateur === clientId);
-        if (client) {
-          await sendPromoEmail({ email: client.email });
-          setEmailsEnvoyes(prev => [...prev, client.email]);
-        }
-      }
-      alert(`${clientsSelectionnes.length} code(s) promo envoyé(s) avec succès !`);
-      setClientsSelectionnes([]);
-      setTimeout(() => {
-        setEmailsEnvoyes([]);
-      }, 3000);
-    } catch (e) {
-      alert("Erreur lors de l'envoi groupé");
-    } finally {
-      setEnvoisEnCours(false);
-    }
-  };
+}, []);
 
-  const toggleSelection = (clientId) => {
-    setClientsSelectionnes(prev => 
-      prev.includes(clientId) 
-        ? prev.filter(id => id !== clientId)
-        : [...prev, clientId]
-    );
-  };
+// Filtrer clients par montant minimum
+const clientsFiltresParMontant = () => {
+if (!montantMin) return clients;
+const min = parseFloat(montantMin);
+if (isNaN(min)) return clients;
+return clients.filter(c => (c.totalMontant || 0) >= min);
+};
 
-  const toggleSelectAll = () => {
-    const clientsFiltres = clientsFiltresParMontant();
-    if (clientsSelectionnes.length === clientsFiltres.length) {
-      setClientsSelectionnes([]);
-    } else {
-      setClientsSelectionnes(clientsFiltres.map(c => c.numUtilisateur));
-    }
-  };
+// KPIs
+const totalCommandes = clients.reduce((sum, c) => sum + (c.commandes_count || 0), 0);
+const revenuTotal = clients.reduce((sum, c) => sum + (c.totalMontant || 0), 0);
+const panierMoyen = clients.length > 0 ? revenuTotal / clients.length : 0;
+const tauxConversion = clients.length > 0 ? (totalCommandes / clients.length) * 100 : 0;
+const produitsActifs = produits.length;
+const promotionsActives = promotions.length;
+const modesPaiementActifs = modesActifs.length;
 
-  const clientsFiltresParMontant = () => {
-    if (!montantMin || montantMin === "") return clients;
-    const min = parseFloat(montantMin);
-    if (isNaN(min)) return clients;
-    
-    return clients.filter(c => (c.totalMontant || 0) >= min);
-  };
+const KPICard = ({ titre, valeur, icone: Icon, format = 'nombre', evolution = 0 }) => {
+const isPositif = evolution >= 0;
+const valeurFormatee = format === 'devise' ? `${valeur.toLocaleString()} €` :
+format === 'pourcent' ? `${valeur.toFixed(1)}%` : valeur.toLocaleString();
 
-  // SÉCURISATION DES CALCULS CONTRE NaN
-  const totalCommandes = clients.reduce((sum, c) => sum + (c.commandes_count || 0), 0);
-  const revenuTotal = clients.reduce((sum, c) => sum + (isNaN(c.totalMontant) ? 0 : c.totalMontant || 0), 0);
-  const panierMoyen = totalCommandes > 0 ? revenuTotal / totalCommandes : 0;
+return (  
+  <div className="kpi-card">  
+    <div className="kpi-header">  
+      <span className="kpi-titre">{titre}</span>  
+      <Icon className="kpi-icon" />  
+    </div>  
+    <div className="kpi-valeur">{valeurFormatee}</div>  
+    {format !== 'nombre' && (  
+      <div className={`kpi-evolution ${isPositif ? 'positif' : 'negatif'}`}>  
+        {isPositif ? <TrendingUp size={16} /> : <TrendingDown size={16} />}  
+        <span>{Math.abs(evolution)}% vs période précédente</span>  
+      </div>  
+    )}  
+  </div>  
+);  
 
-  const evolutionVentes = clients.map((c, i) => ({
-    jour: `Client ${i + 1}`,
-    ventes: c.totalMontant || 0,
-  }));
+};
 
-  const ventesParCategorie = [
-    { name: "Clients", value: clients.length, percent: 100 },
-  ];
+// Graphiques
+const ventesParJour = clients.map((c, i) => ({ jour: `Client ${i + 1}`, ventes: c.totalMontant || 0, commandes: c.commandes_count || 0 }));
+const repartitionCommandes = [
+{ name: "Expédiées", value: clients.filter(c => c.derniereCommande?.statut === "expédiée").length },
+{ name: "En cours", value: clients.filter(c => c.derniereCommande?.statut === "en cours").length },
+{ name: "Annulées", value: clients.filter(c => c.derniereCommande?.statut === "annulée").length }
+];
 
-  const clientsAffiches = clientsFiltresParMontant();
-  const tousSelectionnes = clientsAffiches.length > 0 && clientsSelectionnes.length === clientsAffiches.length;
+const toggleSelection = (clientId) => {
+setClientsSelectionnes(prev => prev.includes(clientId) ? prev.filter(id => id !== clientId) : [...prev, clientId]);
+};
 
-  // Composant pour afficher les détails d'une commande
-  const CommandesDetail = ({ commande }) => {
-    if (commande.error) return <p className="error-message">{commande.error}</p>;
-    if (commande.message) return <p>{commande.message}</p>;
-    
-    const montantTotal = isNaN(commande.montantTotal) ? 0 : commande.montantTotal;
-    
-    return (
-      <div className="commande-detail-container">
-        <h4 className="detail-title">Détail de la Commande #{commande.numCommande}</h4>
-        <p>Statut: <strong>{commande.statut}</strong></p>
-        <p>Montant Total: <strong>{montantTotal.toFixed(2)} €</strong></p>
-        <p>Lieu: {commande.lieu ? commande.lieu.nomLieu : 'Non spécifié'}</p>
-        
-        <table className="details-table">
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Poids</th>
-              <th>Prix Unitaire</th>
-              <th>Sous-Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {commande.detailCommandes.map((detail, index) => {
-              const prixUnitaire = isNaN(detail.prixUnitaire) ? 0 : detail.prixUnitaire;
-              const sousTotal = isNaN(detail.sousTotal) ? 0 : detail.sousTotal;
-              
-              // UTILISATION DE LA CLÉ UNIQUE (ID ou un fallback sûr)
-              const key = detail.numDetailCommande ? detail.numDetailCommande : `${commande.numCommande}-${index}`;
+const handleAfficherCommandes = async (clientId) => {
+if (clientCommandeId === clientId && commandeAffichee) {
+setCommandeAffichee(null);
+setClientCommandeId(null);
+return;
+}
 
-              return (
-                <tr key={key}> 
-                  <td>{detail.produit ? detail.produit.nomProduit : 'Produit inconnu'}</td>
-                  <td>{detail.poids} kg</td>
-                  <td>{prixUnitaire.toFixed(2)} €</td>
-                  <td>{sousTotal.toFixed(2)} €</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+setChargementCommande(true);  
+setClientCommandeId(clientId);  
+setCommandeAffichee(null);  
 
+try {  
+  const client = clients.find(c => c.id === clientId);  
+  if (client && client.derniereCommande) {  
+    const commande = await fetchCommandeById(client.derniereCommande.numCommande);  
+    setCommandeAffichee(commande);  
+  } else {  
+    setCommandeAffichee({ message: "Le client n'a pas de commandes récentes." });  
+  }  
+} catch (error) {  
+  console.error("Erreur chargement commande:", error);  
+  setCommandeAffichee({ error: "Erreur lors du chargement des commandes." });  
+} finally {  
+  setChargementCommande(false);  
+}  
 
-  return (
-    <div className="conteneur">
+};
 
-      <header className="entete-client">
-        <h1 className="titre-section">Statistiques d'Achat (Réelles)</h1>
-      </header>
+const handleEnvoyerPromo = async (email) => {
+try {
+setEnvoisEnCours(true);
+await sendPromoEmail({ email });
+setClientsSelectionnes(prev => [...prev, email]);
+setTimeout(() => setClientsSelectionnes(prev => prev.filter(e => e !== email)), 3000);
+} catch (e) {
+alert("Erreur lors de l'envoi");
+console.error("Erreur envoi promo:", e);
+} finally {
+setEnvoisEnCours(false);
+}
+};
 
-      <section className="section-indicateurs">
-        <div className="carte">
-          <h1>Revenu Total</h1>
-          <p>{(isNaN(revenuTotal) ? 0 : revenuTotal).toFixed(2)} €</p> 
-        </div>
+const clientsAffiches = clientsFiltresParMontant();
+const tousSelectionnes = clientsAffiches.length > 0 && clientsSelectionnes.length === clientsAffiches.length;
 
-        <div className="carte">
-          <h1>Total Commandes</h1>
-          <p>{totalCommandes}</p>
-        </div>
+const CommandesDetail = ({ commande }) => {
+if (commande.error) return <p className="error-message">{commande.error}</p>;
+if (commande.message) return <p>{commande.message}</p>;
 
-        <div className="carte">
-          <h1>Panier Moyen</h1>
-          <p>{(isNaN(panierMoyen) ? 0 : panierMoyen).toFixed(2)} €</p> 
-        </div>
-      </section>
+return (  
+  <div className="commande-detail-container">  
+    <h4>Détail Commande #{commande.numCommande}</h4>  
+    <p>Statut: <strong>{commande.statut}</strong></p>  
+    <p>Montant Total: <strong>{commande.montantTotal?.toFixed(2)} €</strong></p>  
+    <p>Lieu: {commande.lieu?.nomLieu || 'Non spécifié'}</p>  
+    <table className="details-table">  
+      <thead>  
+        <tr>  
+          <th>Produit</th><th>Poids</th><th>Prix Unitaire</th><th>Sous-Total</th>  
+        </tr>  
+      </thead>  
+      <tbody>  
+        {commande.detailCommandes?.map((detail, i) => (  
+          <tr key={i}>  
+            <td>{detail.produit?.nomProduit || 'Produit inconnu'}</td>  
+            <td>{detail.poids} kg</td>  
+            <td>{detail.prixUnitaire?.toFixed(2) || 0} €</td>  
+            <td>{detail.sousTotal?.toFixed(2) || 0} €</td>  
+          </tr>  
+        ))}  
+      </tbody>  
+    </table>  
+  </div>  
+);  
 
-      <section className="section-graphiques">
-        <div className="carte graphique-carte">
-          <h2 className="titre-graphique">Évolution des ventes</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={evolutionVentes}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis dataKey="jour" stroke="#555" />
-              <YAxis stroke="#555" />
-              <Tooltip formatter={v => [`${v} €`, "Ventes"]} />
-              <Legend />
-              <Line type="monotone" dataKey="ventes" stroke="#20b2aa" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+};
 
-        <div className="carte graphique-carte">
-          <h2 className="titre-graphique">Ventes par catégorie</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={ventesParCategorie}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label
-              >
-                <Cell fill={COULEURS_PIE[0]} />
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+const alertes = [
+{ type: 'stock', message: `${produits.filter(p => p.quantite === 0).length} produits en rupture de stock`, niveau: 'danger' },
+{ type: 'commande', message: `${clients.filter(c => c.commandes_count > 5).length} clients avec commandes en retard`, niveau: 'warning' }
+];
 
-      <section className="section-classement">
-        <div className="controles-classement">
-          <div className="filtre-recherche">
-            <label htmlFor="montantMin"> Montant minimum:</label>
-            <input
-              id="montantMin"
-              type="number"
-              placeholder="Ex: 100"
-              value={montantMin}
-              onChange={(e) => setMontantMin(e.target.value)}
-              className="input-recherche"
-            />
-           
-          </div>
-          
-          {clientsSelectionnes.length > 0 && (
-            <div className="actions-groupe">
-              <button 
-                className="btn-envoyer-groupe"
-                onClick={handleEnvoyerSelection}
-                disabled={envoisEnCours}
-              >
-                {envoisEnCours ? " Envoi en cours..." : `Envoyer code promo à ${clientsSelectionnes.length} client(s)`}
-              </button>
-              <button 
-                className="btn-annuler"
-                onClick={() => setClientsSelectionnes([])}
-              >
-                ✖ Annuler sélection
-              </button>
-            </div>
-          )}
-        </div>
+return ( <div className="dashboard"> <header className="dashboard-header"> <h1>Tableau de Bord E-commerce</h1> <p>Vue d'ensemble de vos performances</p> </header>
 
-        <div className="tableau-client">
-          <table className="tableau-data">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    checked={tousSelectionnes}
-                    onChange={toggleSelectAll}
-                    className="checkbox-selection"
-                    title="Sélectionner tout"
-                  />
-                </th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Commandes</th>
-                <th>Montant Total</th>
-                <th>Détail</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientsAffiches.length === 0 ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: "center", padding: "2rem" }}>
-                    {montantMin ? " Aucun client ne correspond à ce montant minimum" : " Aucun client "}
-                  </td>
-                </tr>
-              ) : (
-                clientsAffiches.map((client) => ( // Retrait de l'index si non utilisé
-                  <React.Fragment key={client.numUtilisateur}> 
-                    <tr 
-                      className={`ligne-client ${clientsSelectionnes.includes(client.numUtilisateur) ? 'ligne-selectionnee' : ''}`}
-                    >
-                      <td data-label="Sélection">
-                        <input
-                          type="checkbox"
-                          checked={clientsSelectionnes.includes(client.numUtilisateur)}
-                          onChange={() => toggleSelection(client.numUtilisateur)}
-                          className="checkbox-selection"
-                        />
-                      </td>
-                      <td className="data nom-client" data-label="Nom">
-                                           {client.nomUtilisateur}
-                      </td>
-                      <td className="data" data-label="Email">{client.email}</td>
-                      <td className="data" data-label="Commandes">
-                        <span className="badge-commandes">{client.commandes_count}</span>
-                      </td>
-                      <td className="data" data-label="Montant">
-                        {/* Correction NaN */}
-                        <span className="montant-total">
-                          {(isNaN(client.totalMontant) ? 0 : client.totalMontant || 0).toFixed(2)} €
-                        </span>
-                      </td>
-                      <td className="data" data-label="Détail">
-                        <button 
-                          className="btn-action btn-detail" 
-                          onClick={() => handleAfficherCommandes(client.numUtilisateur, client.derniereCommande?.numCommande)}
-                          disabled={chargementCommande && clientCommandeId === client.numUtilisateur}
-                        >
-                          {clientCommandeId === client.numUtilisateur && chargementCommande
-                            ? "Chargement..."
-                            : clientCommandeId === client.numUtilisateur 
-                            ? "Masquer" 
-                            : "Afficher"
-                          }
-                        </button>
-                      </td>
-                      <td className="data" data-label="Statut">
-                        {emailsEnvoyes.includes(client.email) ? (
-                          <span className="statut-envoye">✓ Envoyé</span>
-                        ) : (
-                          <span className="statut-pret">● Prêt</span>
-                        )}
-                      </td>
-                      <td className="data" data-label="Action">
-                        <button 
-                          className="btn-action" 
-                          onClick={() => handleEnvoyerPromo(client.email)}
-                          disabled={envoisEnCours || emailsEnvoyes.includes(client.email)}
-                        >
-                          {emailsEnvoyes.includes(client.email) ? " Envoyé" : "Envoyer Code"}
-                        </button>
-                      </td>
-                    </tr>
-                    
-                    {/* LIGNE DÉTAIL DES COMMANDES */}
-                    {clientCommandeId === client.numUtilisateur && commandeAffichee && (
-                      <tr className="ligne-detail-commande">
-                        <td colSpan="8">
-                          <CommandesDetail commande={commandeAffichee} />
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+  {alertes.length > 0 && (  
+    <div className="alertes-container">  
+      {alertes.map((alerte, idx) => (  
+        <div key={idx} className={`alerte alerte-${alerte.niveau}`}>  
+          <AlertCircle size={18} /> <span>{alerte.message}</span>  
+        </div>  
+      ))}  
+    </div>  
+  )}  
 
-    </div>
-  );
+  <section className="kpis-grid">  
+    <KPICard titre="Revenu Total" valeur={revenuTotal} icone={DollarSign} format="devise" />  
+    <KPICard titre="Total Commandes" valeur={totalCommandes} icone={ShoppingCart} />  
+    <KPICard titre="Total Clients" valeur={clients.length} icone={Users} />  
+    <KPICard titre="Panier Moyen" valeur={panierMoyen} icone={Package} format="devise" />  
+    <KPICard titre="Produits Actifs" valeur={produitsActifs} icone={Package} />  
+    <KPICard titre="Promotions Actives" valeur={promotionsActives} icone={Mail} />  
+    <KPICard titre="Modes Paiement Actifs" valeur={modesPaiementActifs} icone={DollarSign} />  
+  </section>  
+
+  <section className="graphiques-grid">  
+    <div className="chart-card large">  
+      <h3>Évolution des Ventes et Commandes</h3>  
+      <ResponsiveContainer width="100%" height={300}>  
+        <AreaChart data={ventesParJour}>  
+          <defs>  
+            <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">  
+              <stop offset="5%" stopColor="#28a458" stopOpacity={0.8} />  
+              <stop offset="95%" stopColor="#28a458" stopOpacity={0} />  
+            </linearGradient>  
+          </defs>  
+          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />  
+          <XAxis dataKey="jour" /> <YAxis yAxisId="left" /> <YAxis yAxisId="right" orientation="right" />  
+          <Tooltip /> <Legend />  
+          <Area yAxisId="left" type="monotone" dataKey="ventes" stroke="#28a458" fill="url(#colorVentes)" name="Ventes (€)" />  
+          <Line yAxisId="right" type="monotone" dataKey="commandes" stroke="#ff6347" strokeWidth={2} name="Commandes" />  
+        </AreaChart>  
+      </ResponsiveContainer>  
+    </div>  
+
+    <div className="chart-card">  
+      <h3>Répartition des Commandes</h3>  
+      <ResponsiveContainer width="100%" height={300}>  
+        <BarChart data={repartitionCommandes}>  
+          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />  
+          <XAxis dataKey="name" /> <YAxis /> <Tooltip /> <Legend />  
+          <Bar dataKey="value" fill={COULEURS_BAR[0]} name="Nombre de commandes" />  
+        </BarChart>  
+      </ResponsiveContainer>  
+    </div>  
+  </section>  
+
+  <section className="bottom-grid">  
+    <div className="table-card full-width">  
+      <h3>Liste des Clients</h3>  
+      <div className="filters">  
+        <label>Montant minimum: </label>  
+        <input type="number" value={montantMin} onChange={e => setMontantMin(e.target.value)} placeholder="€" min="0" />  
+        <button onClick={() => setClientsSelectionnes(clientsAffiches.map(c => c.id))}>Tout sélectionner</button>  
+      </div>  
+      <table className="data-table">  
+        <thead>  
+          <tr>  
+            <th><input type="checkbox" checked={tousSelectionnes} onChange={() => tousSelectionnes ? setClientsSelectionnes([]) : setClientsSelectionnes(clientsAffiches.map(c => c.id))} /></th>  
+            <th>Nom</th><th>Email</th><th>Total Commandes</th><th>Montant Total</th><th>Actions</th>  
+          </tr>  
+        </thead>  
+        <tbody>  
+          {clientsAffiches.map(client => (  
+            <tr key={client.id}>  
+              <td><input type="checkbox" checked={clientsSelectionnes.includes(client.id)} onChange={() => toggleSelection(client.id)} /></td>  
+              <td>{client.nom}</td> <td>{client.email}</td>  
+              <td>{client.commandes_count || 0}</td> <td>{(client.totalMontant || 0).toFixed(2)} €</td>  
+              <td className="actions-cell">  
+                <button onClick={() => handleAfficherCommandes(client.id)}>  
+                  {clientCommandeId === client.id && commandeAffichee ? "Masquer commande" : "Voir commande"}  
+                </button>  
+                <button onClick={() => handleEnvoyerPromo(client.email)} disabled={envoisEnCours || clientsSelectionnes.includes(client.email)}>  
+                  <Mail size={16} /> Promo  
+                </button>  
+              </td>  
+            </tr>  
+          ))}  
+        </tbody>  
+      </table>  
+
+      {chargementCommande && <p>Chargement de la commande...</p>}  
+      {commandeAffichee && <CommandesDetail commande={commandeAffichee} />}  
+    </div>  
+  </section>  
+</div>  
+
+);
 };
 
 export default TableauDeBord;

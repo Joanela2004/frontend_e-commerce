@@ -16,10 +16,10 @@ export const loginUser = async (loginData) => {
     email: loginData.email,
     motDePasse: loginData.motDePasse
   });
-   if(res.data.access_token) {
-    sessionStorage.setItem('userToken', res.data.access_token);
-    sessionStorage.setItem('userData', JSON.stringify(res.data.user));
-}
+   if (res.data.access_token) {
+    localStorage.setItem('userToken', res.data.access_token);
+    localStorage.setItem('userData', JSON.stringify(res.data.user));
+  }
   return res.data;
 };
 
@@ -45,5 +45,5 @@ export const logoutUser = async () => {
       console.error("Erreur lors de la déconnexion côté serveur:", error);
     }
   }
-  sessionStorage.removeItem('userToken');
-sessionStorage.removeItem('userData');}
+  localStorage.removeItem('userToken');
+localStorage.removeItem('userData');}
