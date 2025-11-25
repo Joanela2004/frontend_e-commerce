@@ -1,15 +1,14 @@
 
 import api from "./api";
 
-// CONFIG pour toutes les requêtes avec authentification
 const getConfig = () => {
-  const token = localStorage.getItem("userToken");
+  const token = localStorage.getItem("userToken"); 
   if (!token) throw new Error("Utilisateur non authentifié");
 
   return {
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data", // axios gère le boundary automatiquement
+      "Content-Type": "application/json",
     },
   };
 };
@@ -26,25 +25,17 @@ export const updateProfilUtilisateur = async (id, formData) => {
 };
 
 
-
-// GET clients (Admin)
 export const getClients = async () => {
   try {
-    const res = await api.get("/admin/utilisateurs", getConfig());
-    return res.data
-      .filter(user => user.role !== "admin")
-      .map(user => ({
-        id: user.numUtilisateur,
-        nom: user.nomUtilisateur,
-        email: user.email,
-        contact: user.contact || "-",
-        dateInscription: new Date(user.created_at).toLocaleDateString("fr-FR"),
-      }));
+    const res = await api.get("/utilisateurs", getConfig());
+    console.log("Requête envoyée avec token :", getConfig().headers.Authorization);
+    return res.data.filter(user => user.role !== "admin");
   } catch (err) {
     console.error("Erreur récupération clients :", err.response?.data || err);
     throw err;
   }
 };
+
 export const getUtilisateurById = async (id) => {
   try {
     const response = await api.get(`/utilisateurs/${id}`);

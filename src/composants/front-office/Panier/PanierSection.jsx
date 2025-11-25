@@ -9,6 +9,7 @@ import {
   FaTag,
   FaExclamationCircle,
 } from "react-icons/fa";
+ import { validerCodePromo } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";
 import { fetchModesActifs } from "../../../services/paiementService";
 import PaginationProduits from "../Accueil/PaginationProduits";
@@ -133,19 +134,34 @@ const fraisLivraisonTotal = fraisParPoids+fraisParLieu;
   const montantAPayer = montantBrut - remise;
   const formattedMontant = montantAPayer.toFixed(2).replace(".", ",");
 
-  const handleApplyCodePromo = () => {
-    const code = codePromo.trim().toUpperCase();
-    if (code === "WELCOME10") {
-      const newRemise = Math.min(montantBrut * 0.1, 10);
-      setRemise(newRemise);
-      alert(
-        `Code "${code}" appliqué ! ${newRemise.toFixed(2)} Ar de réduction.`
-      );
+
+const handleApplyCodePromo = async () => {
+  const code = codePromo.trim().toUpperCase();
+  if (!code) {
+    alert("Veuillez entrer un code promo.");
+    setRemise(0);
+    return;
+  }
+
+  try {
+    // Appel à l'API pour valider le code pour l'utilisateur actuel
+    const result = await validerCodePromo(code);
+
+    if (result.valid) {
+      // Appliquer la remise reçue du back-end
+      setRemise(Number(result.remise));
+      toast.success(`Code "${code}" appliqué ! ${Number(result.remise).toFixed(2)} Ar de réduction.`);
     } else {
       setRemise(0);
-      alert("Code promo non valide.");
+      toast.error("Code promo non valide ou non applicable pour vous.");
     }
-  };
+  } catch (err) {
+    console.error("Erreur lors de la validation du code promo:", err);
+    setRemise(0);
+    toast.error("Impossible de valider le code promo. Réessayez plus tard.");
+  }
+};
+
 
   const getMinDate = () => {
     const today = new Date(); 

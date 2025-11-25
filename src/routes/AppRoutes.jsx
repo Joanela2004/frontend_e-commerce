@@ -29,7 +29,6 @@ import FraisLivraison from "../composants/back-office/Livraison/FraisLivraison";
 import Categorie from "../composants/back-office/Produits/Categorie";
 import Decoupes from "../composants/back-office/Produits/Decoupes";
 import CommandesClient from "../composants/back-office/Client/CommandeClient";
-// Composant pour les routes de l'application
 export default function AppRoutes() {
   return (
     <Router>

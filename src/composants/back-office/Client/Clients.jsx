@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaEye } from "react-icons/fa";
 import { usePagination } from "../../../pages/hooks/hooks";
-import '../../../styles/front-office/Accueil/Pagination.css';
+import "../../../styles/front-office/Accueil/Pagination.css";
 import "../../../styles/back-office/clients.css";
 import { getClients } from "../../../services/utilisateurService";
 import { useNavigate } from "react-router-dom";
@@ -10,24 +10,24 @@ const Clients = () => {
   const [clientsData, setClientsData] = useState([]);
   const navigate = useNavigate();
 
-  const handleVoirCommande= (client) => {
-    navigate(`/admin/clients/${client.id}/commandes`);
+  const handleVoirCommande = (client) => {
+    navigate(`/clients/${client.numUtilisateur}`);
   };
+
   useEffect(() => {
     const fetchClientsData = async () => {
       try {
         const clients = await getClients();
         setClientsData(clients);
       } catch (err) {
-        console.error(err);
+        console.error("Erreur récupération clients :", err);
       }
     };
     fetchClientsData();
   }, []);
 
-  const { currentRows: clientsDataRows, goToPage, currentPage, totalPages } = usePagination(clientsData, 5);
-
- 
+  const { currentRows: clientsDataRows, goToPage, currentPage, totalPages } =
+    usePagination(clientsData, 5);
 
   return (
     <div className="clients-container">
@@ -49,37 +49,62 @@ const Clients = () => {
               </tr>
             </thead>
             <tbody>
-              {clientsDataRows.map((client) => (
-                <tr key={client.id}>
-                  <td>{client.id}</td>
-                  <td>{client.nom}</td>
-                  <td>{client.email}</td>
-                  <td>{client.contact}</td>
-                 
-                  <td>{client.dateInscription}</td>
-                  <td className="client-actions">
-                     <button className="btn-action-view" onClick={() => handleVoirCommande(client)}>
-    <FaEye /> Voir commandes
-  </button>
+              {clientsDataRows && clientsDataRows.length > 0 ? (
+                clientsDataRows.map((client) => (
+                  <tr key={client.numUtilisateur}>
+                    <td>{client.numUtilisateur}</td>
+                    <td>{client.nomUtilisateur}</td>
+                    <td>{client.email}</td>
+                    <td>{client.contact || "---"}</td>
+                    <td>
+                      {client.created_at
+                        ? new Date(client.created_at).toLocaleDateString("fr-FR")
+                        : "---"}
+                    </td>
+                    <td className="client-actions">
+                      <button
+                        className="btn-action-view"
+                        onClick={() => handleVoirCommande(client)}
+                      >
+                        <FaEye /> Voir commandes
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: "center" }}>
+                    Aucun client trouvé.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
 
-          <div className="pagination">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`pagination-btn ${currentPage === 1 ? '' : 'active'}`}
-            >&lt;</button>
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`pagination-btn ${currentPage === 1 ? "disabled" : "active"}`}
+              >
+                &lt;
+              </button>
 
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`pagination-btn ${currentPage === totalPages ? '' : 'active'}`}
-            >&gt;</button>
-          </div>
+              <span className="pagination-info">
+                Page {currentPage} sur {totalPages}
+              </span>
+
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`pagination-btn ${currentPage === totalPages ? "disabled" : "active"}`}
+              >
+                &gt;
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

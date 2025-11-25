@@ -55,11 +55,26 @@ export const deletePromotion = async (id) => {
 };
 export const sendPromoEmail = async (emailData) => {
     try {
-        // CORRECTION : Utiliser une nouvelle route dédiée à l'envoi ciblé
         const res = await api.post(`/send-promo-to-client`, emailData, getConfig());
         return res.data;
     } catch (error) {
         console.error("Erreur envoi e-mails promo ciblé:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const validerCodePromo = async (codePromo) => {
+    try {
+        const token = localStorage.getItem("userToken");
+        const numUtilisateur = JSON.parse(atob(token.split('.')[1])).sub; // Décoder l'ID utilisateur depuis JWT
+        const res = await api.post(
+            `${PROMOTION_URL}/valider-code`,
+            { codePromo, numUtilisateur },
+            getConfig()
+        );
+        return res.data; // { valid: true/false, remise: number }
+    } catch (error) {
+        console.error("Erreur validation code promo:", error.response?.data || error.message);
         throw error;
     }
 };

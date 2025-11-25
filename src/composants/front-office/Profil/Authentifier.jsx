@@ -18,6 +18,7 @@ const Authentifier = () => {
     majuscule: false,
     chiffre: false
   });
+  const [notification, setNotification] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,53 +37,66 @@ const Authentifier = () => {
 
   const handleContactChange = (e) => {
     const value = e.target.value.replace(/\D/g, ''); // Supprimer les non-chiffres
-    if (value.length <= 8) {
+    if (value.length <= 10) {
       setContact(value);
     }
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setErreur('');
+  setNotification('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErreur('');
+  // Validation mot de passe
+  if (!validationMotDePasse.longueur || !validationMotDePasse.majuscule || !validationMotDePasse.chiffre) {
+    setErreur('Le mot de passe ne respecte pas les règles de sécurité.');
+    return;
+  }
 
-    // Vérification de la validation du mot de passe
-    if (!validationMotDePasse.longueur || !validationMotDePasse.majuscule || !validationMotDePasse.chiffre) {
-      setErreur('Le mot de passe ne respecte pas les règles de sécurité.');
-      return;
+  if (motDePasse !== confirmerMotDePasse) {
+    setErreur('Les mots de passe ne correspondent pas !');
+    return;
+  }
+
+  if (contact.length !== 10) {
+    setErreur('Le numéro de téléphone doit contenir exactement 10 chiffres.');
+    return;
+  }
+
+  try {
+    const userData = {
+      nomUtilisateur,
+      email,
+      contact,
+      motDePasse,
+      motDePasse_confirmation: confirmerMotDePasse
+    };
+
+    const response = await registerUser(userData);
+
+    // Ne pas stocker le token tant que l'email n'est pas vérifié
+    // sessionStorage.setItem('userToken', response.access_token);
+    // sessionStorage.setItem('userData', JSON.stringify(response.user));
+
+    setNotification('Inscription réussie ! Veuillez confirmer votre email avant de vous connecter.');
+    
+    // Optionnel : reset des champs
+    setNomUtilisateur('');
+    setEmail('');
+    setContact('');
+    setMotDePasse('');
+    setConfirmerMotDePasse('');
+
+  } catch (err) {
+    if (err.response?.data?.message?.includes("non vérifié")) {
+      setNotification("Inscription réussie ! Veuillez vérifier votre email !");
+    } else if (err.response?.data?.message) {
+      setErreur(err.response.data.message);
+    } else {
+      setErreur("Erreur lors de l'inscription.");
     }
-
-    if (motDePasse !== confirmerMotDePasse) {
-      setErreur('Les mots de passe ne correspondent pas !');
-      return;
-    }
-
-    if (contact.length !== 8) {
-      setErreur('Le numéro de téléphone doit contenir exactement 8 chiffres.');
-      return;
-    }
-
-    try {
-      const userData = {
-        nomUtilisateur,
-        email,
-        contact,
-        motDePasse,
-        motDePasse_confirmation: confirmerMotDePasse
-      };
-
-      const response = await registerUser(userData);
-
-      sessionStorage.setItem('userToken', response.access_token);
-sessionStorage.setItem('userData', JSON.stringify(response.user));
-
-      navigate('/profil');
-    } catch (err) {
-      if (err.response?.data?.message) setErreur(err.response.data.message);
-      else setErreur("Erreur lors de l'inscription.");
-      console.error(err);
-    }
-  };
-
+    console.error(err);
+  }
+};
   const toutesLesValidationsPassent = validationMotDePasse.longueur && 
                                        validationMotDePasse.majuscule && 
                                        validationMotDePasse.chiffre;
@@ -102,7 +116,7 @@ sessionStorage.setItem('userData', JSON.stringify(response.user));
               <FiUser className="icone-champ" />
               <input 
                 type="text" 
-                placeholder="Joanella" 
+                placeholder="Votre nom" 
                 value={nomUtilisateur} 
                 onChange={(e) => setNomUtilisateur(e.target.value)} 
                 required 
@@ -130,12 +144,12 @@ sessionStorage.setItem('userData', JSON.stringify(response.user));
               <FiPhone className="icone-champ" />
               <input 
                 type="tel" 
-                placeholder="34000000" 
+                placeholder="034000000" 
                 value={contact} 
                 onChange={handleContactChange} 
                 required 
-                maxLength={8}
-                pattern="[0-9]{8}"
+                maxLength={10}
+                pattern="[0-9]{10}"
                 title="Le numéro doit contenir exactement 8 chiffres"
               />
             </div>
@@ -201,10 +215,12 @@ sessionStorage.setItem('userData', JSON.stringify(response.user));
             </div>
           )}
         </div>
+   
 
         <button type="submit" className="bouton bouton-primaire fond-vert">
           CRÉER MON COMPTE
         </button>
+        
       </form>
     </div>
   );

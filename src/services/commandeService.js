@@ -52,13 +52,5 @@ console.error("Erreur fetchDetailCommande:", error.response?.data || error.messa
 throw error;
 }
 };
-export const getClientsAvecCommandes = async () => {
-  try {
-    const res = await api.get("/clients/avec-commandes", getConfig());
-    return res.data;
-  } catch (error) {
-    console.error("Erreur getClientsAvecCommandes:", error.response?.data || error.message);
-    throw error;
-  }
-};
+
 
