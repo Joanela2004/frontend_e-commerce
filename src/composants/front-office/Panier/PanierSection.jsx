@@ -9,7 +9,8 @@ import {
   FaTag,
   FaExclamationCircle,
 } from "react-icons/fa";
- import { validerCodePromo } from "../../../services/promotionService";
+import {createStripeSession} from "../../../services/StripeService";   
+import { validerCodePromo } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";
 import { fetchModesActifs } from "../../../services/paiementService";
 import PaginationProduits from "../Accueil/PaginationProduits";
@@ -67,6 +68,7 @@ const PanierSection = () => {
   const [erreurLieu, setErreurLieu] = useState(null);
   const [erreurPaiement, setErreurPaiement] = useState(null);
   const [erreurDate, setErreurDate] = useState(null);
+ 
   const getPrixApresDecoupe = (produit, option = produit.cuttingOption) => {
     const prixDeBase = Number(produit.prixPerKg);
     const decoupeSelected = option;
@@ -144,11 +146,9 @@ const handleApplyCodePromo = async () => {
   }
 
   try {
-    // Appel à l'API pour valider le code pour l'utilisateur actuel
     const result = await validerCodePromo(code);
 
     if (result.valid) {
-      // Appliquer la remise reçue du back-end
       setRemise(Number(result.remise));
       toast.success(`Code "${code}" appliqué ! ${Number(result.remise).toFixed(2)} Ar de réduction.`);
     } else {
@@ -168,78 +168,93 @@ const handleApplyCodePromo = async () => {
      return format(today, 'yyyy-MM-dd');
     };
 
-  const handleConfirmCommande = async () => {
-    setShowConfirmationModal(false);
-    if (cartItems.length === 0 || !selectedLieuNum || !dateLivraison) {
-      return;
-    }
-    if (!selectedModePaiement) {
-      alert("Veuillez sélectionner un mode de paiement.");
-      return;
-    }
+const handleConfirmCommande = async () => {
+  setShowConfirmationModal(false);
+  if (cartItems.length === 0 || !selectedLieuNum || !dateLivraison) return;
+  if (!selectedModePaiement) {
+    alert("Veuillez sélectionner un mode de paiement.");
+    return;
+  }
 
-    const sousTotalCommande = subtotal;
-    const fraisLivraisonCommande = fraisLivraisonTotal;
-    const montantTotalCommande = montantAPayer;
+  const sousTotalCommande = subtotal;
+  const fraisLivraisonCommande = fraisLivraisonTotal;
+  const montantTotalCommande = montantAPayer;
 
-    const numLieuSelectionne = selectedLieuNum;
-    const lieuNom =
-      lieuxList.find((l) => (l.numLieu || l.id) == numLieuSelectionne)
-        ?.nomLieu || "Non spécifié";
+  const numLieuSelectionne = selectedLieuNum;
+  const lieuNom =
+    lieuxList.find((l) => (l.numLieu || l.id) == numLieuSelectionne)
+      ?.nomLieu || "Non spécifié";
 
-    const panierPayload = cartItems.map((item) => {
-      const isViande = item.nomCategorie?.toLowerCase().includes("viande");
-
-      return {
-        numProduit: item.numProduit || item.id,
-        poids: Number(item.poids || item.poids),
-        prix: Number(item.prixPerKg || item.prix),
-        decoupe: isViande ? item.cuttingOption || "entier" : "entier",
-        sousTotal: (
-          Number(item.prixPerKg || item.prix) * Number(item.poids || item.poids)
-        ).toFixed(2),
-      };
-    });
-
-    const payload = {
-      numModePaiement: selectedModePaiement,
-      numLieu: numLieuSelectionne,
-      lieuNom: lieuNom,
-      dateLivraisonSouhaitee: dateLivraison,
-      payerLivraison: payerLivraisonChecked,
-      statut: "en attente ",
-      sousTotal: sousTotalCommande.toFixed(2),
-      fraisLivraison: fraisLivraisonCommande.toFixed(2),
-      montantTotal: montantTotalCommande.toFixed(2),
-      codePromo: codePromo || null,
-      panier: panierPayload,
+  const panierPayload = cartItems.map((item) => {
+    const isViande = item.nomCategorie?.toLowerCase().includes("viande");
+    return {
+      numProduit: item.numProduit || item.id,
+      poids: Number(item.poids),
+      prix: Number(item.prixPerKg || item.prix),
+      decoupe: isViande ? item.cuttingOption || "entier" : "entier",
+      sousTotal: (Number(item.prixPerKg || item.prix) * Number(item.poids)).toFixed(2),
     };
+  });
 
-    try {
-      setIsCreating(true);
-      const res = await createCommande(payload);
-      toast.success(
-        "Commande envoyée avec succès (numéro: " +
-          (res.numCommande || res.id) +
-          ")",
-        {
-          position: "top-center",
-          autoClose: 8000,
-        }
-      );
-      clearCart();
-      navigate("/client/mesCommandes");
-    } catch (err) {
-      const msg =
-        err?.response?.data?.error ||
-        err?.message ||
-        "Erreur lors de la création de la commande";
-      setError(msg);
-      toast.error("Erreur de commande : " + msg);
-    } finally {
-      setIsCreating(false);
-    }
+  const payload = {
+    numModePaiement: selectedModePaiement,
+    numLieu: numLieuSelectionne,
+    lieuNom: lieuNom,
+    dateLivraisonSouhaitee: dateLivraison,
+    payerLivraison: payerLivraisonChecked,
+    statut: "en attente",
+    sousTotal: sousTotalCommande.toFixed(2),
+    fraisLivraison: fraisLivraisonCommande.toFixed(2),
+    montantTotal: montantTotalCommande.toFixed(2),
+    codePromo: codePromo || null,
+    panier: panierPayload,
   };
+
+  try {
+    setIsCreating(true);
+    const res = await createCommande(payload);
+    toast.success(
+      "Commande envoyée avec succès (numéro: " +
+        (res.numCommande || res.id) +
+        ")",
+      { position: "top-center", autoClose: 8000 }
+    );
+    clearCart();
+    navigate("/client/mesCommandes");
+  } catch (err) {
+    const msg =
+      err?.response?.data?.error ||
+      err?.message ||
+      "Erreur lors de la création de la commande";
+    setError(msg);
+    toast.error("Erreur de commande : " + msg);
+  } finally {
+    setIsCreating(false);
+  }
+};
+
+const handleStripeCheckout = async () => {
+  try {
+    if (cartItems.length === 0) {
+      toast.error("Votre panier est vide.");
+      return;
+    }
+
+    const sessionData = await createStripeSession(cartItems, montantAPayer);
+
+    if (sessionData?.url) {
+      window.location.href = sessionData.url;
+    } else {
+      toast.error("Impossible de lancer le paiement Stripe.");
+    }
+  } catch (err) {
+    console.error("Erreur Stripe Checkout:", err);
+    toast.error("Impossible de lancer le paiement Stripe.");
+  }
+};
+
+
+
 
   const handlePasserCommandeClick = () => {
     setErreurLieu(null);
@@ -296,7 +311,7 @@ const handleApplyCodePromo = async () => {
   const handleCuttingOptionChange = (itemId, newOption) => {
     const item = cartItems.find((i) => i.id === itemId);
     if (!item) return;
-    const newPrixUnit = getPrixApresDecoupe(item, newOption); // 👈 Calcul du prix unitaire corrigé
+    const newPrixUnit = getPrixApresDecoupe(item, newOption); 
     updateQuantity(itemId, Number(item.poids || 1), newOption, newPrixUnit);
   };
 
@@ -677,6 +692,7 @@ const handleApplyCodePromo = async () => {
             {isCreating ? "Traitement..." : <> Valider la Commande et Payer</>} 
                  
           </button>
+          <button onClick={handleStripeCheckout}>Payer</button>
                
         </div>
       )}
