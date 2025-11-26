@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 
 // Pages Front-Office
+
 import Accueil from "../pages/front-office/Accueil";
 import Actualite from "../pages/front-office/Actualite";
 import ActualiteDetails from "../pages/front-office/ActualiteDetails";
@@ -94,6 +95,7 @@ const AdminRoutes = () => {
         <Route path="livraisons/frais" element={<FraisLivraison />} />
         <Route path="livraisons/lieux" element={<LieuxLivraison />} />
         <Route path="change-password" element={<ChangePasswordAdmin />} />
+        
       </Route>
     </Routes>
   );
