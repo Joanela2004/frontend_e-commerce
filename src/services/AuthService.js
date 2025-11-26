@@ -31,9 +31,7 @@ export const registerUser = async (userData) => {
 export const loginUser = async (loginData) => {
    const localCartItems = getLocalCart();
 
-   // Si vous utilisez les cookies, décommentez la ligne suivante
-   // await api.get('/sanctum/csrf-cookie');
-
+   
     const res = await api.post('/login', {
     email: loginData.email,
     motDePasse: loginData.motDePasse,

@@ -16,12 +16,11 @@ const getCartItemId = (item) => {
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // ⭐️ DÉFINITION DE IMAGE_BASE_URL DANS LE CONTEXTE
   const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
 
   const loadCart = async () => {
     setLoading(true);
+
     try {
       const data = await fetchPanier();
       let normalizedItems = [];
@@ -32,8 +31,7 @@ export const CartProvider = ({ children }) => {
         normalizedItems = data.map(item => {
           if (!item) return null;
           
-          // Cas 1: Données complètes avec produit
-          if (item.produit && item.produit.nomProduit) {
+            if (item.produit && item.produit.nomProduit) {
             return {
               id: item.numDetailPanier || item.numProduit,
               numProduit: item.numProduit,
@@ -50,8 +48,7 @@ export const CartProvider = ({ children }) => {
               poidsDisponible: Number(item.produit.poids) || 0
             };
           } 
-          // Cas 2: Données minimales (seulement numProduit et poids)
-          else if (item.numProduit) {
+              else if (item.numProduit) {
             return {
               id: item.numProduit,
               numProduit: item.numProduit,
