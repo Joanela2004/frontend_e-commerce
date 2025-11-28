@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 
 // Pages Front-Office
-
 import Accueil from "../pages/front-office/Accueil";
 import Actualite from "../pages/front-office/Actualite";
 import ActualiteDetails from "../pages/front-office/ActualiteDetails";
@@ -12,6 +11,10 @@ import SuiviCommande from "../pages/front-office/SuiviCommande";
 import SuiviLivraison from "../pages/front-office/SuiviLivraison";
 import Profil from "../pages/front-office/Profil";
 import ChangePasswordAdmin from "../composants/front-office/Profil/ChangePasswordAdmin";
+
+// Pages de paiement
+import Success from "../pages/front-office/Success";
+import Cancel from "../pages/front-office/Cancel";
 
 // Pages Back-Office
 import LieuxLivraison from "../composants/back-office/Livraison/LieuxLivraison";
@@ -30,6 +33,7 @@ import FraisLivraison from "../composants/back-office/Livraison/FraisLivraison";
 import Categorie from "../composants/back-office/Produits/Categorie";
 import Decoupes from "../composants/back-office/Produits/Decoupes";
 import CommandesClient from "../composants/back-office/Client/CommandeClient";
+
 export default function AppRoutes() {
   return (
     <Router>
@@ -41,6 +45,10 @@ export default function AppRoutes() {
         <Route path="/actualite" element={<Actualite />} />
         <Route path="/actualite/:id" element={<ActualiteDetails />} />
         <Route path="/profil" element={<Profil />} />
+
+        {/* Pages de paiement Stripe */}
+        <Route path="/success" element={<Success />} />
+        <Route path="/cancel" element={<Cancel />} />
 
         {/* Pages client sécurisées */}
         <Route
@@ -74,7 +82,7 @@ export default function AppRoutes() {
   );
 }
 
-// Routes admin
+// Routes admin (inchangées)
 const AdminRoutes = () => {
   return (
     <Routes>
@@ -95,7 +103,6 @@ const AdminRoutes = () => {
         <Route path="livraisons/frais" element={<FraisLivraison />} />
         <Route path="livraisons/lieux" element={<LieuxLivraison />} />
         <Route path="change-password" element={<ChangePasswordAdmin />} />
-        
       </Route>
     </Routes>
   );

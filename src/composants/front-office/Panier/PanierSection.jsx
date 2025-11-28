@@ -11,6 +11,9 @@ import {
   FaShoppingCart,
   FaArrowLeft, 
 } from "react-icons/fa";
+import CheckoutPayment from "./CheckoutPayment"; 
+import Success from "../../../pages/front-office/Success"; 
+import Cancel from "../../../pages/front-office/Cancel"; 
 import {createStripeSession} from "../../../services/StripeService";
 import { validerCodePromo } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";

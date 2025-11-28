@@ -15,12 +15,12 @@ const getConfig = (isFormData = false) => {
 };
 
 export const fetchLivraisons = async () => {
-  const res = await api.get(LIVRAISON_URL, getConfig());
+  const res = await api.get(LIVRAISON_URL);
   return res.data;
 };
 export const fetchLivraisonByCommandeId = async (commandeId) => {
   try {
-     const res = await api.get(`/commandes/${commandeId}/livraisons`, getConfig());
+     const res = await api.get(`/commandes/${commandeId}/livraisons`);
     return res.data;
   } catch (err) {
     console.error("Erreur fetchLivraisonByCommandeId:", err.response?.data || err.message);
@@ -43,7 +43,7 @@ export const deleteLivraison = async (id) => {
 };
 
 export const fetchFrais = async () => {
-  const res = await api.get(FRAIS_URL,getConfig());
+  const res = await api.get(FRAIS_URL);
   return res.data;
 };
 

@@ -1,6 +1,6 @@
 import api from "./api";
 
-const MODES_PAIEMENT_URL = "/mode_paiements";
+const MODES_PAIEMENT_URL = "/modes_paiement";
 
 const getConfig = (isFormData = false) => {
   const token = localStorage.getItem("userToken");
@@ -52,6 +52,6 @@ export const deletePaiement = async (id) => {
   return res.data;
 };
 export const fetchModesActifs = async () => {
-  const res = await api.get(`${MODES_PAIEMENT_URL}/actifs`,getConfig());
+  const res = await api.get(`${MODES_PAIEMENT_URL}/actifs`);
   return res.data;
 };

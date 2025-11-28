@@ -1,24 +1,13 @@
 
 import api from "./api";
 
-export const createStripeSession = async (panier, total) => {
+export const createStripeSession = async (commandeData) => {
   const token = localStorage.getItem("userToken");
-  if (!token) throw new Error("Utilisateur non connecté");
+  if (!token) throw new Error("Vous devez être connecté");
 
-  try {
-    const response = await api.post(
-      "/stripe/checkout",
-      { panier, total },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      }
-    );
-    return response.data; // { url: "..." }
-  } catch (err) {
-    console.error("Erreur lors de la création de la session Stripe:", err);
-    throw err;
-  }
+  const response = await api.post("/create-checkout-session", commandeData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return response.data; // { url, session_id, montant_ariary }
 };
