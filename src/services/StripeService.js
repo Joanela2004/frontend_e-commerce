@@ -1,13 +1,30 @@
-
-import api from "./api";
-
-export const createStripeSession = async (commandeData) => {
+export const createStripeSession = async ({ referenceCommande, montantTotal, nomModePaiement }) => {
   const token = localStorage.getItem("userToken");
-  if (!token) throw new Error("Vous devez être connecté");
+  if (!token) throw new Error("Token manquant");
 
-  const response = await api.post("/create-checkout-session", commandeData, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/paiement/stripe/create-session`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        referenceCommande: referenceCommande,
+        montantTotal: Number(montantTotal), 
+        nomModePaiement: nomModePaiement,
+      }),
+    }
+  );
 
-  return response.data; // { url, session_id, montant_ariary }
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    console.error("Erreur Stripe API :", error);
+    throw new Error(error.error || "Échec paiement");
+  }
+
+  const data = await response.json();
+  console.log("Session Stripe créée →", data.url);
+  return data; // { url, session_id }
 };

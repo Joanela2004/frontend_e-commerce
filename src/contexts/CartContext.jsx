@@ -49,26 +49,21 @@ export const CartProvider = ({ children }) => {
     setCartItems((prev) => prev.filter((i) => i.id !== itemId));
   };
 
-const updateQuantity = (id, newPoids, newCuttingOption, newPrixApresDecoupe) => { // 👈 AJOUTER newPrixApresDecoupe
-  setCartItems(prev =>
-    prev.map(item => {
-      if (item.id === id) {
-        // Si le prix est passé (c'est-à-dire lors du changement de découpe), utiliser le nouveau prix.
-        const finalPrix = newPrixApresDecoupe !== undefined 
-            ? newPrixApresDecoupe 
-            : item.prixApresDecoupe; 
-            
-        return {
-          ...item,
-          poids: newPoids,
-          cuttingOption: newCuttingOption || item.cuttingOption,
-               prixApresDecoupe: finalPrix, 
-        };
-      }
-      return item;
-    })
-  );
+const updateQuantity = (id, newPoids, newCuttingOption = null, newPrixUnit = null) => {
+    setCartItems((prevItems) =>
+        prevItems.map((item) =>
+            item.id === id
+                ? {
+                      ...item,
+                      poids: newPoids,
+                      cuttingOption: newCuttingOption ?? item.cuttingOption,
+                      prixApresDecoupe: newPrixUnit ?? item.prixApresDecoupe
+                  }
+                : item
+        )
+    );
 };
+
 
   const clearCart = () => {
     setCartItems([]);

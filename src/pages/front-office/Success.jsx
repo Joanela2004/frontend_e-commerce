@@ -60,7 +60,7 @@ const Success = () => {
         {/* Footer avec un seul bouton bien visible */}
         <div className="modal-footer" style={{ justifyContent: 'center', gap: '1rem' }}>
           <button
-            onClick={() => navigate("/commandes")}
+            onClick={() => navigate("/client/mesCommandes")}
             className="btn-primary"
             style={{ padding: '0.9rem 2rem', fontSize: '1.1rem' }}
           >

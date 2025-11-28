@@ -738,4 +738,102 @@ border-bottom: 2px solid var(--color-green-primary);
     flex-direction: column;
     gap: 10px;
   }
+}.commande-envoyee-container {
+  max-width: 900px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 20px;
+}
+
+.success-message-card {
+  background: #f8fff9;
+  border: 2px solid #28a745;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.success-icon {
+  margin-bottom: 20px;
+}
+
+.order-number, .montant-total, .info-paiement {
+  font-size: 1.2rem;
+  margin: 15px 0;
+  color: #1f2937;
+}
+
+.modes-paiement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 40px 0;
+}
+
+.mode-paiement-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-paiement-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.mode-paiement-card.selected {
+  border-color: #28a745;
+  background: #f0fff4;
+}
+
+.selected-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.final-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 50px;
+  align-items: CENTER;
+}
+
+.btn-continuer-achats,
+.btn-suivre-commande {
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  min-width: 300px;
+  transition: all 0.3s ease;
+}
+
+.btn-continuer-achats {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.btn-continuer-achats:hover { background: #2563eb; }
+
+.btn-suivre-commande {
+  background: white;
+  color: #28a745;
+  border: 2px solid #28a745;
+}
+
+.btn-suivre-commande:hover {
+  background: #28a745;
+  color: white;
 }
