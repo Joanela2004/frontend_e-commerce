@@ -20,7 +20,7 @@ export const fetchLivraisons = async () => {
 };
 export const fetchLivraisonByCommandeId = async (commandeId) => {
   try {
-     const res = await api.get(`/commandes/${commandeId}/livraisons`);
+    const res = await api.get(`/mesCommandes/${commandeId}/livraison`, getConfig());
     return res.data;
   } catch (err) {
     console.error("Erreur fetchLivraisonByCommandeId:", err.response?.data || err.message);

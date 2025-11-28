@@ -1,4 +1,4 @@
-export const createStripeSession = async ({ referenceCommande, montantTotal, nomModePaiement }) => {
+export const createStripeSession = async ({ referenceCommande, montantTotal, numModePaiement }) => {
   const token = localStorage.getItem("userToken");
   if (!token) throw new Error("Token manquant");
 
@@ -13,7 +13,8 @@ export const createStripeSession = async ({ referenceCommande, montantTotal, nom
       body: JSON.stringify({
         referenceCommande: referenceCommande,
         montantTotal: Number(montantTotal), 
-        nomModePaiement: nomModePaiement,
+        
+        numModePaiement: numModePaiement,
       }),
     }
   );

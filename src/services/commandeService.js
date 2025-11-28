@@ -24,7 +24,7 @@ return res.data;
 };
 
 export const fetchCommandeById = async (id) => {
-const res = await api.get(`${COMMANDE_URL}/${id}`, getConfig());
+const res = await api.get(`${MES_COMMANDES_URL}/${id}`, getConfig());
 return res.data;
 };
 

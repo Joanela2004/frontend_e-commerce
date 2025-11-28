@@ -315,7 +315,7 @@ const handleChoisirPaiement = async (mode) => {
     setCurrentStep(4); 
   } else {
     try {
-      const sessionData = await createStripeSession({referenceCommande: commandeConfirmee.referenceCommande,nomModePaiement: mode.nomModePaiement,
+      const sessionData = await createStripeSession({referenceCommande: commandeConfirmee.referenceCommande,numModePaiement: mode.numModePaiement,
       montantTotal: commandeConfirmee.montantTotal});
       if (sessionData?.url) {
         window.location.href = sessionData.url;
@@ -612,9 +612,62 @@ const handleChoisirPaiement = async (mode) => {
                 </p>
               )}
             </div>
-
-            {/* BOUTONS DE NAVIGATION ÉTAPE 2 */}
-            <div className="bouton-paiement">
+ <div className="panier-total-card commande-globale-card">
+              <div className="total-card">
+                <div className="total-card-top">
+                  <div className="text">
+                    <h2>Poids total du panier</h2>
+                    {totalPoids > 0 && <p>{totalPoids.toFixed(2)} kg</p>}
+                  </div>
+                  
+                  {payerLivraisonChecked && (
+                    <div className="text">
+                      <h2>Frais de poids</h2>
+                      <p>{fraisParPoids.toFixed(2).replace(".", ",")} Ar</p>
+                    </div>
+                  )}
+                  
+                  {payerLivraisonChecked && fraisParLieu > 0 && (
+                    <div className="text">
+                      <h2>Frais de distance ({lieuSelectionne?.nomLieu})</h2>
+                      <p>{fraisParLieu.toFixed(2).replace(".", ",")} Ar</p>
+                    </div>
+                  )}
+                  
+                  <hr />
+                  
+                  {payerLivraisonChecked && fraisParPoids > 0 && fraisParLieu > 0 && (
+                    <div className="text total-line">
+                      <h2>Total Frais Livraison</h2>
+                      <p>{fraisLivraisonTotal.toFixed(2).replace(".", ",")} Ar</p>
+                    </div>
+                  )}
+                  
+                  <div className="text total-line">
+                    <h2>Sous-Total</h2>
+                    <p>{sousTotal.toFixed(2).replace(".", ",")} Ar</p>
+                  </div>
+                  
+                  {remise > 0 && (
+                    <div className="text discount-line">
+                      <h2>Remise Code Promo</h2>
+                      <p>-{remise.toFixed(2).replace(".", ",")} Ar</p>
+                    </div>
+                  )}
+                </div>
+                
+                <hr />
+                
+                <div className="text total-line">
+                  <h2>Montant total</h2>
+                  <p className="total-prix-to-pay">
+                    {montantAPayer.toFixed(2).replace(".", ",")} Ar
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+              <div className="bouton-paiement">
               <button
                 className="passer-commande-btn-retour"
                 onClick={handleGoBack}
@@ -672,7 +725,7 @@ const handleChoisirPaiement = async (mode) => {
           className={`mode-paiement-card ${selectedModePaiement === (mode.numModePaiement ) ? "selected" : ""}`}
           onClick={() => {
             setSelectedModePaiement(mode.numModePaiement);
-            handleChoisirPaiement(mode); // ← Nouvelle fonction (voir plus bas)
+            handleChoisirPaiement(mode); 
           }}
         >
           <div className="mode-logo-container">

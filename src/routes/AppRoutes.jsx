@@ -50,25 +50,17 @@ export default function AppRoutes() {
         <Route path="/success" element={<Success />} />
         <Route path="/cancel" element={<Cancel />} />
 
-        {/* Pages client sécurisées */}
+        {/* Routes client sécurisées */}
         <Route
-          path="/client/mesCommandes"
+          path="/client/*"
           element={
             <PrivateRoute role="client">
-              <SuiviCommande />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/client/livraisons/:id"
-          element={
-            <PrivateRoute role="client">
-              <SuiviLivraison />
+              <ClientRoutes />
             </PrivateRoute>
           }
         />
 
-        {/* Pages admin sécurisées */}
+        {/* Routes admin sécurisées */}
         <Route
           path="/admin/*"
           element={
@@ -81,6 +73,16 @@ export default function AppRoutes() {
     </Router>
   );
 }
+
+// Routes client
+const ClientRoutes = () => {
+  return (
+    <Routes>
+      <Route path="mesCommandes" element={<SuiviCommande />} />
+      <Route path="mesCommandes/:id/livraison" element={<SuiviLivraison />} />
+    </Routes>
+  );
+};
 
 // Routes admin (inchangées)
 const AdminRoutes = () => {

@@ -21,11 +21,12 @@ const CarteCommande = ({ order }) => {
     }
   };
 
-  const handleTrackOrder = () => {
-    navigate(`/client/livraisons/${order.numCommande}`, { 
-      state: { commande: order } 
-    });
-  };
+const handleTrackOrder = () => {
+  navigate(`/client/mesCommandes/${order.numCommande}/livraison`, { 
+    state: { commande: order } 
+  });
+};
+
 
   const showNavigation = order.detail_commandes.length > 4;
 
