@@ -80,6 +80,7 @@ const ClientRoutes = () => {
     <Routes>
       <Route path="mesCommandes" element={<SuiviCommande />} />
       <Route path="mesCommandes/:id/livraison" element={<SuiviLivraison />} />
+      {/* <Route path="profil/modifier" element={<EditProfil />} /> */}
     </Routes>
   );
 };

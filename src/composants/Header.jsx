@@ -24,8 +24,11 @@ const userData = JSON.parse(localStorage.getItem("userData") || "{}");
 
   const handleLogout = async () => {
     await logoutUser();
-    navigate("/", { replace: true });
-    window.location.reload();
+   await logoutUser();
+localStorage.removeItem("userToken");
+localStorage.removeItem("userData");
+navigate("/", { replace: true });
+
     closeMenu();
   };
 

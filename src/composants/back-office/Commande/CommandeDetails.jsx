@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../../../styles/back-office/commandes.css";
-import { fetchCommandeById } from "../../../services/commandeService";
+import { fetchDetailCommande } from "../../../services/commandeService";
 
 const CommandeDetails = () => {
   const { id } = useParams();
@@ -12,7 +12,7 @@ const CommandeDetails = () => {
   useEffect(() => {
     const loadCommande = async () => {
       try {
-        const data = await fetchCommandeById(id);
+        const data = await fetchDetailCommande(id);
         setCommande(data);
       } catch (error) {
         console.error("Erreur lors du chargement de la commande", error);
@@ -24,7 +24,6 @@ const CommandeDetails = () => {
     loadCommande();
   }, [id]);
 
-  // --- Fonctions utilitaires ---
   const formatPrice = (price) => {
     if (price === null || price === undefined) return "0 Ar";
     return Number(price).toLocaleString() + " Ar";
@@ -37,7 +36,6 @@ const CommandeDetails = () => {
   if (loading) return <p>Chargement...</p>;
   if (!commande) return <p>Commande introuvable.</p>;
 
-  // Calculs :
   const totalPoids = commande.detail_commandes?.reduce(
     (total, item) => total + Number(item.poids || 0),
     0
@@ -54,7 +52,7 @@ const CommandeDetails = () => {
   return (
     <div className="details-container">
 
-      <h2>Détails de la commande n° {commande.numCommande}</h2>
+      <h2>Détails de la commande n° {commande.referenceCommande}</h2>
 
       <div className="commande-info">
         <p><strong>Client :</strong> {commande.utilisateur?.nomUtilisateur || 'Inconnu'}</p>

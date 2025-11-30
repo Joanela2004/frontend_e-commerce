@@ -16,7 +16,7 @@ const getConfig = () => {
 
 export const fetchPromotions = async () => {
     try {
-        const res = await api.get(PROMOTION_URL);
+        const res = await api.get(PROMOTION_URL,getConfig());
         return res.data;
     } catch (error) {
         console.error("Erreur chargement promotions:", error.response?.data || error.message);
@@ -63,18 +63,26 @@ export const sendPromoEmail = async (emailData) => {
     }
 };
 
-export const validerCodePromo = async (codePromo) => {
+export const validerCodePromo = async (code, numUtilisateur) => {
+  const response = await api.post(
+    `/promotions/valider`,
+    { codePromo: code, numUtilisateur },
+    getConfig()
+  );
+  return response.data;
+};
+
+
+
+export const checkPromoSent = async (numPromotion, numUtilisateur) => {
     try {
-        const token = localStorage.getItem("userToken");
-        const numUtilisateur = JSON.parse(atob(token.split('.')[1])).sub; // Décoder l'ID utilisateur depuis JWT
-        const res = await api.post(
-            `${PROMOTION_URL}/valider-code`,
-            { codePromo, numUtilisateur },
+        const res = await api.get(
+            `/promotions/deja-envoye/${numPromotion}/${numUtilisateur}`,
             getConfig()
         );
-        return res.data; // { valid: true/false, remise: number }
+        return res.data.sent;
     } catch (error) {
-        console.error("Erreur validation code promo:", error.response?.data || error.message);
-        throw error;
+        console.error("Erreur vérification promo:", error);
+        return false;
     }
 };

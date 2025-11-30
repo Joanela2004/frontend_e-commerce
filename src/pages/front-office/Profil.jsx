@@ -13,7 +13,7 @@ import "../../styles/front-office/Profil/profil.css";
 
 const Profil = () => {
   const [showModal, setShowModal] = useState(false);
-  const token = sessionStorage.getItem("userToken");
+ const token = localStorage.getItem("userToken");
   const isAuthenticated = !!token;
   const navigate = useNavigate();
 
@@ -26,8 +26,10 @@ const Profil = () => {
   };
 
   const handleLogout = async () => {
-    await logoutUser();
-    navigate("/", { replace: true });
+   await logoutUser();
+localStorage.removeItem("userToken");
+localStorage.removeItem("userData");
+navigate("/", { replace: true });
     window.location.reload();
   };
 

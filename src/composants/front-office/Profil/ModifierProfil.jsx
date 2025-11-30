@@ -19,7 +19,7 @@ const ModifierProfil = ({ onClose }) => {
   useEffect(() => {
   const fetchUserData = async () => {
     const storedUser = JSON.parse(localStorage.getItem("userData") || "{}");
-   const userId = storedUser.numUtilisateur || storedUser.id;
+   const userId = storedUser.numUtilisateur ;
 
 if (!userId) {
   setMessage({ type: "error", text: "ID utilisateur non disponible." });
@@ -31,7 +31,6 @@ if (!userId) {
       console.log("data API:", data);
       setUserData({
         nomUtilisateur: data.nomUtilisateur,
-        email: data.email,
         contact: data.contact,
         image: null,
       });
@@ -73,55 +72,75 @@ if (!userId) {
     reader.readAsDataURL(file);
   };
 
-  // Soumission du formulaire
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage({ type: "", text: "" });
-    setIsLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setMessage({ type: "", text: "" });
+  setIsLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("nomUtilisateur", userData.nomUtilisateur);
-      formData.append("email", userData.email);
-      formData.append("contact", userData.contact || "");
+  try {
+    const formData = new FormData();
 
-      if (userData.image instanceof File) {
-        console.log("Ajout de l'image :", userData.image.name); // DEBUG
-        formData.append("image", userData.image);
-      }
+    // Champs obligatoires
+    formData.append("nomUtilisateur", userData.nomUtilisateur);
+    formData.append("contact", userData.contact || "");
 
-      const storedUser = JSON.parse(localStorage.getItem("userData") || "{}");
-      const userId = storedUser.numUtilisateur || storedUser.id;
-
-      const updatedUser = await updateProfilUtilisateur(userId, formData);
-
-      // Mettre à jour localStorage
-      localStorage.setItem("userData", JSON.stringify(updatedUser));
-      
-      setUserData({
-        nomUtilisateur: updatedUser.nomUtilisateur,
-        email: updatedUser.email,
-        contact: updatedUser.contact,
-        image: null,
-      });
-
-      if (updatedUser.image) {
-        setPreviewImage(`${VITE_IMAGE_BASE_URL}${updatedUser.image}`);
-      }
-
-      setMessage({ type: "success", text: "Profil mis à jour avec succès !" });
-    } catch (error) {
-      let msg = "Erreur lors de la mise à jour du profil.";
-      if (error.response?.data?.errors?.image) {
-        msg = error.response.data.errors.image.join(" ");
-      } else if (error.response?.data?.message) {
-        msg = error.response.data.message;
-      }
-      setMessage({ type: "error", text: msg });
+    // Image : seulement si nouvelle photo sélectionnée
+    if (userData.image instanceof File) {
+      console.log("Image ajoutée :", userData.image.name);
+      formData.append("image", userData.image);
     }
 
+    // LA CLÉ MAGIQUE – OBLIGATOIRE
+    formData.append("_method", "PUT");
+
+    // Récupération sécurisée de l'ID
+    const storedUser = JSON.parse(localStorage.getItem("userData") || "{}");
+    const userId = storedUser.numUtilisateur || storedUser.id;
+
+    if (!userId) {
+      setMessage({ type: "error", text: "ID utilisateur manquant. Reconnectez-vous." });
+      setIsLoading(false);
+      return;
+    }
+
+    // Envoi
+    const response = await updateProfilUtilisateur(userId, formData);
+
+    // Mise à jour réussie
+    const updatedUser = response.utilisateur || response;
+
+    localStorage.setItem("userData", JSON.stringify(updatedUser));
+
+    setUserData({
+      nomUtilisateur: updatedUser.nomUtilisateur,
+      contact: updatedUser.contact,
+      image: null,
+    });
+
+    if (updatedUser.image) {
+      setPreviewImage(`${VITE_IMAGE_BASE_URL}${updatedUser.image}`);
+    }
+
+    setMessage({ type: "success", text: "Profil mis à jour avec succès !" });
+    setTimeout(() => onClose(), 1200);
+
+  } catch (error) {
+    console.error("Erreur complète :", error.response?.data);
+
+    let msg = "Erreur lors de la mise à jour du profil.";
+    if (error.response?.data?.errors?.image) {
+      msg = error.response.data.errors.image.join(" ");
+    } else if (error.response?.data?.message) {
+      msg = error.response.data.message;
+    } else if (error.response?.status === 401) {
+      msg = "Session expirée. Veuillez vous reconnecter.";
+    }
+
+    setMessage({ type: "error", text: msg });
+  } finally {
     setIsLoading(false);
-  };
+  }
+};
 
   return (
     <div className="conteneur-formulaire modal-form">
@@ -169,13 +188,7 @@ if (!userId) {
           </div>
         </div>
 
-        <div className="groupe-formulaire">
-          <label>Email</label>
-          <div className="champ-avec-icone">
-            <FaEnvelope className="icone-champ" />
-            <input type="email" name="email" value={userData.email} onChange={handleChange} required />
-          </div>
-        </div>
+       
 
         <div className="groupe-formulaire">
           <label>Téléphone</label>

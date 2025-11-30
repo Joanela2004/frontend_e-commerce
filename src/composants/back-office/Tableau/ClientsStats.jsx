@@ -1,13 +1,9 @@
-// Fichier : ClientsStats.jsx
-
-import React, { useMemo, useState } from "react"; // Suppression d'useEffect inutile ici
+// ClientsStats.jsx
+import React, { useMemo, useState } from "react";
 import { usePagination } from "../../../pages/hooks/hooks";
-import { sendPromoEmail } from "../../../services/promotionService";
-import { fetchPromotions } from "../../../services/promotionService";
+import { sendPromoEmail, fetchPromotions, checkPromoSent } from "../../../services/promotionService"; 
 import { toast } from "react-toastify";
-import { X, Gift, Calendar, Percent } from "lucide-react";
-import '../../../styles/front-office/Accueil/Pagination.css';
-import "../../../styles/back-office/clients.css";
+import { X, Gift, Calendar, Percent, ShoppingBag, DollarSign } from "lucide-react";
 
 const ClientsStats = ({ clients, commandes }) => {
   const [loadingClient, setLoadingClient] = useState(null);
@@ -19,22 +15,28 @@ const ClientsStats = ({ clients, commandes }) => {
   const [sending, setSending] = useState(false);
 
   const clientsAvecStats = useMemo(() => {
-    if (!clients) return [];
-    const clientsNormaux = clients.filter(c => c.role !== "admin");
-    const mapTotalParClient = new Map();
+    if (!clients || !commandes) return [];
 
-    commandes?.forEach(cmd => {
+    const clientsNormaux = clients.filter(c => c.role !== "admin");
+
+    const mapTotalParClient = new Map();
+    const mapNbCommandes = new Map();
+
+    commandes.forEach(cmd => {
       const clientId = cmd.numUtilisateur;
       const totalCmd = parseFloat(cmd.montantTotal || 0);
+
       mapTotalParClient.set(clientId, (mapTotalParClient.get(clientId) || 0) + totalCmd);
+      mapNbCommandes.set(clientId, (mapNbCommandes.get(clientId) || 0) + 1);
     });
 
     return clientsNormaux.map(client => ({
       id: client.numUtilisateur,
       nom: client.nomUtilisateur,
       email: client.email,
-      // NOTE : Ajout du total dépensé pour l'affichage (si votre besoin inclut cette info)
+      image: client.image ,
       totalDepense: mapTotalParClient.get(client.numUtilisateur) || 0,
+      nbCommandes: mapNbCommandes.get(client.numUtilisateur) || 0,
     }));
   }, [clients, commandes]);
 
@@ -47,24 +49,27 @@ const ClientsStats = ({ clients, commandes }) => {
     setSelectedPromo(null);
 
     try {
-        const promos = await fetchPromotions();
-        
-        // CORRECTION 1 : Filtre robuste et insensible à la casse + vérification de date.
-        const promosActives = promos.filter(p => {
-            const statut = p.statutPromotion?.toLowerCase();
-            const dateFin = new Date(p.dateFin);
-            const maintenant = new Date();
+      const promos = await fetchPromotions();
+      const maintenant = new Date();
 
-            // La promotion est active si statut est 'active' OU 'actif' ET n'est pas expirée
-            return (statut === "active" || statut === "actif") && dateFin > maintenant;
-        });
-        
-        setPromotions(promosActives);
+      const promosActives = promos.filter(p => {
+        const dateFin = new Date(p.dateFin);
+        return (
+          (p.statutPromotion === "active" || p.statutPromotion === "actif" || p.statutPromotion === true) &&
+          dateFin > maintenant
+        );
+      });
 
-    // CORRECTION 2 : Gestion d'erreur déplacée dans le bloc catch
+      const promosAvecStatus = await Promise.all(
+        promosActives.map(async (p) => {
+          const deja = await checkPromoSent(p.numPromotion, client.id);
+          return { ...p, dejaEnvoye: deja };
+        })
+      );
+
+      setPromotions(promosAvecStatus);
     } catch (err) {
       toast.error("Erreur lors du chargement des promotions.");
-      console.error(err);
       setPromotions([]);
     } finally {
       setLoadingPromos(false);
@@ -72,34 +77,34 @@ const ClientsStats = ({ clients, commandes }) => {
   };
 
   const handleEnvoyerPromo = async () => {
-    if (!selectedPromo) {
-      toast.warning("Veuillez sélectionner une promotion");
+    if (!selectedPromo || !selectedClient) return;
+
+    if (selectedPromo.dejaEnvoye) {
+      toast.warning("Cette promotion a déjà été envoyée à ce client.");
       return;
     }
 
     try {
       setSending(true);
-      
-      // Les données envoyées DOIVENT correspondre à ce que le contrôleur Laravel attend
       const res = await sendPromoEmail({
         email: selectedClient.email,
         codePromo: selectedPromo.codePromo,
-        // Les champs 'valeur' et 'nomClient' sont utiles mais pas critiques pour l'API Laravel si elle trouve la promo par codePromo.
-        valeur: selectedPromo.valeur, 
-        nomClient: selectedClient.nom, // Utilisez 'nom' défini dans useMemo
+        valeur: selectedPromo.valeur,
+        typePromotion: selectedPromo.typePromotion,
+        nomClient: selectedClient.nom,
+        numUtilisateur: selectedClient.id,
+        numPromotion: selectedPromo.numPromotion, 
       });
 
-      if (res.success || res.message) {
+      if (res.success) {
         toast.success(`Code promo ${selectedPromo.codePromo} envoyé à ${selectedClient.nom} !`);
         setShowModal(false);
-        setSelectedClient(null);
-        setSelectedPromo(null);
       } else {
-        toast.error(res.message || "Erreur lors de l'envoi du code promo");
+        toast.error(res.message || "Échec de l'envoi");
       }
     } catch (err) {
-      toast.error("Erreur serveur lors de l'envoi du code promo.");
-      console.error(err.response?.data || err);
+      toast.error("Erreur lors de l'envoi du code promo");
+      console.error(err);
     } finally {
       setSending(false);
     }
@@ -107,68 +112,60 @@ const ClientsStats = ({ clients, commandes }) => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return new Date(dateString).toLocaleDateString("fr-FR", {
+      day: "2-digit", month: "2-digit", year: "numeric"
+    });
   };
-
-  // ... (Reste du composant inchangé, excepté les ajustements d'affichage)
 
   return (
     <>
       <div className="clients-stats">
         <h3>Statistiques par client</h3>
-        
         <table className="clients-table">
           <thead>
             <tr>
               <th>Client</th>
               <th>Email</th>
+              <th>Commandes</th>
+              <th>Total dépensé</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {currentRows.map(c => (
               <tr key={c.id}>
-                {/* CORRECTION 3: Utilisez les clés définies dans useMemo */}
-                <td><strong>{c.nom}</strong></td> 
+                <td>
+                  <strong>{c.nom}</strong>
+                </td>
                 <td>{c.email}</td>
-                
+                <td>
+                  <ShoppingBag size={16} color="#6366f1" /> {c.nbCommandes}
+                </td>
+                <td>
+                  <DollarSign size={16} color="#10b981" /> {c.totalDepense.toFixed(2)} Ar
+                </td>
                 <td>
                   <button
                     className="btn-action-view"
                     onClick={() => handleOpenModal(c)}
-                    disabled={loadingClient === c.id}
                   >
-                    {loadingClient === c.id ? (
-                      <>
-                        <span className="loading-spinner"></span>
-                        Envoi...
-                      </>
-                    ) : (
-                      <>
-                        <Gift size={16} style={{ marginRight: '0.5rem' }} />
-                        Envoyer code promo
-                      </>
-                    )}
+                    <Gift size={16} style={{ marginRight: "0.5rem" }} />
+                    Envoyer promo
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
-        {/* ... (Pagination) ... */}
-
       </div>
 
-      {/* MODAL DE SÉLECTION DE PROMOTION */}
+      {/* MODAL */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <Gift size={28} color="#28a458" />
-                Sélectionner une promotion
+                <Gift size={28} color="#28a458" /> Envoyer un code promo
               </h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>
                 <X size={20} />
@@ -176,110 +173,70 @@ const ClientsStats = ({ clients, commandes }) => {
             </div>
 
             <div className="modal-client-info">
-              {/* CORRECTION 4: Utilisez les clés correctes */}
               <p><strong>Client :</strong> {selectedClient?.nom}</p>
               <p><strong>Email :</strong> {selectedClient?.email}</p>
-              {/* NOTE : La ligne 'Total dépenses' est laissée en commentaire si vous ne la calculez pas ici */}
-              {/* <p><strong>Total dépenses :</strong> {parseFloat(selectedClient?.totalDepense || 0).toLocaleString('fr-FR')} Ar</p> */}
+              <p>
+                <strong>Commandes :</strong> {selectedClient?.nbCommandes} | 
+                <strong> Dépensé :</strong> {selectedClient?.totalDepense.toFixed(2)} Ar
+              </p>
             </div>
 
-                   {loadingPromos ? (
-
-              <div style={{ textAlign: 'center', padding: '3rem' }}>
-
-                <div className="loading-spinner" style={{ 
-
-                  width: '40px', 
-
-                  height: '40px', 
-
-                  borderWidth: '4px',
-
-                  margin: '0 auto'
-
-                }}></div>
-
-                <p style={{ marginTop: '1rem', color: '#6b7280' }}>Chargement des promotions...</p>
-
+            {loadingPromos ? (
+              <div style={{ textAlign: "center", padding: "3rem" }}>
+                <div className="loading-spinner"></div>
+                <p>Chargement des promotions...</p>
               </div>
-
             ) : promotions.length === 0 ? (
-
-              <div style={{ 
-
-                textAlign: 'center', 
-
-                padding: '3rem', 
-
-                background: '#f9fafb',
-
-                borderRadius: '12px',
-
-                border: '2px dashed #d1d5db'
-
-              }}>
-
-                <Gift size={48} color="#d1d5db" style={{ margin: '0 auto 1rem' }} />
-
-                <p style={{ color: '#6b7280', fontWeight: '600' }}>
-
-                  Aucune promotion active disponible
-
-                </p>
-
+              <div style={{ textAlign: "center", padding: "3rem", background: "#f9fafb", borderRadius: "12px" }}>
+                <Gift size={48} color="#d1d5db" />
+                <p style={{ color: "#6b7280", marginTop: "1rem" }}>Aucune promotion active</p>
               </div>
-
             ) : (
-
               <>
                 <div className="promo-list">
-                  {promotions.map((promo) => (
+                  {promotions.map(promo => (
                     <div
-                      key={promo.numPromotion || promo.id}
-                      className={`promo-item ${selectedPromo?.numPromotion === promo.numPromotion ? 'selected' : ''}`}
+                      key={promo.numPromotion}
+                      className={`promo-item ${
+                        selectedPromo?.numPromotion === promo.numPromotion ? "selected" : ""
+                      }`}
                       onClick={() => setSelectedPromo(promo)}
                     >
                       <div className="promo-code">
-                         <Percent size={18} style={{ display: 'inline', marginRight: '0.5rem' }} />
-                         {promo.codePromo}
+                        <Percent size={18} /> {promo.codePromo}
                       </div>
+
+                      {promo.dejaEnvoye && (
+                        <span className="badge-sent">Déjà envoyé</span> // ⭐ AJOUT
+                      )}
+
                       <div className="promo-valeur">
-                        {/* Affichage correct de la valeur si c'est un pourcentage, sinon ajuster */}
-                        -{promo.valeur} {promo.typePromotion === 'Pourcentage' ? '%' : '€'} 
+                        -{promo.valeur} {promo.typePromotion === "Pourcentage" ? "%" : "Ar"}
                       </div>
-                      <div className="promo-nomPromotion">
-                        {promo.nomPromotion || "Promotion spéciale"}
-                      </div>
+                      <div className="promo-nomPromotion">{promo.nomPromotion}</div>
                       <div className="promo-dates">
-                        <Calendar size={14} style={{ display: 'inline', marginRight: '0.3rem' }} />
-                        Du {formatDate(promo.dateDebut)} au {formatDate(promo.dateFin)}
+                        <Calendar size={14} /> Du {formatDate(promo.dateDebut)} au{" "}
+                        {formatDate(promo.dateFin)}
                       </div>
                     </div>
                   ))}
                 </div>
 
                 <div className="modal-actions">
-                  {/* ... (Boutons) ... */}
-                  <button 
-                    className="btn-modal btn-secondary" 
-                    onClick={() => setShowModal(false)}
-                    disabled={sending}
-                  >
+                  <button className="btn-modal btn-secondary" onClick={() => setShowModal(false)}>
                     Annuler
                   </button>
-                  <button 
-                    className="btn-modal btn-primary" 
+
+                  <button
+                    className="btn-modal btn-primary"
                     onClick={handleEnvoyerPromo}
-                    disabled={!selectedPromo || sending}
+                    disabled={!selectedPromo || sending || selectedPromo?.dejaEnvoye} // ⭐ CORRECTION
                   >
-                    {sending ? (
-                      <>
-                        <span className="loading-spinner"></span>
-                        Envoi en cours...
-                      </>
-                    ) : (
-                      <>Envoyer le code promo</>
-                    )}
+                    {selectedPromo?.dejaEnvoye
+                      ? "Déjà envoyé"
+                      : sending
+                      ? "Envoi..."
+                      : "Envoyer le code promo"}
                   </button>
                 </div>
               </>

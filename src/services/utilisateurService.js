@@ -1,17 +1,16 @@
 
 import api from "./api";
 
-const getConfig = () => {
-  const token = localStorage.getItem("userToken"); 
+const getConfig = (isFormData = false) => {
+  const token = localStorage.getItem("userToken");
   if (!token) throw new Error("Utilisateur non authentifié");
 
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  };
+  const headers = { Authorization: `Bearer ${token}` };
+  if (isFormData) headers["Content-Type"] = "multipart/form-data";
+
+  return { headers, withCredentials: true };
 };
+
 
 export const getProfilUtilisateur = async (numUtilisateur) => {
   const res = await api.get(`/utilisateurs/${numUtilisateur}`, getConfig());
@@ -19,8 +18,7 @@ export const getProfilUtilisateur = async (numUtilisateur) => {
 };
 
 export const updateProfilUtilisateur = async (id, formData) => {
-  // Ici on envoie en POST mais Laravel traitera comme PUT
-  const res = await api.post(`/utilisateurs/${id}`, formData, getConfig());
+   const res = await api.post(`/utilisateurs/${id}?_method=PUT`, formData, getConfig(true));
   return res.data;
 };
 

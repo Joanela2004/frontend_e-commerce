@@ -218,31 +218,48 @@ const PanierSection = () => {
   const montantAPayer = montantBrut - remise;
   
   const handleApplyCodePromo = async () => {
-    const code = codePromo.trim().toUpperCase();
-    if (!code) {
-      toast.warn("Veuillez entrer un code promo.");
-      setRemise(0);
-      return;
-    }
-    try {
-      const result = await validerCodePromo(code);
-      if (result.valid) {
-        setRemise(Number(result.remise));
-        toast.success(
-          `Code "${code}" appliqué ! ${Number(result.remise).toFixed(
-            2
-          )} Ar de réduction.`
-        );
-      } else {
-        setRemise(0);
-        toast.error("Code promo non valide ou non applicable pour vous.");
-      }
-    } catch (err) {
-      console.error("Erreur lors de la validation du code promo:", err);
-      setRemise(0);
-      toast.error("Impossible de valider le code promo. Réessayez plus tard.");
-    }
-  };
+  const code = codePromo.trim().toUpperCase();
+  if (!code) {
+    toast.warn("Veuillez entrer un code promo.");
+    setRemise(0);
+    return;
+  }
+
+  const userData = JSON.parse(localStorage.getItem("userData")); // <-- AJOUT
+  const utilisateur = userData;
+
+  if (!utilisateur || !utilisateur.numUtilisateur) {
+    toast.error("Utilisateur non connecté.");
+    setRemise(0);
+    return;
+  }
+
+  const numUtilisateur = utilisateur.numUtilisateur;
+
+
+try {
+const result = await validerCodePromo(code, numUtilisateur);
+
+
+// Le backend renvoie déjà 'message', 'valeur', 'typePromotion'
+if (result.message === "Code promo valide") {
+  setRemise(Number(result.valeur));
+  toast.success(
+    `Code "${code}" appliqué ! ${Number(result.valeur).toFixed(2)} Ar de réduction.`
+  );
+} else {
+  setRemise(0);
+  toast.error(result.message || "Code promo non valide ou non applicable pour vous.");
+}
+
+
+} catch (err) {
+console.error("Erreur lors de la validation du code promo:", err);
+setRemise(0);
+toast.error("Impossible de valider le code promo. Réessayez plus tard.");
+}
+};
+
 
   const getMinDate = () => {
     const today = new Date();

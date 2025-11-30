@@ -45,7 +45,7 @@ throw error;
 
 export const fetchDetailCommande = async (id) => {
 try {
-const response = await api.get(`${MES_COMMANDES_URL}/${id}`, getConfig());
+const response = await api.get(`${COMMANDE_URL}/${id}`, getConfig());
 return response.data;
 } catch (error) {
 console.error("Erreur fetchDetailCommande:", error.response?.data || error.message);

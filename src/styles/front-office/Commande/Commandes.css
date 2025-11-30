@@ -285,3 +285,215 @@
     padding:10px 20px;
 }
 
+/* ========================================================================= */
+/* --- STYLES MODIFIÉS POUR L'INTÉGRATION DU PAIEMENT MODAL ET LA SÉLECTION DE LA CARTE --- */
+/* ========================================================================= */
+
+/* --- 1. Styles pour la CarteCommande sélectionnée (Harmonisation) --- */
+
+/* Laisser tel quel, utilise déjà --color-marron */
+.carte-commande-selected {
+    border: 2px solid var(--color-marron); 
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4); /* Rendre l'ombre un peu plus présente */
+}
+
+/* --- 2. Styles pour le Modal de Paiement (Panneau de droite) --- */
+
+.paiement-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Ombre plus foncée pour plus de contraste */
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end; 
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.paiement-modal-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.paiement-modal-content {
+    width: 100%;
+    max-width: 450px; 
+    background: var(--color-background-white);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); /* Animation plus fluide */
+    box-shadow: -6px 0 20px rgba(0, 0, 0, 0.15); /* Ombre plus marquée à gauche */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto; /* Permet le défilement si le contenu est trop long */
+}
+
+.paiement-modal-overlay.open .paiement-modal-content {
+    transform: translateX(0);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5em; /* Taille plus discrète */
+    cursor: pointer;
+    color: white;
+    z-index: 1010;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+/* Nouveau style de l'en-tête : utilise marron et green-primary pour le gradient */
+.modal-header-gradient {
+    /* Gradient Marron-Vert */
+    background: linear-gradient(135deg, var(--color-marron), var(--color-green-primary)); 
+    padding: 60px 30px 30px; /* Plus d'espace pour le bouton fermer */
+    color: white;
+    text-align: center;
+    border-radius: 0 0 40px 40px; /* Bordure inférieure plus arrondie */
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.header-icon {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2); /* Icône mise en valeur */
+}
+
+.modal-title {
+    font-size: 2em; /* Titre plus grand */
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.modal-subtitle {
+    opacity: 0.9;
+    font-size: 1.1em;
+}
+
+.modal-body {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+.body-message {
+    margin-bottom: 30px;
+    color: var(--color-text-dark); /* Couleur sombre pour le texte */
+    text-align: center;
+    font-size: 1.05em;
+    padding: 0 10px;
+}
+
+.modes-paiement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.mode-option {
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--color-background-light); /* Utilise la couleur de fond claire */
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); /* Ombre plus subtile */
+}
+
+.mode-option:hover {
+    background-color: #f0f0f0;
+}
+
+.mode-option.option-selected-modal {
+    border-color: var(--color-marron); /* Bordure marron pour la sélection */
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(139, 69, 19, 0.2);
+}
+
+.mode-logo-container {
+    width: 45px; /* Taille légèrement augmentée */
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mode-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.mode-name {
+    font-weight: 600; /* Poids de police */
+    color: var(--color-text-dark);
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.mode-description {
+    font-size: 0.85em;
+    color: #666;
+    margin: 0;
+}
+
+.bouton-payer-modal {
+    width: 100%;
+    /* Utilise la couleur principale pour le bouton d'action */
+    background-color: var(--color-marron); 
+    color: white;
+    font-weight: bold;
+    padding: 18px; /* Padding plus grand */
+    border: none;
+    border-radius: 10px; /* Coins légèrement plus arrondis */
+    cursor: pointer;
+    font-size: 1.2em; /* Texte plus grand */
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.bouton-payer-modal:hover {
+    transform: translateY(-3px); /* Effet plus prononcé */
+    background-color: #a0522d; /* Légèrement plus foncé au survol */
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.4);
+}
+
+.bouton-payer-modal:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.securite-note {
+    text-align: center;
+    font-size: 0.85em;
+    margin-top: 20px;
+    color: #888;
+}
+
+/* Style de chargement */
+.paiement-modal-content.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    color: #666;
+}
