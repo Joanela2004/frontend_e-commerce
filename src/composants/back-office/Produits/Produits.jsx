@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import { createProduit,updateProduit,fetchProduits, deleteProduit } from "../../../services/produitService";
+import {
+  createProduit,
+  updateProduit,
+  fetchProduits,
+  deleteProduit,
+} from "../../../services/produitService";
 import { getCategories } from "../../../services/categorieService";
+import { fetchPromotions } from "../../../services/promotionService"; // ← AJOUTÉ !
 import "../../../styles/back-office/fraisLivraison.css";
 import { useNavigate } from "react-router-dom";
+
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
 const Produits = () => {
   const navigate = useNavigate();
   const [produits, setProduits] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [promotions, setPromotions] = useState([]);
+  const [search, setSearch] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+
   const [form, setForm] = useState({
     nomProduit: "",
     prix: "",
@@ -14,13 +29,8 @@ const Produits = () => {
     quantiteStock: "",
     numCategorie: "",
     numPromotion: "",
-    image: null
+    image: null,
   });
-
-  const [editingId, setEditingId] = useState(null);
-  const [search, setSearch] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [promotions, setPromotions] = useState([]);
 
   useEffect(() => {
     loadProduits();
@@ -32,74 +42,76 @@ const Produits = () => {
     try {
       const data = await fetchProduits();
       setProduits(data);
-    } catch (error) {
-      console.error("Erreur chargement produits:", error);
-      alert("Erreur lors du chargement des produits");
+    } catch (err) {
+      alert("Erreur chargement produits");
     }
   };
 
   const loadCategories = async () => {
-     const data = await getCategories();
-     setCategories(data);
+    const data = await getCategories();
+    setCategories(data);
   };
 
   const loadPromotions = async () => {
-    const data = await fetchPromotions();
-    setPromotions(data);
+    try {
+      const data = await fetchPromotions();
+      setPromotions(data);
+    } catch (err) {
+      console.error("Promotions non chargées", err);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm({ ...form, image: file });
+      setPreviewImage(URL.createObjectURL(file));
+    }
   };
 
   const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    
-    if (type === 'file') {
-      setForm({ ...form, image: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("nomProduit", form.nomProduit);
     formData.append("prix", form.prix);
     formData.append("poids", form.poids);
     formData.append("quantiteStock", form.quantiteStock);
     formData.append("numCategorie", form.numCategorie);
-    if (form.numPromotion) {
-      formData.append("numPromotion", form.numPromotion);
-    }
-    
-    if (form.image) {
-      formData.append("image", form.image);
-    }
+    if (form.numPromotion) formData.append("numPromotion", form.numPromotion);
+    if (form.image) formData.append("image", form.image);
 
     try {
       if (editingId) {
-         await updateProduit(editingId, formData);
+        await updateProduit(editingId, formData);
         alert("Produit mis à jour !");
       } else {
-         await createProduit(formData);
+        await createProduit(formData);
         alert("Produit ajouté !");
       }
-      
-      setForm({
-        nomProduit: "",
-        prix: "",
-        poids: "",
-        quantiteStock: "",
-        numCategorie: "",
-        numPromotion: "",
-        image: null
-      });
-      setEditingId(null);
+      resetForm();
       loadProduits();
-
     } catch (err) {
-      console.error("Erreur détaillée:", err);
-      alert("Erreur lors de l'enregistrement: " + (err.response?.data?.message || err.message));
+      alert("Erreur : " + (err.response?.data?.message || err.message));
     }
+  };
+
+  const resetForm = () => {
+    setForm({
+      nomProduit: "",
+      prix: "",
+      poids: "",
+      quantiteStock: "",
+      numCategorie: "",
+      numPromotion: "",
+      image: null,
+    });
+    setEditingId(null);
+    setPreviewImage(null);
   };
 
   const handleEdit = (produit) => {
@@ -108,33 +120,28 @@ const Produits = () => {
       prix: produit.prix,
       poids: produit.poids,
       quantiteStock: produit.quantiteStock,
-      numCategorie: produit.numCategorie,
+      numCategorie: produit.numCategorie || "",
       numPromotion: produit.numPromotion || "",
-      image: null
+      image: null,
     });
-    setEditingId(produit.numProduit || produit.id);
+    setEditingId(produit.numProduit);
+    setPreviewImage(produit.image ? `${IMAGE_BASE_URL}${produit.image}` : null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce produit ?")) return;
-    try {
-      await deleteProduit(id);
-      loadProduits();
-      alert("Produit supprimé !");
-    } catch (error) {
-      console.error("Erreur suppression:", error);
-      alert("Erreur lors de la suppression");
-    }
+    await deleteProduit(id);
+    loadProduits();
   };
 
-  const filteredProduits = produits.filter(p =>
+  const filteredProduits = produits.filter((p) =>
     p.nomProduit.toLowerCase().includes(search.toLowerCase()) ||
-    p.categorie?.nomCategorie.toLowerCase().includes(search.toLowerCase())
+    p.categorie?.nomCategorie?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="frais-container">
-       
       <div className="frais-header">
         <h2>Gestion des Produits</h2>
         <div className="livraison-tabs">
@@ -148,40 +155,37 @@ const Produits = () => {
         </div>
       </div>
 
-      {/* Formulaire */}
-      <form onSubmit={handleSubmit} className="frais-form" encType="multipart/form-data">
+      {/* FORMULAIRE */}
+      <form onSubmit={handleSubmit} className="frais-form">
         <div className="form-row">
           <div className="form-group">
-            <label>Image</label>
-            <input 
-              type="file" 
-              name="image" 
-              accept="image/*" 
-              onChange={handleChange} 
-            />
+            <label>Image {form.image || previewImage ? "(modifiée)" : ""}</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {(previewImage || form.image) && (
+              <img
+                src={previewImage || `${IMAGE_BASE_URL}${form.image}`}
+                alt="Preview"
+                style={{ width: 100, height: 100, objectFit: "cover", marginTop: 8, borderRadius: 8 }}
+              />
+            )}
           </div>
-
           <div className="form-group">
-            <label>Nom du produit</label>
+            <label>Nom du produit *</label>
             <input
-              type="text"
               name="nomProduit"
               value={form.nomProduit}
               onChange={handleChange}
               required
-              placeholder="Nom du produit"
             />
           </div>
-
           <div className="form-group">
-            <label>Prix (Ar)</label>
+            <label>Prix (Ar) *</label>
             <input
               type="number"
               name="prix"
               value={form.prix}
               onChange={handleChange}
               required
-              placeholder="Prix"
               step="0.01"
             />
           </div>
@@ -189,47 +193,42 @@ const Produits = () => {
 
         <div className="form-row">
           <div className="form-group">
-            <label>Poids (kg)</label>
+            <label>Poids (kg) *</label>
             <input
               type="number"
               name="poids"
               value={form.poids}
               onChange={handleChange}
               required
-              placeholder="Poids"
               step="0.01"
             />
           </div>
-
           <div className="form-group">
-            <label>Quantité en stock</label>
+            <label>Stock *</label>
             <input
               type="number"
               name="quantiteStock"
               value={form.quantiteStock}
               onChange={handleChange}
               required
-              placeholder="Quantité"
             />
           </div>
-
           <div className="form-group">
-            <label>Catégorie</label>
+            <label>Catégorie *</label>
             <select
               name="numCategorie"
               value={form.numCategorie}
               onChange={handleChange}
               required
             >
-              <option value="">Sélectionnez une catégorie</option>
-              {categories.map(cat => (
-                <option key={cat.numCategorie} value={cat.numCategorie}>
-                  {cat.nomCategorie}
+              <option value="">Choisir...</option>
+              {categories.map((c) => (
+                <option key={c.numCategorie} value={c.numCategorie}>
+                  {c.nomCategorie}
                 </option>
               ))}
             </select>
           </div>
-
           <div className="form-group">
             <label>Promotion</label>
             <select
@@ -237,112 +236,125 @@ const Produits = () => {
               value={form.numPromotion}
               onChange={handleChange}
             >
-              <option value="">Aucune promotion</option>
-              {promotions.map(promo => (
-                <option key={promo.numPromotion} value={promo.numPromotion}>
-                  {promo.nomPromotion} ({promo.valeur}%)
-                </option>
-              ))}
+              <option value="">Aucune</option>
+              {promotions
+                .filter(p => p.statutPromotion?.toLowerCase().includes('active'))
+                .map((p) => (
+                  <option key={p.numPromotion} value={p.numPromotion}>
+                    {p.nomPromotion} ({p.valeur}{p.typePromotion === "Pourcentage" ? "%" : " Ar"})
+                  </option>
+                ))}
             </select>
           </div>
         </div>
 
-        <button className="btn-save" type="submit">
-          {editingId ? "Mettre à jour" : "Ajouter"}
-        </button>
-        
-        {editingId && (
-          <button 
-            type="button" 
-            className="btn-cancel"
-            onClick={() => {
-              setEditingId(null);
-              setForm({
-                nomProduit: "",
-                prix: "",
-                poids: "",
-                quantiteStock: "",
-                numCategorie: "",
-                numPromotion: "",
-                image: null
-              });
-            }}
-          >
-            Annuler
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button type="submit" className="btn-save">
+            {editingId ? "Mettre à jour" : "Ajouter le produit"}
           </button>
-        )}
+          {editingId && (
+            <button type="button" className="btn-cancel" onClick={resetForm}>
+              Annuler
+            </button>
+          )}
+        </div>
       </form>
 
-      {/* Barre de recherche */}
+      {/* RECHERCHE */}
       <div className="frais-search-bar">
         <FaSearch />
         <input
           type="text"
-          placeholder="Rechercher un produit ou catégorie..."
+          placeholder="Rechercher produit ou catégorie..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {search && <button className="btn-clear" onClick={() => setSearch("")}>✕</button>}
+        {search && <button className="btn-clear" onClick={() => setSearch("")}>X</button>}
       </div>
 
-      {/* Tableau */}
+      {/* TABLEAU */}
       <table className="frais-table">
         <thead>
           <tr>
             <th>Image</th>
-            <th>Nom</th>
+            <th>Produit</th>
             <th>Prix</th>
             <th>Poids</th>
             <th>Stock</th>
             <th>Catégorie</th>
-            <th>Promotion</th>
+            <th>Promo</th>
             <th>Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          {filteredProduits.map((p) => (
-            <tr key={p.numProduit || p.id}>
-              <td>
-                {p.image ? (
-                  <img
-                    src={`${import.meta.env.VITE_IMAGE_BASE_URL}${p.image}`}
-                    alt={p.nomProduit}
-                    style={{ width: 50, height: 50, objectFit: 'cover' }}
-                  />
-                ) : "—"}
-              </td>
+          {filteredProduits.map((p) => {
+            const prixReel = p.promotion
+              ? p.promotion.typePromotion === "Pourcentage"
+                ? p.prix * (1 - p.promotion.valeur / 100)
+                : p.prix - p.promotion.valeur
+              : p.prix;
 
-              <td>{p.nomProduit}</td>
-              
-              <td>{p.prix} Ar</td>
-              
-              <td>{p.poids} kg</td>
-              
-              <td>
-                <span className={`status ${p.quantiteStock > 0 ? 'active' : 'inactive'}`}>
-                  {p.quantiteStock}
-                </span>
-              </td>
-
-              <td>{p.categorie?.nomCategorie || "—"}</td>
-              
-              <td>
-                {p.promotion ? (
-                  <span className="status active">
-                    {p.promotion.valeur}%
+            return (
+              <tr key={p.numProduit}>
+                <td>
+                  {p.image ? (
+                    <img
+                      src={`${IMAGE_BASE_URL}${p.image}`}
+                      alt={p.nomProduit}
+                      style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
+                    />
+                  ) : "—"}
+                </td>
+                <td><strong>{p.nomProduit}</strong></td>
+                <td>
+                  {p.promotion ? (
+                    <>
+                      <span style={{ textDecoration: "line-through", color: "#999" }}>
+                        {parseFloat(p.prix).toFixed(0)} Ar
+                      </span>
+                      <br />
+                      <strong style={{ color: "#28a458" }}>
+                        {parseFloat(prixReel).toFixed(0)} Ar
+                      </strong>
+                    </>
+                  ) : (
+                    `${parseFloat(p.prix).toFixed(0)} Ar`
+                  )}
+                </td>
+                <td>{p.poids} kg</td>
+                <td>
+                  <span className={`status ${p.quantiteStock > 0 ? "active" : "inactive"}`}>
+                    {p.quantiteStock}
                   </span>
-                ) : "—"}
-              </td>
-
-              <td>
-                <button className="btn-edit" onClick={() => handleEdit(p)}>✏️</button>
-                <button className="btn-delete" onClick={() => handleDelete(p.numProduit || p.id)}>🗑️</button>
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td>{p.categorie?.nomCategorie || "—"}</td>
+                <td>
+                  {p.promotion ? (
+                    <span className="status active">
+                      -{p.promotion.valeur}
+                      {p.promotion.typePromotion === "Pourcentage" ? "%" : " Ar"}
+                    </span>
+                  ) : "—"}
+                </td>
+                <td>
+                  <button className="btn-edit" onClick={() => handleEdit(p)} title="Modifier">
+                    Edit
+                  </button>
+                  <button className="btn-delete" onClick={() => handleDelete(p.numProduit)} title="Supprimer">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
+
+      {filteredProduits.length === 0 && (
+        <div style={{ textAlign: "center", padding: "3rem", color: "#777" }}>
+          {search ? "Aucun produit trouvé" : "Aucun produit"}
+        </div>
+      )}
     </div>
   );
 };

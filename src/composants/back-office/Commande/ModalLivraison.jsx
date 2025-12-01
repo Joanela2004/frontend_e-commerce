@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { updateLivraison } from "../../../services/livraisonService";
 import { updateCommandeAdmin } from "../../../services/commandeService";
-import "../../../styles/back-office/livraison.css";
+// L'import de livraison.css est supprimé et les styles sont dans commandes.css
+import "../../../styles/back-office/commandes.css"; 
 
 const ModalLivraison = ({ isOpen, onClose, initialData, onSubmit }) => {
   const [formData, setFormData] = useState({});

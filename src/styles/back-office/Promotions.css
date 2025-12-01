@@ -1,171 +1,207 @@
-/* Fichier: Promotions.css ou Promotions.scss */
+/* Styles additionnels pour les Promotions dans livraison.css */
 
-/* --- Mise en page Générale --- */
-.gestion-promotions-bo {
-    padding: 30px;
-    background-color: #f7f9fc; /* Arrière-plan léger */
-    min-height: 100vh;
+.promotions-empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-gray-light);
+    background: var(--color-background-white);
+    border-radius: var(--rayon);
+    margin: 1rem 0;
+    font-style: italic;
 }
 
-.titre-page-bo {
-    color: #333;
-    font-size: 28px;
+.promotion-active {
+    border-left: 4px solid var(--color-green-primary);
+}
+
+.promotion-expired {
+    opacity: 0.7;
+    background-color: var(--color-gray-lightest);
+}
+
+.promotion-expired:hover {
+    background-color: var(--color-gray-lighter);
+}
+
+/* Badges pour les promotions */
+.badge-type-bo, 
+.badge-statut-bo {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
     font-weight: 600;
-}
-
-/* --- En-tête et Bouton Ajouter --- */
-.header-promotions-bo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.btn-ajouter-promotion-bo {
-    background-color: #007bff; /* Bleu primaire */
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    transition: background-color 0.2s;
-}
-
-.btn-ajouter-promotion-bo:hover {
-    background-color: #0056b3;
-}
-
-.icone-plus-bo {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-}
-
-/* --- Conteneur du Tableau --- */
-.table-container-bo {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    overflow-x: auto; /* Permet le défilement sur mobile */
-}
-
-.promotions-table-bo {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    text-align: left;
-}
-
-/* --- En-tête du Tableau --- */
-.promotions-table-bo thead th {
-    background-color: #e9ecef;
-    color: #6c757d;
-    font-weight: 600;
-    padding: 12px 15px;
+    display: inline-block;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
 }
 
-/* --- Corps du Tableau --- */
-.promotions-table-bo tbody tr {
-    border-bottom: 1px solid #e9ecef;
-    transition: background-color 0.2s;
+.badge-type-pourcentage {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark);
+    border: 1px solid rgba(21, 87, 36, 0.2);
 }
 
-.promotions-table-bo tbody tr:hover {
-    background-color: #f1f1f1;
+.badge-type-montantfixe {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-dark);
+    border: 1px solid rgba(133, 100, 4, 0.2);
 }
 
-.promotions-table-bo tbody td {
-    padding: 12px 15px;
-    color: #495057;
-    vertical-align: middle;
+.badge-statut-active {
+    background-color: var(--color-green-primary);
+    color: var(--color-background-white);
+}
+
+.badge-statut-inactive { 
+    background-color: var(--color-danger-light);
+    color: var(--color-danger-dark);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.badge-statut-expired {
+    background-color: var(--color-gray-lighter);
+    color: var(--color-gray-light);
+    border: 1px solid var(--color-border-light);
 }
 
 .code-promo-td {
     font-weight: 700;
-    color: #333;
+    color: var(--color-text-dark);
 }
 
-/* --- Styles des Badges (Type & Statut) --- */
+/* Adaptation responsive pour les promotions */
+@media (max-width: 768px) {
+    .livraison-table {
+        font-size: 0.8rem;
+    }
+    
+    .badge-type-bo,
+    .badge-statut-bo {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+}
+/* Styles additionnels pour le modal de promotion */
 
-/* Base du Badge */
-.badge-type-bo, 
-.badge-statut-bo {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
+.modal-promotion {
+    max-width: 600px;
+    width: 90%;
 }
 
-/* Badge Type: Pourcentage */
-.badge-type-pourcentage {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-/* Badge Type: Montant fixe */
-.badge-type-montantfixe {
-    background-color: #ffeeba;
-    color: #856404;
-}
-
-/* Badge Statut: Active */
-.badge-statut-active {
-    background-color: #cce5ff;
-    color: #004085;
-}
-
-/* Badge Statut: Désactivée (Hypothétique) */
-.badge-statut-inactive { 
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.actions-cell-bo {
+.modal-header {
     display: flex;
-    gap: 10px; 
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border-light);
 }
 
-.btn-action-editer, 
-.btn-action-supprimer {
+.modal-header h3 {
+    color: var(--color-text-dark);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close-btn {
     background: none;
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    border-radius: 4px;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--color-gray-light);
     cursor: pointer;
-    font-size: 13px;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
     display: flex;
     align-items: center;
-    transition: all 0.2s;
+    justify-content: center;
 }
 
-.icone-action-bo {
-    width: 16px;
-    height: 16px;
-    margin-right: 5px;
-}
-.btn-action-editer {
-    color: #007bff;
-    border-color: #007bff;
+.modal-close-btn:hover {
+    background-color: var(--color-background-light);
+    color: var(--color-text-dark);
 }
 
-.btn-action-editer:hover {
-    background-color: #007bff;
-    color: white;
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.btn-action-supprimer {
-    color: #dc3545;
-    border-color: #dc3545;
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
 }
 
-.btn-action-supprimer:hover {
-    background-color: #dc3545;
-    color: white;
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-light);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: var(--color-background-white);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-green-primary);
+    box-shadow: 0 0 0 3px rgba(40, 164, 88, 0.1);
+}
+
+.form-help {
+    font-size: 0.8rem;
+    color: var(--color-gray-light);
+    font-style: italic;
+}
+
+/* Responsive design pour le modal */
+@media (max-width: 768px) {
+    .modal-promotion {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .modal-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
+/* Validation states */
+.form-group input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: var(--color-danger-dark);
+    background-color: var(--color-danger-light);
+}
+
+.form-group input:valid:not(:focus):not(:placeholder-shown) {
+    border-color: var(--color-green-primary);
+    background-color: var(--color-success-light);
 }

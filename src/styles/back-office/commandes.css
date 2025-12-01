@@ -1,287 +1,498 @@
+/* --- Styles des Commandes (Similaire à Livraison.css, sauf pagination) --- */
 
-.commandes-container, .det-com-cont {
-    padding: 30px;
-       min-height: 100vh;
+/* --- Container and General Layout --- */
+.livraison-container {
+    min-height: 100vh;
+    background-color: var(--color-background-light); 
+    padding: clamp(12px, 4vw, 20px);
+    font-family: 'Inter', sans-serif;
 }
 
-h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text-dark);
-    margin-bottom: 15px;
-}
-.notification-icon {
-  position: relative;
-  margin-right: 20px;
-  cursor: pointer;
-}
-
-.bell-icon {
-  font-size: 22px;
-  color: white;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -10px;
-  background: red;
-  color: white;
-  border-radius: 50%;
-  padding: 2px 6px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.btn-voir {
-    color: var(--color-green-primary);
-    font-weight: 500;
-    text-decoration: none;
-    transition: color 0.15s;
-}
-
-.btn-voir:hover {
-    color: var(--color-green-secondary);
-}
-
-.statut-badge {
-    padding: 4px 12px;
-    display: inline-flex;
-    font-size: 0.75rem;
-    line-height: 1;
-    font-weight: 600;
-    border-radius: 9999px;
-}
-
-.statut-reussi {
-    background-color: var(--color-background-light);
-    color: var(--color-green-primary);
-}
-
-.statut-attente {
-    background-color: var(--color-background-light);
-    color: var(--color-text-dark);
-}
-
-.statut-default {
-    background-color: rgba(245, 240, 225, 0.7);
-    color: var(--color-text-footer);
-}
-
-
-/* ================================================= */
-/* 1. STYLES POUR LA LISTE DES COMMANDES */
-/* ================================================= */
-
-.table-commandes, .table-produits {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: var(--color-background-white);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.table-commandes thead th, .table-produits thead th {
-    padding: 12px 20px;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-text-footer);
-    text-transform: uppercase;
-    background-color: var(--color-background-light);
-    border-bottom: 1px solid rgba(245, 240, 225, 0.8);
-}
-
-.table-commandes tbody tr, .table-produits tbody tr {
-    transition: background-color 0.15s;
-}
-
-.table-commandes tbody tr:hover, .table-produits tbody tr:hover {
-    background-color: rgba(245, 240, 225, 0.7);
-}
-
-.table-commandes tbody td, .table-produits tbody td {
-    padding: 12px 20px;
-    font-size: 0.875rem;
-    color: var(--color-text-dark);
-    border-bottom: 1px solid rgba(245, 240, 225, 0.8);
-}
-
-/* ================================================= */
-/* 2. STYLES POUR LA PAGINATION */
-/* ================================================= */
-
-.pagination-zone {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(245, 240, 225, 0.8);
-}
-
-.pagination-btn {
-    background-color: transparent;
-    border: 1px solid rgba(245, 240, 225, 0.8);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    margin: 0 5px;
-    cursor: pointer;
-    font-weight: bold;
-    color: var(--color-text-footer);
-    transition: background-color 0.15s;
-}
-
-.pagination-btn:hover:not(:disabled) {
-    background-color: rgba(245, 240, 225, 0.5);
-}
-
-.pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.pagination-page {
-    background-color: transparent;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    margin: 0 5px;
-    cursor: pointer;
-    font-weight: 500;
-    color: var(--color-text-footer);
-    transition: background-color 0.15s, color 0.15s;
-}
-
-.pagination-page.active {
-    background-color: var(--color-green-primary); 
-    color: var(--color-background-light);
-    font-weight: bold;
-}
-
-/* ================================================= */
-/* 3. STYLES POUR LE DÉTAIL DE LA COMMANDE */
-/* ================================================= */
-
-.det-com-titre {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--color-text-dark);
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.com-date {
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--color-text-footer);
-}
-
-.info-cartes {
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-@media (min-width: 768px) {
-    .info-cartes {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-.info-carte {
-    background-color: var(--color-background-light);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--color-green-secondary);
-    color: var(--color-text-dark);
-    font-size: 0.875rem;
-}
-
-.carte-entete {
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--color-text-footer);
-}
-
-.info-carte p {
-    margin: 4px 0;
-}
-
-.produits-carte {
-    background-color: var(--color-background-white);
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-}
-
-.produits-titre {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-text-dark);
-    margin-bottom: 15px;
-}
-
-.table-produits th:first-child {
-    width: 50px;
-}
-
-.prod-img {
-    font-size: 1.5rem;
-    display: block;
-    text-align: center;
-}
-
-.bloc-totaux {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: 100%;
-    max-width: 300px;
-    margin-left: auto;
-    padding-top: 15px;
-    border-top: 1px solid rgba(245, 240, 225, 0.8);
-}
-
-.tot-ligne {
+/* --- Header et Tabs --- */
+.livraison-header {
+    background: var(--color-background-white);
+    border-radius: var(--rayon);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-    color: var(--color-text-footer);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.tot-val {
+.livraison-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    color: var(--color-text-dark);
+    margin: 0;
+    font-weight: 700;
+}
+
+.livraison-header h2 svg {
+    color: var(--color-green-primary);
+}
+
+.livraison-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--color-background-white);
+    padding: 0.25rem;
+    border-radius: var(--rayon);
+    flex-shrink: 0;
+}
+
+.livraison-tabs button {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.livraison-tabs .tab-active {
+    background: var(--color-green-primary);
+    color: var(--color-background-white);
+}
+
+.livraison-tabs button:not(.tab-active) {
+    background: transparent;
+    color: var(--color-text-dark);
+}
+
+.livraison-tabs button:not(.tab-active):hover {
+    background: var(--color-background-light);
+}
+
+/* --- Search Bar / Filtres (combinés) --- */
+.livraison-search-bar {
+    background: var(--color-background-white);
+    border-radius: var(--rayon);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--color-border-light);
+}
+
+.livraison-search-bar svg {
+    color: #666; 
+    font-size: 1.25rem;
+}
+
+.livraison-search-bar input {
+    flex: 1;
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.livraison-search-bar input:focus,
+.livraison-search-bar select.select-filter:focus {
+    border-color: var(--color-green-primary);
+    box-shadow: 0 0 0 3px rgba(40, 164, 88, 0.1); 
+}
+
+.livraison-search-bar select.select-filter {
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    outline: none;
+    transition: var(--transition);
+    cursor: pointer;
+    background: var(--color-background-white);
+    color: var(--color-text-dark);
+}
+
+/* --- Indicateur de nouvelles commandes --- */
+.new-orders-indicator {
+    background-color: #fff3cd; 
+    color: #856404;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* --- Tableau --- */
+.livraison-table {
+    width: 100%;
+    background: var(--color-background-white);
+    border-radius: var(--rayon);
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-collapse: collapse;
+}
+
+.livraison-table thead {
+    background: var(--color-green-primary);
+    color: var(--color-background-white);
+}
+
+.livraison-table th {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.livraison-table tbody tr {
+    border-bottom: 1px solid var(--color-border-light);
+    transition: background 0.2s;
+}
+
+.livraison-table tbody tr:hover {
+    background: var(--color-background-light);
+}
+
+.livraison-table td {
+    padding: 1rem 1.5rem;
+    color: var(--color-text-dark);
+}
+
+.livraison-table td:first-child {
     font-weight: 600;
     color: var(--color-text-dark);
 }
 
-.val-rouge {
-    color: var(--color-text-dark);
+.new-order-row {
+    background-color: #e6f7ff !important; 
+    font-weight: 500;
 }
 
-.tot-final {
-    font-size: 1.25rem;
+/* --- Badges de Statut --- */
+.statut-badge {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+    border-radius: 50px;
+    font-size: 0.8rem;
     font-weight: 700;
-    color: var(--color-green-primary);
-    padding-top: 10px;
-    border-top: 2px solid var(--color-green-primary);
+    text-transform: capitalize;
+    text-align: center;
+    min-width: 80px;
 }
 
-.loading-state, .error-state {
-    padding: 40px;
-    text-align: center;
+.statut-reussi { 
+    background-color: #e6ffed;
+    color: #007c45; 
+}
+
+.statut-expediee { 
+    background-color: #fff4e6;
+    color: #ff9900; 
+}
+
+.statut-attente { 
+    background-color: #e9e9e9;
+    color: #6c757d; 
+}
+
+.statut-annule { 
+    background-color: #fbe6e6;
+    color: #dc3545; 
+}
+
+.badge-paid {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-unpaid {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.mode-paiement-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid var(--color-border-light);
+    padding: 4px;
+    background: var(--color-background-white);
+}
+
+/* --- Boutons d'Action --- */
+.actions-cell-bo {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    white-space: nowrap; 
+}
+
+.btn-validate {
+    background-color: var(--color-green-primary);
+    color: white;
+}
+.btn-validate:hover { background-color: var(--color-green-secondary); }
+
+.btn-cancel {
+    background-color: var(--color-danger-dark);
+    color: white;
+}
+.btn-cancel:hover { background-color: #bd2130; }
+
+.btn-delivery, .btn-pay {
+    background-color: #17a2b8; 
+    color: white;
+}
+.btn-delivery:hover, .btn-pay:hover { background-color: #117a8b; }
+
+.btn-action[disabled] {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .livraison-container {
+        padding: 1rem;
+    }
+
+    .livraison-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .livraison-header h2 {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .livraison-tabs {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .livraison-tabs button {
+        flex: 1;
+        min-width: unset;
+    }
+
+    .livraison-search-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .livraison-search-bar input,
+    .livraison-search-bar select.select-filter {
+        width: 100%;
+    }
+
+    .livraison-table {
+        font-size: 0.875rem;
+        overflow-x: auto; 
+    }
+    
+    .livraison-table table {
+        min-width: 800px;
+    }
+
+    .livraison-table th,
+    .livraison-table td {
+        padding: 0.75rem;
+    }
+
+    .actions-cell-bo {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .btn-action {
+        width: 100%;
+        text-align: center;
+    }
+}
+/* src/components/back-office/Clients/CommandesClient.css */
+
+/* --- Réutilisation des Styles Globaux du Back-Office --- */
+/* (Assurez-vous que .livraison-container, .livraison-header et .livraison-table sont bien importés via un fichier global comme client.css ou commandes.css) */
+
+/* Style pour le bouton de retour */
+.btn-back {
+  background: var(--color-background-white);
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-border-light);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.btn-back:hover {
+  background: var(--color-background-light);
+  border-color: var(--color-green-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Carte de détails du client */
+.client-details-card {
+  background: var(--color-background-white);
+  padding: 1.5rem;
+  border-radius: var(--rayon);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  border-left: 5px solid var(--color-green-primary);
+}
+
+.client-details-card h4 {
+  margin-top: 0;
+  color: var(--color-text-dark);
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--color-border-light);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.client-details-card p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.client-details-card strong {
+  font-weight: 700;
+  color: var(--color-green-secondary);
+}
+
+.section-title-commandes {
+    font-size: 1.3rem;
+    color: var(--color-text-dark);
+    margin-bottom: 1rem;
+}
+
+/* Style spécifique pour le tableau des commandes */
+.table-commandes-client td {
+    vertical-align: middle;
+}
+
+.montant-cell {
+    text-align: right;
+    font-family: monospace;
+}
+
+.total-montant-cell {
     font-size: 1.1rem;
-    color: var(--color-text-footer);
+    color: var(--color-green-primary);
+}
+
+/* Styles des badges (réutilisés de Commandes.jsx si possible) */
+.statut-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* Couleurs des statuts (à adapter à vos variables ou couleurs exactes) */
+.statut-en-attente, .statut-attente { 
+    background-color: var(--color-warning-light, #fffbe6); 
+    color: var(--color-warning-dark, #8a6d3b);
+}
+.statut-validée { 
+    background-color: var(--color-info-light, #d9edf7); 
+    color: var(--color-info-dark, #31708f); 
+}
+.statut-expédiée, .statut-en-cours { 
+    background-color: var(--color-blue-light, #e0f7fa); 
+    color: var(--color-blue-dark, #00796b); 
+}
+.statut-livrée { 
+    background-color: var(--color-success-light, #dff0d8); 
+    color: var(--color-success-dark, #3c763d);
+}
+.statut-annulée { 
+    background-color: var(--color-danger-light, #f2dede); 
+    color: var(--color-danger-dark, #a94442);
+}
+
+/* Style en cas d'absence de données */
+.no-data-card {
+    background: var(--color-background-white);
+    padding: 2rem;
+    border-radius: var(--rayon);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    color: var(--color-gray-light);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .table-commandes-client {
+        overflow-x: auto;
+        display: block;
+    }
+    
+    .table-commandes-client thead,
+    .table-commandes-client tbody {
+        display: block;
+    }
+    
+    .table-commandes-client tr {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--color-border-light);
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+    }
+    
+    .table-commandes-client td,
+    .table-commandes-client th {
+        display: block;
+        width: 100%;
+        text-align: left !important;
+        padding: 5px 0;
+    }
+    
+    .table-commandes-client td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 10px;
+        color: var(--color-text-dark);
+        min-width: 120px;
+        display: inline-block;
+    }
 }

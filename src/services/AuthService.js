@@ -48,16 +48,22 @@ export const loginUser = async (loginData) => {
   return res.data;
 };
 export const changeAdminPassword = async (payload) => {
-  const token = sessionStorage.getItem(USER_TOKEN_KEY);
-     const res = await api.post('/admin/change-password', {
+  const token = localStorage.getItem(USER_TOKEN_KEY);
+
+  const res = await api.post('/change-password', {
     current_password: payload.currentPassword,
     new_password: payload.newPassword,
-    new_password_confirmation: payload.newPasswordConfirmation
+    new_password_confirmation: payload.newPasswordConfirmation,
   }, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { 
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
   });
+
   return res.data; 
 };
+
 
 export const logoutUser = async () => {
  const token = localStorage.getItem(USER_TOKEN_KEY);

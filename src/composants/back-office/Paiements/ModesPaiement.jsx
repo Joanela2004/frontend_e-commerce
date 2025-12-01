@@ -1,26 +1,23 @@
-
+// src/composants/back-office/Paiements/ModesPaiement.jsx
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../../styles/back-office/fraisLivraison.css";
 import {
   fetchModes,
   createMode,
   updateMode,
-  deleteMode
+  deleteMode,
 } from "../../../services/paiementService";
 
 const ModesPaiement = () => {
   const [modes, setModes] = useState([]);
-  const [form, setForm] = useState({ 
-    nomModePaiement: "", 
-    actif: true,
-    image: null,
-    config: "" 
-  });
+  const [form, setForm] = useState({ nomModePaiement: "", actif: true, image: null });
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
+  const [preview, setPreview] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
   useEffect(() => {
@@ -31,88 +28,61 @@ const ModesPaiement = () => {
     try {
       const data = await fetchModes();
       setModes(data);
-    } catch (error) {
-      console.error("Erreur chargement modes:", error);
-      alert("Erreur lors du chargement des modes de paiement");
+    } catch (err) {
+      alert("Erreur chargement des modes");
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    
-    if (type === 'file') {
-      setForm({ ...form, image: files[0] });
-    } else if (type === 'checkbox') {
-      setForm({ ...form, [name]: e.target.checked });
-    } else {
-      setForm({ ...form, [name]: value });
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm({ ...form, image: file });
+      setPreview(URL.createObjectURL(file));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("nomModePaiement", form.nomModePaiement);
-  
-    formData.append("actif", form.actif.toString());
-       formData.append("config", form.config || ""); 
-    
-    if (form.image) {
-      formData.append("image", form.image);
-    }
+    formData.append("actif", form.actif ? "1" : "0");
+    if (form.image) formData.append("image", form.image);
 
     try {
       if (editingId) {
-              await updateMode(editingId, formData);
+        await updateMode(editingId, formData);
         alert("Mode mis à jour !");
       } else {
         await createMode(formData);
         alert("Mode ajouté !");
       }
-      
-      setForm({ 
-        nomModePaiement: "", 
-        actif: true,
-        image: null,
-        config: "" 
-      });
+      setForm({ nomModePaiement: "", actif: true, image: null });
+      setPreview(null);
       setEditingId(null);
       loadModes();
-
     } catch (err) {
-      console.error("Erreur détaillée:", err);
-           const errorMsg = err.response?.data?.errors 
-        ? Object.values(err.response.data.errors).flat().join(' ; ')
-        : (err.response?.data?.message || err.message);
-
-      alert("Erreur lors de l'enregistrement: " + errorMsg);
+      alert("Erreur enregistrement");
     }
   };
 
   const handleEdit = (mode) => {
     setForm({
       nomModePaiement: mode.nomModePaiement,
-      actif: mode.actif,
-      image: null, 
-            config: mode.config ? JSON.stringify(mode.config) : "" 
+      actif: mode.actif === 1 || mode.actif === true,
+      image: null,
     });
-    setEditingId(mode.numModePaiement || mode.id);
+    setPreview(`${IMAGE_BASE_URL}${mode.image}`);
+    setEditingId(mode.numModePaiement);
+    window.scrollTo(0, 0);
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer ce mode ?")) return;
-    try {
-      await deleteMode(id);
-      loadModes();
-      alert("Mode supprimé !");
-    } catch (error) {
-      console.error("Erreur suppression:", error);
-      alert("Erreur lors de la suppression");
-    }
+    if (!window.confirm("Supprimer ce mode de paiement ?")) return;
+    await deleteMode(id);
+    loadModes();
   };
 
-  const filteredModes = modes.filter(m =>
+  const filtered = modes.filter((m) =>
     m.nomModePaiement.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -121,83 +91,76 @@ const ModesPaiement = () => {
       <div className="frais-header">
         <h2>Gestion des Modes de Paiement</h2>
         <div className="livraison-tabs">
-          <button className="tab-inactive" onClick={() => navigate("/admin/paiements")}>
+          <button
+            className={location.pathname === "/admin/paiements" ? "tab-active" : "tab-inactive"}
+            onClick={() => navigate("/admin/paiements")}
+          >
             Paiements
           </button>
           <button className="tab-active">Modes de paiement</button>
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="frais-form" encType="multipart/form-data">
+      <form onSubmit={handleSubmit} className="frais-form">
         <div className="form-row">
           <div className="form-group">
-            <label>Logo</label>
-            <input 
-              type="file" 
-              name="image" 
-              accept="image/*" 
-              onChange={handleChange} 
-            />
+            <label>Logo du mode</label>
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+            {preview && <img src={preview} alt="Preview" style={{ width: 80, marginTop: 10, borderRadius: 8 }} />}
           </div>
-
           <div className="form-group">
-            <label>Nom du mode de paiement</label>
+            <label>Nom du mode</label>
             <input
               type="text"
-              name="nomModePaiement"
               value={form.nomModePaiement}
-              onChange={handleChange}
+              onChange={(e) => setForm({ ...form, nomModePaiement: e.target.value })}
               required
-              placeholder="Ex: Carte bancaire, PayPal..."
+              placeholder="Ex: Carte Bancaire, PayPal, Virement..."
             />
           </div>
-         
-
           <div className="form-group">
             <label>
               <input
                 type="checkbox"
-                name="actif"
                 checked={form.actif}
-                onChange={handleChange}
-              />
+                onChange={(e) => setForm({ ...form, actif: e.target.checked })}
+              />{" "}
               Actif
             </label>
           </div>
         </div>
 
-        <button className="btn-save" type="submit">
-          {editingId ? "Mettre à jour" : "Ajouter"}
-        </button>
-        
-        {editingId && (
-          <button 
-            type="button" 
-            className="btn-cancel"
-            onClick={() => {
-              setEditingId(null);
-              setForm({ nomModePaiement: "", actif: true, image: null, config: "" });
-            }}
-          >
-            Annuler
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button type="submit" className="btn-save">
+            {editingId ? "Mettre à jour" : "Ajouter"}
           </button>
-        )}
+          {editingId && (
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={() => {
+                setEditingId(null);
+                setForm({ nomModePaiement: "", actif: true, image: null });
+                setPreview(null);
+              }}
+            >
+              Annuler
+            </button>
+          )}
+        </div>
       </form>
 
-      {/* Search */}
       <div className="frais-search-bar">
         <FaSearch />
         <input
           type="text"
-          placeholder="Rechercher..."
+          placeholder="Rechercher un mode..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {search && <button className="btn-clear" onClick={() => setSearch("")}>✕</button>}
+        {search && <button className="btn-clear" onClick={() => setSearch("")}>X</button>}
       </div>
 
-      {/* Table */}
       <table className="frais-table">
         <thead>
           <tr>
@@ -207,33 +170,43 @@ const ModesPaiement = () => {
             <th>Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          {filteredModes.map((m) => (
-            <tr key={m.numModePaiement || m.id}>
+          {filtered.map((m) => (
+            <tr key={m.numModePaiement}>
               <td>
-    {m.image ? (
-        <img
-            src={`${IMAGE_BASE_URL}${m.image}`}
-            alt={m.nomModePaiement}
-            style={{ width: 50, height: 50, objectFit: 'contain' }}
-        />
-    ) : "—"}
-</td>
+                {m.image ? (
+                  <img
+                    src={`${IMAGE_BASE_URL}${m.image}`}
+                    alt={m.nomModePaiement}
+                    style={{ width: 60, height: 40, objectFit: "contain" }}
+                  />
+                ) : (
+                  "—"
+                )}
+              </td>
               <td>{m.nomModePaiement}</td>
-              
               <td>
-                <span className={`status ${m.actif ? 'active' : 'inactive'}`}>
-                  {m.actif ? 'Actif' : 'Inactif'}
+                <span className={`status ${m.actif ? "active" : "inactive"}`}>
+                  {m.actif ? "Actif" : "Inactif"}
                 </span>
               </td>
-
               <td>
-                <button className="btn-edit" onClick={() => handleEdit(m)}>✏️</button>
-                <button className="btn-delete" onClick={() => handleDelete(m.numModePaiement || m.id)}>🗑️</button>
+                <button className="btn-edit" onClick={() => handleEdit(m)}>
+                  Edit
+                </button>
+                <button className="btn-delete" onClick={() => handleDelete(m.numModePaiement)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
+          {filtered.length === 0 && (
+            <tr>
+              <td colSpan="4" style={{ textAlign: "center", padding: "2rem" }}>
+                Aucun mode trouvé
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

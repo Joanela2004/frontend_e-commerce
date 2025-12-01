@@ -3,14 +3,13 @@ import { FaUserCircle, FaCaretDown, FaSignOutAlt, FaLock, FaBell } from "react-i
 import profile from '../../assets/icones/log.png';
 import ChangePasswordModal from "../../composants/front-office/Profil/ChangePasswordModal";
 import "../../styles/back-office/Header.css";
-import { useNouvelleCommande } from "../../contexts/Actualisation"; // 👈 IMPORT DU HOOK
+import { useNouvelleCommande } from "../../contexts/Actualisation";
 
 const Header = () => {
   const [userData, setUserData] = useState(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  // Utilisation du compteur global du Context
   const { newOrdersCount, loading } = useNouvelleCommande(); 
 
   useEffect(() => {
@@ -43,19 +42,24 @@ const Header = () => {
           </div>
 
           <div className="header-right">
-
-            <div 
-              className="notification-icon"
-              onClick={() => window.location.href = "/admin/commandes"}
-            >
-              <FaBell className="bell-icon" />
-
-              {/* Affichage du compteur global */}
-              {newOrdersCount > 0 && !loading && (
-                <span className="notification-badge">{newOrdersCount}</span>
-              )}
+            {/* Conteneur de notification */}
+            <div className="notification-container">
+              <div 
+                className="notification-icon"
+                onClick={() => window.location.href = "/admin/commandes"}
+                title="Nouvelles commandes"
+              >
+                <FaBell className="bell-icon" />
+                {/* Affichage du compteur global */}
+                {newOrdersCount > 0 && !loading && (
+                  <span className="notification-badge">
+                    {newOrdersCount > 99 ? '99+' : newOrdersCount}
+                  </span>
+                )}
+              </div>
             </div>
 
+            {/* Menu profil */}
             <div className="profile-menu-container">
               <div 
                 className="profile-toggle"
@@ -63,7 +67,7 @@ const Header = () => {
               >
                 <FaUserCircle className="profile-icon" />
                 <span className="profile-name">
-                  {userData?.prenom || userData?.nom || 'Admin'}
+                  { userData?.nomUtilisateur || 'Admin'}
                 </span>
                 <FaCaretDown className={`caret-icon ${isProfileMenuOpen ? 'rotate' : ''}`} />
               </div>
@@ -92,7 +96,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </header>

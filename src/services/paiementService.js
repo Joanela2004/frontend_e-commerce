@@ -1,6 +1,6 @@
 import api from "./api";
 
-const MODES_PAIEMENT_URL = "/modes_paiement";
+const MODES_PAIEMENT_URL = "/mode_paiements";
 
 const getConfig = (isFormData = false) => {
   const token = localStorage.getItem("userToken");

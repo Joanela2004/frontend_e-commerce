@@ -51,7 +51,6 @@ const prepareData = (commandes, dateDebutStr, dateFinStr, periodeRapide) => {
     return dateCmd >= debut && dateCmd <= fin;
   });
 
-  // Ventes par catégorie
   const ventesParCategorieMap = new Map();
   commandesFiltrees.forEach(cmd => {
     cmd.detail_commandes?.forEach(ligne => {
@@ -139,30 +138,35 @@ const TableauDeBord = () => {
     chargerDonnees();
   }, [periode]);
 
-  const chargerDonnees = async () => {
-    setLoading(true);
+ const chargerDonnees = async () => {
+  setLoading(true);
+  try {
+    const clientsData = await getClients();
+    const produitsData = await fetchProduits();
+    const promotionsData = await fetchPromotions();
+
+    let modesData = [];
     try {
-      const [clientsData, produitsData, promotionsData, modesData, commandesData] = await Promise.all([
-        getClients(), 
-        fetchProduits(), 
-        fetchPromotions(), 
-        fetchModesActifs(), 
-        fetchCommandes()
-      ]);
-
-      setClients(clientsData);
-      setProduits(produitsData);
-      setPromotions(promotionsData);
-      setModesActifs(modesData);
-      setCommandes(commandesData);
-
-    } catch (error) {
-      console.error("Erreur chargement données:", error);
-      toast.error("Erreur lors du chargement des données");
-    } finally {
-      setLoading(false);
+      modesData = await fetchModesActifs();
+    } catch (err) {
+      console.warn("Impossible de charger les modes de paiement actifs :", err);
     }
-  };
+
+    const commandesData = await fetchCommandes();
+
+    setClients(clientsData);
+    setProduits(produitsData);
+    setPromotions(promotionsData);
+    setModesActifs(modesData);
+    setCommandes(commandesData);
+  } catch (error) {
+    console.error("Erreur chargement données:", error);
+    toast.error("Erreur lors du chargement des données");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Calcul des données filtrées
   const { commandesFiltrees, evolutionVentes, ventesParCategorie } = useMemo(() =>
@@ -209,32 +213,10 @@ const TableauDeBord = () => {
     };
   }, [commandesFiltrees, clients, produits, promotions, modesActifs]);
 
-  if (loading) {
-    return (
-      <div className="dashboard" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh' 
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="loading-spinner" style={{ 
-            width: '60px', 
-            height: '60px', 
-            borderWidth: '6px',
-            margin: '0 auto 1rem'
-          }}></div>
-          <p style={{ color: '#6b7280', fontSize: '1.1rem', fontWeight: '600' }}>
-            Chargement du tableau de bord...
-          </p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="dashboard">
-      {/* Toast Container pour les notifications */}
       <ToastContainer 
         position="top-right"
         autoClose={3000}

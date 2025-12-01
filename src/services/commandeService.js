@@ -54,3 +54,11 @@ throw error;
 };
 
 
+export const markCommandeAsConsulted = async (numCommande) => {
+    await api.put(`${COMMANDE_URL}/${numCommande}`, { estConsulte: 1 }, getConfig());
+};
+
+export const getNewOrdersCount = async () => {
+    const commandes = await fetchCommandes();
+    return commandes.filter(cmd => !cmd.estConsulte).length;
+};

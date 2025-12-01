@@ -15,7 +15,7 @@ const getConfig = (isFormData = false) => {
 };
 
 export const fetchLivraisons = async () => {
-  const res = await api.get(LIVRAISON_URL);
+  const res = await api.get(LIVRAISON_URL,getConfig());
   return res.data;
 };
 export const fetchLivraisonByCommandeId = async (commandeId) => {

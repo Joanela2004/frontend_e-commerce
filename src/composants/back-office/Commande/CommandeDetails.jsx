@@ -30,8 +30,28 @@ const CommandeDetails = () => {
   };
 
   const getLivraisonStatus = (payerLivraison) => {
-    return payerLivraison ? "OUI (Payé)" : "NON (Non Payé)";
+    return payerLivraison ? (
+        <span className="text-green-600">OUI (Payé)</span>
+    ) : (
+        <span className="text-red-600">NON (Non Payé)</span>
+    );
   };
+  
+  const getStatusClass = (statut) => {
+    switch (statut) {
+        case 'validée':
+        case 'livrée':
+            return 'statut-reussi';
+        case 'expédiée':
+            return 'statut-expediee';
+        case 'en attente':
+            return 'statut-attente';
+        case 'annulée':
+            return 'statut-annule';
+        default:
+            return 'statut-default';
+    }
+};
 
   if (loading) return <p>Chargement...</p>;
   if (!commande) return <p>Commande introuvable.</p>;
@@ -58,13 +78,10 @@ const CommandeDetails = () => {
         <p><strong>Client :</strong> {commande.utilisateur?.nomUtilisateur || 'Inconnu'}</p>
         <p><strong>Date :</strong> {commande.dateCommande}</p>
         
-        {/* Ligne du statut */}
-        <p><strong>Statut :</strong> **{commande.statut}**</p>
+        <p><strong>Statut :</strong> <span className={`statut-badge ${getStatusClass(commande.statut)}`}>{commande.statut}</span></p>
         
-        {/* Nombre de produits commandés */}
         <p><strong>Nombre de produits commandés :</strong> {nombreProduits}</p>
         
-        {/* Lieu de livraison mis à jour */}
         <p><strong>Lieu de livraison :</strong> {lieuLivraison}</p>
       </div>
 
@@ -120,73 +137,32 @@ const CommandeDetails = () => {
         <h3>Récapitulatif financier et logistique 💸🚚</h3>
         
         <p>
-          <strong>Poids Total des produits :</strong> **{totalPoids} kg**
+          <strong>Poids Total des produits :</strong> <span>{totalPoids} kg</span>
         </p>
         <p>
-          <strong>Sous-Total des produits :</strong> {formatPrice(commande.sousTotal)}
+          <strong>Sous-Total des produits :</strong> <span>{formatPrice(commande.sousTotal)}</span>
         </p>
         
         <p>
-          <strong>Frais de Livraison :</strong> {formatPrice(commande.fraisLivraison)}
+          <strong>Frais de Livraison :</strong> <span>{formatPrice(commande.fraisLivraison)}</span>
         </p>
         <p>
           <strong>Code Promo Appliqué :</strong>{" "}
-          <span style={{ color: codePromo ? 'green' : 'red' }}>
+          <span style={{ color: codePromo ? 'var(--color-green-primary)' : 'var(--color-danger-dark)' }}>
              {codePromo || "Aucun"}
           </span>
         </p>
         <p>
           <strong>Livraison Payée :</strong>{" "}
-          <span style={{ color: livraisonPayee ? 'green' : 'red' }}>
+          <span style={{ color: livraisonPayee ? 'var(--color-green-primary)' : 'var(--color-danger-dark)' }}>
             {getLivraisonStatus(livraisonPayee)}
           </span>
         </p>
         <hr/>
         <p className="montant-total">
-          <strong>Montant Total (Net) :</strong> **{formatPrice(commande.montantTotal)}**
+          <strong>Montant Total (Net) :</strong> <span>{formatPrice(commande.montantTotal)}</span>
         </p>
       </div>
-
-      <style jsx="true">{`
-        .recap-financier {
-          margin-top: 30px;
-          padding: 20px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          background-color: #f9f9f9;
-        }
-        .recap-financier h3 {
-          border-bottom: 2px solid #ccc;
-          padding-bottom: 10px;
-          margin-bottom: 15px;
-        }
-        .recap-financier p {
-          margin: 5px 0;
-        }
-        .montant-total {
-          font-size: 1.2em;
-          color: #004d40;
-          margin-top: 15px !important;
-          border-top: 1px dashed #aaa;
-          padding-top: 10px;
-        }
-        .table-produits {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        .table-produits th, .table-produits td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        .img-produit {
-          width: 50px;
-          height: 50px;
-          object-fit: cover;
-          border-radius: 4px;
-        }
-      `}</style>
     </div>
   );
 };

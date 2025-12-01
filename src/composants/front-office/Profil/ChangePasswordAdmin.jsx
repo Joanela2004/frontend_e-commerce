@@ -21,11 +21,12 @@ const ChangePasswordAdmin = ({ onSuccess }) => {
     }
 
     try {
-      const res = await changeAdminPassword({
-        current_password: currentPassword,
-        new_password: newPassword,
-        new_password_confirmation: confirmPassword
-      });
+     const res = await changeAdminPassword({
+  currentPassword,
+  newPassword,
+  newPasswordConfirmation: confirmPassword
+});
+
 
       setMessage(res.message || 'Mot de passe changé avec succès!');
 
