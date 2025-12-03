@@ -104,14 +104,14 @@ const Promotions = () => {
                 </button>
             </div>
 
-            <div className="livraison-search-bar">
-                <FaSearch />
-                <input
-                    type="text"
-                    placeholder="Rechercher par code, nom, type ou statut..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+               <div className="frais-search-bar">
+                                  <FaSearch />
+                                  <input
+                                    type="text"
+                                    placeholder="Rechercher "
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                  />
             </div>
 
             <div className="table-container-bo">

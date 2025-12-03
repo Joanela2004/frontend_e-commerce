@@ -45,3 +45,5 @@ export const deleteProduit = async (id) => {
   const res = await api.delete(`${PRODUIT_URL}/${id}`, getConfig());
   return res.data;
 };
+export const restoreProduit = async (id) => (await api.post(`${PRODUIT_URL}/${id}/restore`, {}, getConfig())).data;
+

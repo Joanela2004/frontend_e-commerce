@@ -54,3 +54,7 @@ export const deleteDecoupe = async (id) => {
         throw error;
     }
 };
+export const restoreDecoupe = async (id) => {
+    const res = await api.post(`${DECOUPE_URL}/${id}/restore`, {}, getConfig());
+    return res.data;
+};

@@ -151,14 +151,14 @@ const Livraisons = () => {
         </div>
       </div>
 
-      <div className="livraison-search-bar">
-        <FaSearch />
-        <input
-          type="text"
-          placeholder="Rechercher par commande, transporteur, référence ou statut..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+         <div className="frais-search-bar">
+                            <FaSearch />
+                            <input
+                              type="text"
+                              placeholder="Rechercher par commande,transporteur ou reference"
+                              value={search}
+                              onChange={(e) => setSearch(e.target.value)}
+                            />
       </div>
 
      <table className="livraison-table">

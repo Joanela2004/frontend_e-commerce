@@ -56,11 +56,15 @@ export const updateFrais = async (id, data) => {
   const res = await api.post(`${FRAIS_URL}/${id}?_method=PUT`, data, getConfig());
   return res.data;
 };
-
+export const regenererToutesLesTranches = async (data) => {
+  const res = await api.post(`${FRAIS_URL}/regenerer`, data, getConfig());
+  return res.data;
+};
 export const deleteFrais = async (id) => {
   const res = await api.delete(`${FRAIS_URL}/${id}`, getConfig());
   return res.data;
 };
+export const restoreFrais = async (id) => (await api.post(`${FRAIS_URL}/${id}/restore`, {}, getConfig())).data;
 
 export const fetchLieux = async () => {
   const res = await api.get(LIEUX_URL);
@@ -81,3 +85,4 @@ export const deleteLieu = async (id) => {
   const res = await api.delete(`${LIEUX_URL}/${id}`, getConfig());
   return res.data;
 };
+export const restoreLieu = async (id) => (await api.post(`${LIEUX_URL}/${id}/restore`, {}, getConfig())).data;

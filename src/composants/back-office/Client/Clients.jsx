@@ -44,21 +44,17 @@ const handleVoirCommande = (client) => {
     <div className="livraison-container">
       <div className="livraison-header">
         <h2><FaUsers /> Gestion des Clients</h2>
-        <div className="livraison-tabs">
-          <button className="tab-active">Tous les clients</button>
-          <button>Clients actifs</button>
-          <button>Nouveaux clients</button>
-        </div>
+       
       </div>
 
-      <div className="livraison-search-bar">
-         <FaSearch />
-        <input
-          type="text"
-          placeholder="Rechercher par nom, email, contact ou ID..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+          <div className="frais-search-bar">
+                             <FaSearch />
+                             <input
+                               type="text"
+                               placeholder="Rechercher par nom, e-mail, contact..."
+                               value={search}
+                               onChange={(e) => setSearch(e.target.value)}
+                             />
       </div>
 
       <div className="table-container-bo">

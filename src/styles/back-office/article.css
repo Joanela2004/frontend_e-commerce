@@ -1,325 +1,71 @@
-/* Variables de base (doivent être dans un fichier global, mais définies ici pour la démonstration) */
-:root {
-    --color-primaire: #2a9d8f; /* Bleu/vert principal */
-    --color-secondaire: #2196f3; /* Bleu secondaire pour les actions */
-    --color-danger: #e63946;
-    --color-texte-sombre: #333;
-    --color-texte-clair: #fff;
-    --color-fond-clair: #f4f6f9;
-    --color-card-fond: #ffffff;
-    --shadow-leger: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-fort: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
+/* Titre de l'article */
+.article-title {
+  margin-bottom: 10px;
+  color: var(--color-text);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  font-weight: 600;
+  min-height: 56px; /* Maintient une hauteur constante pour l'alignement des cartes */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limite à 3 lignes pour le titre */
+  -webkit-box-orient: vertical;
+ }
 
-/* ------------------------------------------- */
-/* GLOBAL BACK-OFFICE LAYOUT */
-/* ------------------------------------------- */
-
-.bo-container {
-    padding: 30px;
-    background-color: var(--color-fond-clair);
-    min-height: 100vh;
-}
-
-.bo-header {
-    margin-bottom: 25px;
-}
-
-.bo-titre-page {
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--color-texte-sombre);
-}
-
-.bo-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap; /* Rendre responsive */
-}
-
-/* Boutons */
-.bo-btn-primaire {
-    background-color: var(--color-primaire);
-    color: var(--color-texte-clair);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s, transform 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.bo-btn-primaire:hover {
-    background-color: #24887c;
-    transform: translateY(-1px);
-}
-
-.bo-search-input {
-    flex-grow: 1;
-    max-width: 400px;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.bo-search-input:focus {
-    border-color: var(--color-primaire);
-    box-shadow: 0 0 5px rgba(42, 157, 143, 0.3);
-    outline: none;
-}
-
-/* ------------------------------------------- */
-/* ARTICLES GRID & CARDS */
-/* ------------------------------------------- */
-
-.articles-grid-bo {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.article-card-bo {
-    background-color: var(--color-card-fond);
-    border-radius: 12px;
-    box-shadow: var(--shadow-leger);
+.article-description{
     overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card-body {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* CRUCIAL pour l'alignement vertical */
+    flex-grow: 1; /* Prend l'espace pour que les actions restent en bas */
+    padding: 15px 20px 0; /* Padding ajusté */
+    text-align: left;
 }
 
-.article-card-bo:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-fort);
+.meta-info {
+    margin-top: auto; /* Pousse les méta-infos vers le bas du .card-body */
+    padding: 10px 0 0; 
 }
 
-.article-image-container-bo {
-    height: 200px;
-    overflow: hidden;
-    border-bottom: 1px solid #eee;
+
+/* Animation d'apparition des cartes (inchangée) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.article-image-bo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s;
+
+
+/* Personnalisation supplémentaire pour les articles (inchangé) */
+@media (max-width: 768px) {
+  .article-title {
+    font-size: 1.1rem;
+    min-height: 50px;
+  }
+  
+  .article-description {
+    font-size: 0.9rem;
+  }
+  
+  .grid-container.grid-3 {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
 }
 
-.article-card-bo:hover .article-image-bo {
-    transform: scale(1.05);
-}
-
-.article-details-bo {
-    padding: 15px;
-    flex-grow: 1;
-}
-
-.article-titre-bo {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--color-texte-sombre);
-    margin-bottom: 8px;
-}
-
-.article-description-bo {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-.article-meta-bo {
-    font-size: 12px;
-    color: #888;
-    line-height: 1.5;
-}
-
-.article-actions-bo {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
-
-.bo-btn-secondaire,
-.bo-btn-danger {
-    padding: 8px 15px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.3s, background-color 0.3s;
-    border: none;
-}
-
-.bo-btn-secondaire {
-    background-color: var(--color-secondaire);
-    color: var(--color-texte-clair);
-}
-
-.bo-btn-secondaire:hover {
-    background-color: #1976d2;
-}
-
-.bo-btn-danger {
-    background-color: var(--color-danger);
-    color: var(--color-texte-clair);
-}
-
-.bo-btn-danger:hover {
-    background-color: #c0303c;
-}
-
-/* Message aucun article */
-.bo-message-vide {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 50px 20px;
-    border: 2px dashed #ccc;
-    background-color: var(--color-card-fond);
-    border-radius: 12px;
-    box-shadow: var(--shadow-leger);
-    margin-top: 20px;
-}
-
-.bo-message-vide h3 {
-    color: var(--color-texte-sombre);
-    margin-bottom: 10px;
-}
-
-.bo-message-vide p {
-    color: #666;
-    font-size: 16px;
-}
-
-/* ------------------------------------------- */
-/* MODAL STYLES (Utilisation de la nomenclature BO) */
-/* ------------------------------------------- */
-
-.bo-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.bo-modal-container {
-    background: var(--color-card-fond);
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: var(--shadow-fort);
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.bo-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.bo-modal-title {
-    font-size: 24px;
-    color: var(--color-texte-sombre);
-}
-
-.bo-modal-close-btn {
-    background: none;
-    border: none;
-    font-size: 30px;
-    cursor: pointer;
-    color: #999;
-}
-
-.bo-modal-close-btn:hover {
-    color: var(--color-danger);
-}
-
-.bo-modal-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.bo-form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.bo-form-group-row {
-    display: flex;
-    gap: 15px;
-}
-
-.bo-form-group-row .bo-form-group {
-    flex: 1;
-}
-
-.bo-form-label {
-    font-weight: 600;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: var(--color-texte-sombre);
-}
-
-.bo-form-input,
-.bo-form-input-file {
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: border-color 0.3s;
-    background-color: var(--color-fond-clair);
-}
-
-.bo-form-input:focus,
-.bo-form-input-file:focus {
-    border-color: var(--color-primaire);
-    outline: none;
-    background-color: var(--color-card-fond);
-}
-
-.bo-form-input-file {
-    padding: 8px 12px;
-}
-
-/* Actions Modal */
-.bo-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.bo-btn-annuler {
-    background-color: #ccc;
-    color: var(--color-texte-sombre);
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s;
-}
-
-.bo-btn-annuler:hover {
-    background-color: #bbb;
+@media (max-width: 480px) {
+  .grid-container.grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .article-title {
+    min-height: auto;
+  }
 }

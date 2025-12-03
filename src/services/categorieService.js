@@ -53,3 +53,7 @@ export const deleteCategorie = async (id) => {
         throw error;
     }
 };
+export const restoreCategorie = async (id) => {
+    const res = await api.post(`${CATEGORIE_URL}/${id}/restore`, {}, getConfig());
+    return res.data;
+};

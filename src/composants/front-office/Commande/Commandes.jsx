@@ -37,10 +37,7 @@ const HistoriqueCommandes = () => {
     if (isPending) {
         setShowPaiementModal(true);
     } else {
-        // La carte a déjà un bouton "Suivre Livraison" qui navigue
-        // mais on peut ajouter une logique ici si on voulait un panneau de détails pour toutes.
-        // Pour l'instant, le clic général ne fait rien pour les non-pending.
-        setShowPaiementModal(false); 
+                setShowPaiementModal(false); 
     }
   };
 
@@ -48,7 +45,7 @@ const HistoriqueCommandes = () => {
       setShowPaiementModal(false);
       setSelectedOrderForPayment(null);
       if (refresh) {
-          fetchData(); // Actualise la liste après un paiement réussi (espèces)
+          fetchData(); 
       }
   }
 

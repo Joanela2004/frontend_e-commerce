@@ -52,6 +52,6 @@ export const deletePaiement = async (id) => {
   return res.data;
 };
 export const fetchModesActifs = async () => {
-  const res = await api.get(`${MODES_PAIEMENT_URL}/actifs`);
+  const res = await api.get(`${MODES_PAIEMENT_URL}/actifs`, getConfig(false));
   return res.data;
 };

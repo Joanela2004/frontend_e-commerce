@@ -1,361 +1,871 @@
-import React, { useState, useEffect, useMemo } from "react";
-import "../../../styles/back-office/commandes.css";
+import React, { useState, useEffect } from "react";
+import {
+  FaSearch,
+  FaSync,
+  FaFilter,
+  FaEye,
+  FaCheck,
+  FaTruck,
+  FaExclamationTriangle,
+  FaBox, // Utilisé pour le statut Livrée
+  FaUser,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaCheckCircle,
+  FaBoxes
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { FaBoxes, FaSearch ,FaEye} from "react-icons/fa"; 
 import { useNouvelleCommande } from '../../../contexts/Actualisation';
-import { usePagination } from "../../../pages/hooks/hooks";
 import { fetchCommandes, updateCommandeAdmin } from "../../../services/commandeService";
-import ModalLivraison from './ModalLivraison';
 import { updateLivraison } from "../../../services/livraisonService";
+import { useToast } from "../../../contexts/ToastContext";
+import ModalLivraison from './ModalLivraison';
+import "../../../styles/back-office/global.css";
+import "../../../styles/back-office/tableau.css";
+import "../../../styles/back-office/modal.css";
+import "../../../styles/back-office/toast.css";
 
-const allStatuts = [
-    { value: '', label: 'Tous les statuts' },
-    { value: 'en attente', label: 'En attente' },
-    { value: 'validée', label: 'Validée' },
-    { value: 'expédiée', label: 'Expédiée' },
-    { value: 'livrée', label: 'Livrée' },
-    { value: 'annulée', label: 'Annulée' },
-];
-
-const getStatusClass = (statut) => {
-    switch (statut) {
-        case 'validée':
-        case 'livrée':
-            return 'statut-reussi';
-        case 'expédiée':
-            return 'statut-expediee';
-        case 'en attente':
-            return 'statut-attente';
-        case 'annulée':
-            return 'statut-annule';
-        default:
-            return 'statut-default';
-    }
-};
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Commandes = () => {
-    const [commandes, setCommandes] = useState([]);
-    const [searchQuery, setSearchQuery] = useState(""); 
-    const [statusFilter, setStatusFilter] = useState(""); 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentDeliveryData, setCurrentDeliveryData] = useState({});
-    const [currentCmd, setCurrentCmd] = useState(null);
-    const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+  const { newOrdersCount, markAsConsulted } = useNouvelleCommande();
+  const { showToast } = useToast();
+  const [commandes, setCommandes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // États pour les filtres
+  const [filtreStatut, setFiltreStatut] = useState("tous");
+  const [filtreDateMin, setFiltreDateMin] = useState("");
+  const [filtreDateMax, setFiltreDateMax] = useState("");
+  const [filtrePrixMin, setFiltrePrixMin] = useState("");
+  const [filtrePrixMax, setFiltrePrixMax] = useState("");
+  
+  // États pour les modals
+  // NOTE : J'ai conservé showExpedierModal, showValidateModal, showCancelModal, showPayModal
+  // bien que showExpedierModal ne soit plus utilisée pour l'expédition "directe".
+  const [showExpedierModal, setShowExpedierModal] = useState(false);
+  const [showValidateModal, setShowValidateModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  const [modalData, setModalData] = useState({
+    title: "",
+    message: "",
+    type: "",
+    commandeId: null,
+    commandeInfo: "",
+    onConfirm: null
+  });
+  
+  const [commandeAExpedier, setCommandeAExpedier] = useState(null);
+  const [isLivraisonModalOpen, setIsLivraisonModalOpen] = useState(false);
+  const [currentDeliveryData, setCurrentDeliveryData] = useState({});
+  const [currentCmd, setCurrentCmd] = useState(null);
 
-    const { newOrdersCount, markAsConsulted } = useNouvelleCommande();
+  useEffect(() => {
+    chargerDonnees();
+  }, []);
 
-    const fetchData = async () => {
+  const chargerDonnees = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchCommandes();
+      setCommandes(data);
+    } catch (error) {
+      console.error("Erreur chargement des commandes:", error);
+      showToast("error", "Erreur lors du chargement des commandes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fonction pour afficher une modal (simplifiée)
+  const showModal = (type, title, message, commandeId = null, commandeInfo = "", onConfirm = null) => {
+    setModalData({
+      type,
+      title,
+      message,
+      commandeId,
+      commandeInfo,
+      onConfirm
+    });
+    
+    // NOTE: showExpedierModal n'est plus utilisée pour l'expédition directe, mais la conservons si jamais vous la réutilisez
+    if (type === "expedier") {
+      setShowExpedierModal(true);
+    } else if (type === "validate") {
+      setShowValidateModal(true);
+    } else if (type === "cancel") {
+      setShowCancelModal(true);
+    } else if (type === "pay") {
+      setShowPayModal(true);
+    } else if (type === "success") {
+      setShowSuccessModal(true);
+    }
+  };
+
+  // Fermer toutes les modals
+  const closeAllModals = () => {
+    setShowExpedierModal(false);
+    setShowValidateModal(false);
+    setShowCancelModal(false);
+    setShowPayModal(false);
+    setShowSuccessModal(false);
+    setModalData({
+      title: "",
+      message: "",
+      type: "",
+      commandeId: null,
+      commandeInfo: "",
+      onConfirm: null
+    });
+    setCommandeAExpedier(null);
+  };
+
+const handleMarquerCommeVue = async (commandeId) => {
+  try {
+    setCommandes(prev => prev.map(cmd =>
+      cmd.numCommande === commandeId ? { ...cmd, estConsulte: 1 } : cmd
+    ));
+    
+    await markAsConsulted(commandeId);
+    showToast("info", `Consultation de la commande #${commandeId}`); 
+
+    navigate(`/admin/commandes/${commandeId}`); 
+
+  } catch (err) {
+    setCommandes(prev => prev.map(cmd =>
+      cmd.numCommande === commandeId ? { ...cmd, estConsulte: 0 } : cmd
+    ));
+    console.error("Erreur lors de la consultation et de la navigation:", err);
+    showToast("error", "Erreur lors de la consultation de la commande");
+  }
+};
+
+  const handleValidateClick = (commande) => {
+    showModal(
+      "validate",
+      "Valider la commande",
+      `Êtes-vous sûr de vouloir valider la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      commande.numCommande,
+      `Commande #${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
+      async () => {
         try {
-            const data = await fetchCommandes();
-            setCommandes(data);
+          await updateCommandeAdmin(commande.numCommande, { statut: 'validée' });
+          setCommandes(prev => prev.map(cmd =>
+            cmd.numCommande === commande.numCommande ? { ...cmd, statut: 'validée' } : cmd
+          ));
+          showToast("success", "Commande validée avec succès !");
         } catch (error) {
-            console.error("Erreur chargement commandes", error);
+          console.error("Erreur mise à jour statut", error);
+          showToast("error", "Erreur lors de la validation de la commande");
         }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const filteredCommandes = useMemo(() => {
-        let filtered = commandes;
-
-        if (statusFilter) {
-            filtered = filtered.filter(cmd => cmd.statut === statusFilter);
-        }
-
-        if (searchQuery) {
-            const lowerCaseQuery = searchQuery.toLowerCase();
-            filtered = filtered.filter(cmd => 
-                cmd.referenceCommande?.toLowerCase().includes(lowerCaseQuery) ||
-                cmd.utilisateur?.nomUtilisateur?.toLowerCase().includes(lowerCaseQuery) ||
-                cmd.dateCommande?.toLowerCase().includes(lowerCaseQuery) ||
-                cmd.mode_paiement?.nomModePaiement?.toLowerCase().includes(lowerCaseQuery)
-            );
-        }
-
-        return filtered;
-    }, [commandes, statusFilter, searchQuery]);
-
-    const { currentRows, currentPage, totalPages, goToPage } = usePagination(filteredCommandes, 5);
-
-
-    const handleViewClick = async (id) => {
-        try {
-            setCommandes(prev => prev.map(cmd =>
-                cmd.numCommande === id ? { ...cmd, estConsulte: 1 } : cmd
-            ));
-            await markAsConsulted(id);
-        } catch (err) {
-            setCommandes(prev => prev.map(cmd =>
-                cmd.numCommande === id ? { ...cmd, estConsulte: 0 } : cmd
-            ));
-        }
-    };
-
-    const handleValidate = async (id, currentStatut) => {
-        const newStatus = currentStatut === 'en attente' ? 'validée' : 'annulée';
-        if (!window.confirm(`Êtes-vous sûr de vouloir ${newStatus === 'validée' ? 'valider' : 'annuler'} la commande N°${id} ?`)) return;
-
-        try {
-            await updateCommandeAdmin(id, { statut: newStatus });
-            setCommandes(prev => prev.map(cmd =>
-                cmd.numCommande === id ? { ...cmd, statut: newStatus } : cmd
-            ));
-        } catch (err) {
-            console.error("Erreur mise à jour statut", err);
-            alert("Erreur lors de la mise à jour du statut");
-        }
-    };
-
-    const handleDeliveryClick = (cmd) => {
-        const livraison = cmd.livraisons?.[0] || {};
-        setCurrentCmd(cmd);
-        setCurrentDeliveryData({
-            numCommande: cmd.numCommande,
-            referenceColis: '', 
-            lieuLivraison: livraison.lieuLivraison || '', 
-            transporteur: livraison.transporteur || '',
-            contactTransporteur: livraison.contactTransporteur || '',
-        });
-        setIsModalOpen(true);
-    };
-
-    const handleDeliverySubmit = async (data) => {
-        if (!currentCmd) return alert("Aucune commande sélectionnée.");
-
-        const livraison = currentCmd.livraisons?.[0];
-        if (!livraison?.numLivraison) return alert("Livraison introuvable.");
-
-        try {
-            const updatedLivraison = {
-                transporteur: data.transporteur || null,
-                contactTransporteur: data.contactTransporteur || null,
-                statutLivraison: "en cours", 
-                referenceColis: data.referenceColis, 
-                lieuLivraison: data.lieuLivraison, 
-            };
-
-            const livraisonResponse = await updateLivraison(livraison.numLivraison, updatedLivraison);
-            
-            const newStatutCommande = "expédiée"; 
-
-            await updateCommandeAdmin(currentCmd.numCommande, { statut: newStatutCommande });
-
-            setCommandes(prev => prev.map(cmd =>
-                cmd.numCommande === currentCmd.numCommande
-                    ? {
-                        ...cmd,
-                        statut: newStatutCommande,
-                        livraisons: [{
-                            ...livraison,
-                            ...updatedLivraison,
-                            dateExpedition: livraisonResponse.dateExpedition || new Date().toISOString()
-                        }]
-                    }
-                    : cmd
-            ));
-
-            setIsModalOpen(false);
-            setCurrentCmd(null);
-        } catch (err) {
-            console.error("Erreur livraison", err);
-            alert("Erreur lors de la mise à jour de la livraison/commande");
-        }
-    };
-
-    const handlePayLivraison = async (numCommande) => {
-        const commande = commandes.find(c => c.numCommande === numCommande);
-        if (!commande) return;
-
-        if (!window.confirm(`Confirmez-vous le paiement des frais de livraison pour la commande N°${commande.referenceCommande} ?`)) return;
-
-        const nouveauTotal = parseFloat(commande.montantTotal || 0) + parseFloat(commande.fraisLivraison || 0);
-
-        try {
-            await updateCommandeAdmin(numCommande, {
-                payerLivraison: 1,
-                montantTotal: nouveauTotal
-            });
-
-            setCommandes(prev => prev.map(cmd =>
-                cmd.numCommande === numCommande
-                    ? { ...cmd, payerLivraison: 1, montantTotal: nouveauTotal }
-                    : cmd
-            ));
-        } catch (err) {
-            console.error("Erreur paiement livraison", err);
-            alert("Erreur lors du paiement des frais de livraison");
-        }
-    };
-
-    return (
-        <div className="livraison-container">
-            <div className="livraison-header">
-                <h2><FaBoxes /> Gestion des Commandes</h2>
-                <div className="livraison-tabs">
-                    <button className="tab-active">Commandes</button>
-                    <button className="tab-inactive" disabled>Détails</button>
-                    <button className="tab-inactive" disabled>Statistiques</button>
-                </div>
-            </div>
-            
-            {newOrdersCount > 0 && (
-                <p className="new-orders-indicator">
-                    **{newOrdersCount}** nouvelle(s) commande(s) non consultée(s).
-                </p>
-            )}
-
-            <div className="livraison-search-bar">
-                <FaSearch />
-                <input
-                    type="text"
-                    placeholder="Rechercher par référence, client, date..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        goToPage(1); 
-                    }}
-                />
-
-                <select
-                    className="select-filter"
-                    value={statusFilter}
-                    onChange={(e) => {
-                        setStatusFilter(e.target.value);
-                        goToPage(1); 
-                    }}
-                >
-                    {allStatuts.map(s => (
-                        <option key={s.value} value={s.value}>{s.label}</option>
-                    ))}
-                </select>
-            </div>
-
-            <table className="livraison-table table-commandes">
-                <thead>
-                    <tr>
-                        <th>Référence</th>
-                        <th>Client</th>
-                        <th>Date</th>
-                        <th>Statut</th>
-                        <th>Paiement Frais</th>
-                        <th>Mode Paiement</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentRows.length > 0 ? (
-                        currentRows.map(cmd => (
-                            <tr key={cmd.numCommande} className={!cmd.estConsulte ? 'new-order-row' : ''}>
-                                <td>{cmd.referenceCommande}</td>
-                                <td>{cmd.utilisateur?.nomUtilisateur || "Inconnu"}</td>
-                                <td>{new Date(cmd.dateCommande).toLocaleDateString('fr-FR')}</td>
-                                <td>
-                                    <span className={`statut-badge ${getStatusClass(cmd.statut)}`}>
-                                        {cmd.statut}
-                                    </span>
-                                </td>
-                                <td>
-                                    {cmd.payerLivraison
-                                        ? <span className="badge-paid">Payé</span>
-                                        : <span className="badge-unpaid">Non Payé</span>
-                                    }
-                                </td>
-                                <td>
-                                    <img
-                                        src={`${IMAGE_BASE_URL}${cmd.mode_paiement?.image}`}
-                                        alt="Mode de paiement"
-                                        className="mode-paiement-logo"
-                                    />
-                                </td>
-                                <td>
-                                   <div className="actions-cell-bo flex flex-wrap gap-2">
-    <Link
-        className="btn-edit"
-        to={`/admin/commandes/${cmd.numCommande}`}
-        onClick={() => handleViewClick(cmd.numCommande)}
-    >
-        <FaEye /> Voir
-    </Link>
-
-    {cmd.statut === 'en attente' && (
-        <button onClick={() => handleValidate(cmd.numCommande, cmd.statut)} className="btn-action btn-validate">
-            Valider
-        </button>
-    )}
-    {cmd.statut === 'validée' && (
-        <button onClick={() => handleValidate(cmd.numCommande, cmd.statut)} className="btn-action btn-cancel">
-            Annuler
-        </button>
-    )}
-
-    {/* Nouveau bouton pour passer directement en expédiée */}
-    {(cmd.payerLivraison || cmd.statut === 'en attente' || cmd.statut === 'validée') && cmd.statut !== 'expédiée' && cmd.statut !== 'livrée' && (
-        <button
-            onClick={async () => {
-                if (!window.confirm(`Voulez-vous changer le statut de la commande N°${cmd.numCommande} en "expédiée" ?`)) return;
-                try {
-                    await updateCommandeAdmin(cmd.numCommande, { statut: 'expédiée' });
-                    setCommandes(prev => prev.map(c => c.numCommande === cmd.numCommande ? { ...c, statut: 'expédiée' } : c));
-                } catch (err) {
-                    console.error("Erreur mise à jour statut", err);
-                    alert("Impossible de changer le statut en expédiée");
-                }
-            }}
-            className="btn-action btn-delivery"
-        >
-            Expédier Direct
-        </button>
-    )}
-
-    {/* Boutons existants liés à la livraison */}
-    {cmd.statut === 'validée' && cmd.livraisons?.[0]?.statutLivraison !== 'livrée' && (
-        <button onClick={() => handleDeliveryClick(cmd)} className="btn-action btn-delivery">
-            Expédier
-        </button>
-    )}
-    {cmd.statut === 'expédiée' && (
-        <button className="btn-action btn-delivery" disabled>
-            Expédiée
-        </button>
-    )}
-    {cmd.statut === 'livrée' && (
-        <button className="btn-action btn-delivery" disabled>
-            Livrée
-        </button>
-    )}
-
-    {!cmd.payerLivraison && (cmd.statut !== 'annulée') && (
-        <button onClick={() => handlePayLivraison(cmd.numCommande)} className="btn-action btn-pay">
-            Payer Frais
-        </button>
-    )}
-</div>
-
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="7" className="text-center" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-gray-light)' }}>
-                                Aucune commande trouvée correspondant aux critères.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-
-          
-
-            <ModalLivraison
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSubmit={handleDeliverySubmit}
-                initialData={currentDeliveryData}
-            />
-        </div>
+      }
     );
+  };
+
+  const handleCancelClick = (commande) => {
+    showModal(
+      "cancel",
+      "Annuler la commande",
+      `Êtes-vous sûr de vouloir annuler la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      commande.numCommande,
+      `Commande #${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
+      async () => {
+        try {
+          await updateCommandeAdmin(commande.numCommande, { statut: 'annulée' });
+          setCommandes(prev => prev.map(cmd =>
+            cmd.numCommande === commande.numCommande ? { ...cmd, statut: 'annulée' } : cmd
+          ));
+          showToast("success", "Commande annulée avec succès !");
+        } catch (error) {
+          console.error("Erreur mise à jour statut", error);
+          showToast("error", "Erreur lors de l'annulation de la commande");
+        }
+      }
+    );
+  };
+
+  // Ouvre la modal pour entrer les détails de livraison
+  const handleDeliveryClick = (cmd) => {
+    const livraison = cmd.livraisons?.[0] || {};
+    setCurrentCmd(cmd);
+    setCurrentDeliveryData({
+      numCommande: cmd.numCommande,
+      referenceColis: '',
+      lieuLivraison: livraison.lieuLivraison || '',
+      transporteur: livraison.transporteur || '',
+      contactTransporteur: livraison.contactTransporteur || '',
+    });
+    setIsLivraisonModalOpen(true);
+  };
+
+  // Soumet les détails de livraison et passe la commande à 'expédiée'
+  const handleDeliverySubmit = async (data) => {
+    if (!currentCmd) {
+      showToast("error", "Aucune commande sélectionnée.");
+      return;
+    }
+    const livraison = currentCmd.livraisons?.[0];
+    if (!livraison?.numLivraison) {
+      showToast("error", "Livraison introuvable.");
+      return;
+    }
+    try {
+      const updatedLivraison = {
+        transporteur: data.transporteur || null,
+        contactTransporteur: data.contactTransporteur || null,
+        statutLivraison: "en cours",
+        referenceColis: data.referenceColis,
+        lieuLivraison: data.lieuLivraison,
+      };
+      await updateLivraison(livraison.numLivraison, updatedLivraison);
+      
+      const newStatutCommande = "expédiée";
+      await updateCommandeAdmin(currentCmd.numCommande, { statut: newStatutCommande });
+
+      setCommandes(prev => prev.map(cmd =>
+        cmd.numCommande === currentCmd.numCommande
+          ? {
+              ...cmd,
+              statut: newStatutCommande,
+              livraisons: [{
+                ...livraison,
+                ...updatedLivraison,
+              }]
+            }
+          : cmd
+      ));
+
+      setIsLivraisonModalOpen(false);
+      setCurrentCmd(null);
+      showToast("success", "Commande expédiée avec succès !");
+    } catch (err) {
+      console.error("Erreur livraison", err);
+      showToast("error", "Erreur lors de la mise à jour de la livraison/commande");
+    }
+  };
+
+  // *** LOGIQUE D'EXPÉDITION DIRECTE SUPPRIMÉE CONFORMÉMENT À VOTRE DEMANDE ***
+  // La fonction handleExpedierDirectClick a été retirée.
+
+  const handlePayLivraisonClick = (commande) => {
+    showModal(
+      "pay",
+      "Payer les frais de livraison",
+      `Confirmez-vous le paiement des frais de livraison pour la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      commande.numCommande,
+      `Commande #${commande.referenceCommande || commande.numCommande} - Montant: ${commande.montantTotal || 0} Ar`,
+      async () => {
+        const nouveauTotal = parseFloat(commande.montantTotal || 0) + parseFloat(commande.fraisLivraison || 0);
+        try {
+          await updateCommandeAdmin(commande.numCommande, {
+            payerLivraison: 1,
+            montantTotal: nouveauTotal
+          });
+          setCommandes(prev => prev.map(cmd =>
+            cmd.numCommande === commande.numCommande
+              ? { ...cmd, payerLivraison: 1, montantTotal: nouveauTotal }
+              : cmd
+          ));
+          showToast("success", "Frais de livraison payés avec succès !");
+        } catch (err) {
+          console.error("Erreur paiement livraison", err);
+          showToast("error", "Erreur lors du paiement des frais de livraison");
+        }
+      }
+    );
+  };
+
+  // Filtrer les commandes
+  const filteredCommandes = commandes.filter(commande => {
+    const searchMatch =
+      (commande.referenceCommande?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (commande.utilisateur?.nomUtilisateur?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (commande.dateCommande?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (commande.mode_paiement?.nomModePaiement?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+    
+    const statutMatch = filtreStatut === "tous" || commande.statut === filtreStatut;
+    
+    const dateMinMatch = !filtreDateMin || new Date(commande.dateCommande) >= new Date(filtreDateMin);
+    const dateMaxMatch = !filtreDateMax || new Date(commande.dateCommande) <= new Date(filtreDateMax);
+    
+    const prixMinMatch = !filtrePrixMin || (commande.montantTotal || 0) >= parseFloat(filtrePrixMin);
+    const prixMaxMatch = !filtrePrixMax || (commande.montantTotal || 0) <= parseFloat(filtrePrixMax);
+    
+    return searchMatch && statutMatch && dateMinMatch && dateMaxMatch && prixMinMatch && prixMaxMatch;
+  });
+
+  // Réinitialiser tous les filtres
+  const reinitialiserFiltres = () => {
+    setFiltreStatut("tous");
+    setFiltreDateMin("");
+    setFiltreDateMax("");
+    setFiltrePrixMin("");
+    setFiltrePrixMax("");
+    setSearchTerm("");
+    showToast("info", "Filtres réinitialisés");
+  };
+
+  // Vérifier si des filtres sont actifs
+  const hasActiveFilters =
+    searchTerm ||
+    filtreStatut !== "tous" ||
+    filtreDateMin ||
+    filtreDateMax ||
+    filtrePrixMin ||
+    filtrePrixMax;
+
+  // Statistiques
+  const commandesEnAttente = commandes.filter(c => c.statut === "en attente").length;
+  const commandesValidees = commandes.filter(c => c.statut === "validée").length;
+  const commandesExpediees = commandes.filter(c => c.statut === "expédiée").length;
+  const commandesLivrees = commandes.filter(c => c.statut === "livrée").length;
+  const commandesAnnulees = commandes.filter(c => c.statut === "annulée").length;
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement des commandes...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <h1>Gestion des Commandes</h1>
+          {newOrdersCount > 0 && (
+            <div className="stats-container">
+              <span className="stat-item new-orders">
+                {newOrdersCount} nouvelle{newOrdersCount !== 1 ? 's' : ''} commande{newOrdersCount !== 1 ? 's' : ''} non consultée{newOrdersCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+          <div className="stats-container" style={{ marginTop: '10px' }}>
+            <span className="stat-item">
+              {filteredCommandes.length} commande{filteredCommandes.length !== 1 ? 's' : ''} trouvée{filteredCommandes.length !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item attente">
+              {commandesEnAttente} en attente
+            </span>
+           
+            <span className="stat-item validee">
+              {commandesValidees} validée{commandesValidees !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item expediee">
+              {commandesExpediees} expédiée{commandesExpediees !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item livree">
+              {commandesLivrees} livrée {commandesLivrees !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item annulee">
+              {commandesAnnulees} annulée{commandesAnnulees !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Barre de recherche et filtres */}
+      <div className="search-container">
+        <div className="search-bar">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Rechercher par référence, nom client ou mode de paiement..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+          >
+            <FaFilter />
+          </button>
+          <FaSync
+            onClick={reinitialiserFiltres}
+            style={{ marginRight: '8px', border:"none", color:"#28a458", cursor: "pointer" }}
+            title="Réinitialiser tous les filtres"
+          />
+        </div>
+      </div>
+
+      {/* Filtres avancés */}
+      {showAdvancedFilters && (
+        <div className="filters-container">
+          <div className="filters-row">
+            <div className="filter-group">
+              <label>Statut</label>
+              <select
+                className="form-control"
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+              >
+                <option value="tous">Tous les statuts</option>
+                <option value="en attente">En attente</option>
+
+                <option value="payée">En attente</option>
+                <option value="validée">Validée</option>
+                <option value="expédiée">Expédiée</option>
+                <option value="livrée">Livrée</option>
+                <option value="annulée">Annulée</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMin}
+                onChange={(e) => setFiltreDateMin(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date max</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMax}
+                onChange={(e) => setFiltreDateMax(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Prix min</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="0"
+                value={filtrePrixMin}
+                onChange={(e) => setFiltrePrixMin(e.target.value)}
+                min="0"
+                step="1000"
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Prix max</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="1000000"
+                value={filtrePrixMax}
+                onChange={(e) => setFiltrePrixMax(e.target.value)}
+                min="0"
+                step="1000"
+              />
+            </div>
+          </div>
+          
+          {/* Affichage des filtres actifs */}
+          <div className="active-filters">
+            {filtreStatut !== "tous" && (
+              <span className="active-filter-tag">
+                Statut: {filtreStatut}
+                <button onClick={() => setFiltreStatut("tous")}>×</button>
+              </span>
+            )}
+            {filtreDateMin && (
+              <span className="active-filter-tag">
+                Date min: {filtreDateMin}
+                <button onClick={() => setFiltreDateMin("")}>×</button>
+              </span>
+            )}
+            {filtreDateMax && (
+              <span className="active-filter-tag">
+                Date max: {filtreDateMax}
+                <button onClick={() => setFiltreDateMax("")}>×</button>
+              </span>
+            )}
+            {filtrePrixMin && (
+              <span className="active-filter-tag">
+                Prix min: {filtrePrixMin} Ar
+                <button onClick={() => setFiltrePrixMin("")}>×</button>
+              </span>
+            )}
+            {filtrePrixMax && (
+              <span className="active-filter-tag">
+                Prix max: {filtrePrixMax} Ar
+                <button onClick={() => setFiltrePrixMax("")}>×</button>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tableau des commandes */}
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Paiement Frais</th>
+              <th>Mode Paiement</th>
+              <th>Consulter</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredCommandes.length > 0 ? (
+              filteredCommandes.map((commande) => (
+                <tr key={commande.numCommande} className={!commande.estConsulte ? 'new-order-row' : ''}>
+                  <td>#{commande.referenceCommande || commande.numCommande}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>{commande.utilisateur?.nomUtilisateur || "Inconnu"}</div>
+                        <div style={{ fontSize: "0.9em", color: "#666" }}>{commande.utilisateur?.email || ""}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                     
+                      {commande.dateCommande ? new Date(commande.dateCommande).toLocaleDateString('fr-FR') : "N/A"}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      
+                      <span style={{ fontWeight: "bold", color: "#8b5e3c" }}>
+                        {(commande.montantTotal || 0).toLocaleString('fr-FR')} Ar
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={`status ${commande.statut?.replace(/\s+/g, '-') || 'default'}`}>
+                      {commande.statut || "Non défini"}
+                    </span>
+                  </td>
+                  <td>
+                    {commande.payerLivraison ? (
+                      <span className="badge-paid">Payé</span>
+                    ) : (
+                      <span className="badge-unpaid">Non Payé</span>
+                    )}
+                  </td>
+                  <td>
+                    {commande.mode_paiement?.image ? (
+                      <img
+                        src={`${IMAGE_BASE_URL}${commande.mode_paiement.image}`}
+                        alt="Mode de paiement"
+                        style={{ width: "40px", height: "40px", objectFit: "contain" }}
+                      />
+                    ) : (
+                      <span>{commande.mode_paiement?.nomModePaiement || "N/A"}</span>
+                    )}
+                  </td>
+                  <td>
+                   
+                     <Link
+                      className={`btn-consulter ${commande.estConsulte ? 'vu' : ''}`}
+                      // La navigation est gérée dans le onClick par la fonction,
+                      // mais nous gardons 'to' pour que le lien soit accessible (SEO, clic droit)
+                      to={`/admin/commandes/${commande.numCommande}`}
+                      onClick={() => handleMarquerCommeVue(commande.numCommande)} // <-- APPEL DE LA FONCTION MISE À JOUR
+                      style={{ textDecoration: 'none', display: 'inline-block' }}
+                    >
+                      {commande.estConsulte ? (
+                        <>
+                          <FaCheckCircle style={{marginRight:"5px"}} /> Vu
+                        </>
+                      ) : (
+                        <>
+                          <FaEye style={{marginRight:"5px"}} /> Voir
+                        </>
+                      )}
+                    </Link>
+                  </td>
+                  
+                  {/* ✨ CORRECTION DES ACTIONS SELON LE NOUVEAU FLUX ✨ */}
+                  <td>
+                    <div className="table-actions" style={{ flexWrap: "wrap", gap: "8px" }}>
+                    
+                      
+                      {!commande.payerLivraison && commande.statut !== 'annulée' && (
+                        <button
+                          className="btn-pay"
+                          onClick={() => handlePayLivraisonClick(commande)}
+                        >
+                          Payer Frais
+                        </button>
+                      )}
+
+                      {commande.statut === 'en attente' || commande.statut === 'payée' && (
+                        <button
+                          className="btn-validate"
+                          onClick={() => handleValidateClick(commande)}
+                        >
+                          <FaCheck style={{marginRight:"5px"}} /> Valider
+                        </button>
+                      )}
+                      
+                      {/* Bouton EXPÉDIER (Affiché si statut = 'validée') */}
+                      {commande.statut === 'validée' && (
+                        <button
+                          className="btn-expedier"
+                          onClick={() => handleDeliveryClick(commande)}
+                        >
+                          <FaTruck style={{marginRight:"5px"}} /> Expédier
+                        </button>
+                      )}
+
+                      {/* Bouton Annuler (Visible si la commande n'est ni expédiée, ni livrée, ni annulée) */}
+                      {(commande.statut !== 'expédiée' && commande.statut !== 'livrée'  && commande.statut !== 'payée' && commande.statut !== 'annulée') && (
+                        <button
+                          className="btn-cancel"
+                          onClick={() => handleCancelClick(commande)}
+                        >
+                          Annuler
+                        </button>
+                      )}
+                      
+                      {/* Bouton Statut 'Expédiée' (Désactivé) */}
+                      {commande.statut === 'expédiée' && (
+                        <button className="btn-expediee" disabled>
+                          <FaTruck style={{marginRight:"5px"}} /> Expédiée
+                        </button>
+                      )}
+                      
+                      {/* Bouton Statut 'Livrée' (Désactivé) */}
+                      {commande.statut === 'livrée' && (
+                        <button className="btn-livree" disabled>
+                          <FaBox style={{marginRight:"5px"}} /> Livrée
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  {/* ✨ FIN CORRECTION DES ACTIONS ✨ */}
+
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="9" className="empty-table">
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <h3>
+                      {hasActiveFilters
+                        ? "Aucune commande ne correspond à vos critères"
+                        : "Aucune commande trouvée"}
+                    </h3>
+                    <p>
+                      {hasActiveFilters
+                        ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
+                        : "Les commandes apparaitront ici lorsqu'elles seront passées par les clients."}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal de livraison (ModalLivraison) */}
+      <ModalLivraison
+        isOpen={isLivraisonModalOpen}
+        onClose={() => setIsLivraisonModalOpen(false)}
+        onSubmit={handleDeliverySubmit}
+        initialData={currentDeliveryData}
+      />
+
+      {/* Modal de validation */}
+      {showValidateModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaCheck style={{ color: "#28a458" }} />
+                {modalData.title}
+              </h2>
+              <button className="modal-close" onClick={closeAllModals}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+                {modalData.message}
+              </p>
+              
+              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-success"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+                    }
+                    closeAllModals();
+                  }}
+                  style={{ padding: "10px 30px" }}
+                >
+                  <FaCheck style={{marginRight:"8px"}} /> Valider
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'annulation */}
+      {showCancelModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaExclamationTriangle style={{ color: "#dc3545" }} />
+                {modalData.title}
+              </h2>
+              <button className="modal-close" onClick={closeAllModals}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+                {modalData.message}
+              </p>
+              
+              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-danger"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+                    }
+                    closeAllModals();
+                  }}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler la commande
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Retour
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de paiement frais (showPayModal) */}
+      {showPayModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaMoneyBillWave style={{ color: "#007bff" }} />
+                {modalData.title}
+              </h2>
+              <button className="modal-close" onClick={closeAllModals}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+                {modalData.message}
+              </p>
+              
+              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+                    }
+                    closeAllModals();
+                  }}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Confirmer le paiement
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal d'expédition (conservée mais inutilisée dans ce flux corrigé) */}
+      {showExpedierModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaTruck style={{ color: "#ffc107" }} />
+                {modalData.title}
+              </h2>
+              <button className="modal-close" onClick={closeAllModals}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+                {modalData.message}
+              </p>
+              
+              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-warning"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+                    }
+                    closeAllModals();
+                  }}
+                  style={{ padding: "10px 30px" }}
+                >
+                  <FaTruck style={{marginRight:"8px"}} /> Confirmer Expédition
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal de succès/générique (si vous l'utilisez) */}
+      {showSuccessModal && (
+        // Ajoutez ici le code pour votre modal de succès si nécessaire
+        <div className="modal-overlay">
+          {/* ... contenu de la modal de succès ... */}
+        </div>
+      )}
+
+    </div>
+  );
 };
 
 export default Commandes;

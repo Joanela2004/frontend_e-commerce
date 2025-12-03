@@ -1,171 +1,367 @@
-import React, { useState, useEffect } from 'react';
-import { createArticle, updateArticle } from '../../../services/articleService';
+import React, { useState, useEffect } from "react";
+import {
+  FaTimes,
+  FaImage,
+  FaCalendarAlt,
+  FaUser,
+  FaFileAlt,
+  FaPaperPlane,
+  FaSave,
+  FaSpinner,
+} from "react-icons/fa";
+import { createArticle, updateArticle } from "../../../services/articleService";
+import { useToast } from "../../../contexts/ToastContext"; // Importer useToast
 
 const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
-    const today = new Date().toISOString().split('T')[0]; 
+  const today = new Date().toISOString().split("T")[0];
+  const { showToast } = useToast(); // Utiliser le hook toast
 
-    const [titre, setTitre] = useState('');
-    const [description, setDescription] = useState('');
-    const [contenu, setContenu] = useState(''); 
-    const [auteur, setAuteur] = useState('');
-    const [datePublication, setDatePublication] = useState(today);
-    const [image, setImage] = useState(null);
-const [imageFileName, setImageFileName] = useState('');
+  const [form, setForm] = useState({
+    titre: "",
+    description: "",
+    contenu: "",
+    auteur: "",
+    datePublication: today,
+    image: null,
+  });
 
-    useEffect(() => {
-        if (articleAEditer) {
-            setTitre(articleAEditer.titre || '');
-            setDescription(articleAEditer.description || '');
-            setContenu(articleAEditer.contenu || ''); 
-            setAuteur(articleAEditer.auteur || '');
-            setDatePublication(articleAEditer.datePublication ? articleAEditer.datePublication.split(' ')[0] : today);
-            setImage(null);
-             setImageFileName(articleAEditer.image ? articleAEditer.image.split('/').pop() : '');
+  const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-            
-        } else {
-            setTitre('');
-            setDescription('');
-            setContenu('');
-            setAuteur('');
-            setDatePublication(today);
-            setImage(null);
-             setImageFileName('');
+  useEffect(() => {
+    if (articleAEditer) {
+      setForm({
+        titre: articleAEditer.titre || "",
+        description: articleAEditer.description || "",
+        contenu: articleAEditer.contenu || "",
+        auteur: articleAEditer.auteur || "",
+        datePublication: articleAEditer.datePublication
+          ? articleAEditer.datePublication.split("T")[0]
+          : today,
+        image: null,
+      });
+      setImagePreview(
+        articleAEditer.image
+          ? `${import.meta.env.VITE_IMAGE_BASE_URL}${articleAEditer.image}`
+          : null
+      );
+    } else {
+      resetForm();
+    }
+  }, [articleAEditer, isOpen]);
+
+  const resetForm = () => {
+    setForm({
+      titre: "",
+      description: "",
+      contenu: "",
+      auteur: "",
+      datePublication: today,
+      image: null,
+    });
+    setImagePreview(null);
+    setErrors({});
+  };
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+
+    if (files && name === "image") {
+      const file = files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          setErrors((prev) => ({
+            ...prev,
+            image: "Le fichier est trop volumineux (max 5 Mo).",
+          }));
+          setForm((prev) => ({ ...prev, image: null }));
+          setImagePreview(null);
+          showToast("error", "Le fichier est trop volumineux (max 5 Mo).");
+          return;
         }
-    }, [articleAEditer]);
 
-    if (!isOpen) return null;
+        setForm((prev) => ({ ...prev, image: file }));
+        const reader = new FileReader();
+        reader.onloadend = () => setImagePreview(reader.result);
+        reader.readAsDataURL(file);
+        setErrors((prev) => ({ ...prev, image: "" }));
+      }
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
 
-     const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setImage(file);
-            setImageFileName(file.name);
-        } else {
-            setImage(null);
-            setImageFileName(articleAEditer?.image ? produitAEditer.image.split('/').pop() : '');
-        }
-    };
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const validate = () => {
+    let newErrors = {};
+    if (!form.titre.trim()) newErrors.titre = "Le titre est obligatoire.";
+    if (!form.description.trim()) newErrors.description = "La description est obligatoire.";
+    if (!form.contenu.trim()) newErrors.contenu = "Le contenu est obligatoire.";
+    if (!form.auteur.trim()) newErrors.auteur = "L'auteur est obligatoire.";
+    if (!form.datePublication) newErrors.datePublication = "La date est obligatoire.";
+    if (!articleAEditer && !form.image) newErrors.image = "Une image d'article est requise.";
+    
+    setErrors(newErrors);
+    
+    // Afficher un toast si validation échoue
+    if (Object.keys(newErrors).length > 0) {
+      showToast("error", "Veuillez corriger les erreurs dans le formulaire");
+    }
+    
+    return Object.keys(newErrors).length === 0;
+  };
 
-        if (datePublication < today) {
-            alert(" La date de publication ne peut pas être antérieure à aujourd'hui !");
-            return;
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-        const formData = new FormData();
-        formData.append('titre', titre);
-        formData.append('description', description);
-        formData.append('contenu', contenu); 
-        formData.append('auteur', auteur);
-        formData.append('datePublication', datePublication);
-          if (image instanceof File) {
-            formData.append('image', image);
-        }
-        if (articleAEditer) formData.append('_method', 'PUT'); 
+    setLoading(true);
 
-        try {
-            if (articleAEditer) {
-                await updateArticle(articleAEditer.numArticle, formData);
-            } else {
-                await createArticle(formData);
-            }
-            onSave();
-            onClose();
-        } catch (error) {
-            console.error("Erreur de sauvegarde de l’article :", error);
-            alert("Erreur lors de sauvegarde de l’article.");
-        }
-    };
+    const formData = new FormData();
+    formData.append("titre", form.titre);
+    formData.append("description", form.description);
+    formData.append("contenu", form.contenu);
+    formData.append("auteur", form.auteur);
+    formData.append("datePublication", form.datePublication);
 
-    return (
-        <div className="bo-modal-overlay">
-            <div className="bo-modal-container">
-                <header className="bo-modal-header">
-                    <h3 className="bo-modal-title">{articleAEditer ? "Modifier l’article" : "Ajouter un nouvel article"}</h3>
-                    <button className="bo-modal-close-btn" onClick={onClose}>&times;</button>
-                </header>
+    if (form.image && form.image instanceof File) {
+      formData.append("image", form.image);
+    }
+    
+    if (articleAEditer) {
+      formData.append("_method", "PUT");
+    }
+
+    try {
+      if (articleAEditer) {
+        await updateArticle(articleAEditer.numArticle, formData);
+        showToast("success", "Article modifié avec succès !");
+      } else {
+        await createArticle(formData);
+        showToast("success", "Article ajouté avec succès !");
+      }
+      
+      onSave();
+      
+      // Fermer le modal après un délai
+      setTimeout(() => {
+        onClose();
+        resetForm();
+      }, 1000);
+
+    } catch (err) {
+      console.error("Erreur API:", err);
+      const msg = err.response?.data?.message ||
+        "Une erreur est survenue lors de l'enregistrement.";
+      showToast("error", `Erreur : ${msg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const handleOverlayClick = (e) => {
+    if (e.target.className.includes("modal-overlay") && !loading) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="modal modal-lg">
+        <form onSubmit={handleSubmit}>
+          <div className="modal-header">
+            <h2>
+              {articleAEditer ? "Modifier l'article" : "Nouvel article"}
+            </h2>
+            <button type="button" className="modal-close" onClick={onClose} disabled={loading}>
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="modal-body">
+            <div className="form-layout-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '20px'
+            }}>
+              
+              <div className="form-group" style={{ gridColumn: '1 / 3' }}>
+                <label htmlFor="titre" className="required">
+                  <FaFileAlt /> Titre de l'article
+                </label>
+                <input
+                  type="text"
+                  id="titre"
+                  name="titre"
+                  value={form.titre}
+                  onChange={handleChange}
+                  className={`form-control ${errors.titre ? "error" : ""}`}
+                  placeholder="Ex: Les bienfaits du miel bio"
+                  required
+                />
+                {errors.titre && <div className="error-message">{errors.titre}</div>}
+              </div>
+
+              <div className="form-group" style={{ gridColumn: '1 / 3' }}>
+                <label htmlFor="description" className="required">Description courte (résumé)</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  className={`form-control textarea ${errors.description ? "error" : ""}`}
+                  rows="3"
+                  maxLength="255"
+                  placeholder="Résumé affiché dans la liste des articles..."
+                  required
+                />
+                <small style={{ float: "right", color: "var(--color-text-light)" }}>
+                  {form.description.length}/255
+                </small>
+                {errors.description && <div className="error-message">{errors.description}</div>}
+              </div>
+
+              <div className="form-group" style={{ gridColumn: '1 / 3' }}>
+                <label htmlFor="contenu" className="required">Contenu complet</label>
+                <textarea
+                  id="contenu"
+                  name="contenu"
+                  value={form.contenu}
+                  onChange={handleChange}
+                  className={`form-control textarea ${errors.contenu ? "error" : ""}`}
+                  rows="10"
+                  placeholder="Rédigez ici l'article complet..."
+                  required
+                />
+                {errors.contenu && <div className="error-message">{errors.contenu}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="auteur" className="required">
+                  <FaUser /> Auteur
+                </label>
+                <input
+                  type="text"
+                  id="auteur"
+                  name="auteur"
+                  value={form.auteur}
+                  onChange={handleChange}
+                  className={`form-control ${errors.auteur ? "error" : ""}`}
+                  placeholder="Jean Dupont"
+                  required
+                />
+                {errors.auteur && <div className="error-message">{errors.auteur}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="datePublication" className="required">
+                  <FaCalendarAlt /> Date de publication
+                </label>
+                <input
+                  type="date"
+                  id="datePublication"
+                  name="datePublication"
+                  value={form.datePublication}
+                  onChange={handleChange}
+                  min={today}
+                  placeholder="jj/mm/aaaa"
+                  className={`form-control ${errors.datePublication ? "error" : ""}`}
+                  required
+                />
+                {errors.datePublication && <div className="error-message">{errors.datePublication}</div>}
+              </div>
+
+              <div className="form-group" style={{ gridColumn: '1 / 3' }}>
+                <label htmlFor="image">
+                  Image de l'article {articleAEditer ? "(facultatif)" : "(requis)"}
+                </label>
+
+                <div className={`file-input-container ${errors.image ? "error" : ""}`}>
+                  <input
+                    type="file"
+                    id="image"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    required={!articleAEditer}
+                  />
+                  <div className="file-input-label">
+                    <FaImage />
+                    <div>
+                      <strong>Cliquez ou glissez</strong> une image ici
+                    </div>
+                    <small>JPG, PNG, GIF, WebP • max 5 Mo</small>
+                  </div>
+                </div>
+                {errors.image && <div className="error-message">{errors.image}</div>}
                 
-                <form onSubmit={handleSubmit} className="bo-modal-form">
-                    <div className="bo-form-group">
-                        <label className="bo-form-label">Titre</label>
-                        <input
-                            type="text"
-                            className="bo-form-input"
-                            value={titre}
-                            onChange={(e) => setTitre(e.target.value)}
-                            required
+                {(imagePreview || (articleAEditer && articleAEditer.image)) && (
+                  <div className="file-info">
+                    {imagePreview ? (
+                      <div className="file-preview" style={{ margin: '0 auto' }}>
+                        <img
+                          src={imagePreview}
+                          alt="Aperçu"
+                          style={{ width: "100%", display: "block" }}
                         />
-                    </div>
+                      </div>
+                    ) : (
+                      <p>Image actuelle conservée : <strong>{articleAEditer.image.split('/').pop()}</strong></p>
+                    )}
                     
-                    <div className="bo-form-group">
-                        <label className="bo-form-label">Résumé/Description (Max 255)</label>
-                        <textarea
-                            className="bo-form-input"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows="3"
-                            required
-                        />
-                    </div>
-
-                    <div className="bo-form-group">
-                        <label className="bo-form-label">Contenu Complet</label>
-                        <textarea
-                            className="bo-form-input"
-                            value={contenu}
-                            onChange={(e) => setContenu(e.target.value)}
-                            rows="6"
-                            required
-                        />
-                    </div>
-
-                    <div className="bo-form-group-row">
-                        <div className="bo-form-group">
-                             <label className="bo-form-label">Auteur</label>
-                            <input
-                                type="text"
-                                className="bo-form-input"
-                                value={auteur}
-                                onChange={(e) => setAuteur(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="bo-form-group">
-                            <label className="bo-form-label">Date de Publication</label>
-                            <input
-                                type="date"
-                                className="bo-form-input"
-                                value={datePublication}
-                                onChange={(e) => setDatePublication(e.target.value)}
-                                min={today}
-                                required
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="bo-form-group">
-                        <label className="bo-form-label">Image de l'article</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="bo-form-input-file"
-                            onChange={handleFileChange}
-                                required={!articleAEditer}
-                        />
-                            {imageFileName && <p className="image-info-bo">Fichier : {imageFileName}</p>}
-                 
-                    </div>
-
-                    <div className="bo-modal-actions">
-                        <button type="submit" className="bo-btn-primaire">Enregistrer</button>
-                        <button type="button" className="bo-btn-annuler" onClick={onClose}>Annuler</button>
-                    </div>
-                </form>
+                    {form.image && (
+                      <p style={{ marginTop: "8px", color: "var(--color-text)" }}>
+                        Nouveau fichier : <strong>{form.image.name}</strong>
+                      </p>
+                    )}
+                    {!form.image && articleAEditer && articleAEditer.image && (
+                      <p style={{ marginTop: "8px", color: "var(--color-primary)" }}>
+                        Aucun nouveau fichier sélectionné.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-        </div>
-    );
+          </div>
+
+          <div className="actions-container">
+            <button 
+              type="button" 
+              className="edit" 
+              onClick={onClose} 
+              disabled={loading}
+            >
+              Annuler
+            </button>
+            
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <FaSpinner className="spin" /> Enregistrement...
+                </>
+              ) : articleAEditer ? (
+                <>
+                  <FaSave style={{marginRight:"10px"}} /> Mettre à jour
+                </>
+              ) : (
+                <>
+                  <FaPaperPlane style={{marginRight:"10px"}} /> Publier
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default AjouterArticleModal;
