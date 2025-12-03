@@ -1,67 +1,198 @@
 import React, { useState, useEffect } from "react";
-import { FaEye, FaSearch,FaUsers } from "react-icons/fa";
+import { FaEye, FaSearch, FaUsers, FaCalendarAlt, FaPhone, FaEnvelope, FaSync, FaFilter } from "react-icons/fa";
 import { usePagination } from "../../../pages/hooks/hooks";
-import "../../../styles/back-office/client.css";
 import { getClients } from "../../../services/utilisateurService";
 import { useNavigate } from "react-router-dom";
+import "../../../styles/back-office/global.css";
+import "../../../styles/back-office/tableau.css";
+import "../../../styles/back-office/modal.css";
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Clients = () => {
   const [clientsData, setClientsData] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const navigate = useNavigate();
-const handleVoirCommande = (client) => {
-  navigate(`/admin/clients/${client.numUtilisateur}/commandes`);
-};
+
+  const [filtreDateMin, setFiltreDateMin] = useState("");
+  const [filtreDateMax, setFiltreDateMax] = useState("");
+  const [filtreHasContact, setFiltreHasContact] = useState("tous");
 
   useEffect(() => {
     const fetchClientsData = async () => {
       try {
+        setLoading(true);
         const clients = await getClients();
         setClientsData(clients);
       } catch (err) {
         console.error("Erreur récupération clients :", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchClientsData();
   }, []);
 
-  const filteredClients = clientsData.filter(client =>
-    [
-      client.numUtilisateur?.toString(),
-      client.nomUtilisateur,
-      client.email,
-      client.contact
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const handleVoirCommande = (client) => {
+    navigate(`/admin/clients/${client.numUtilisateur}/commandes`);
+  };
+
+  // Filtrer les clients
+  const filteredClients = clientsData.filter(client => {
+    const searchMatch =
+      (client.numUtilisateur?.toString() || "").includes(searchTerm) ||
+      (client.nomUtilisateur?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (client.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (client.contact?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+    
+    const contactMatch = 
+      filtreHasContact === "tous" ||
+      (filtreHasContact === "avec" && client.contact) ||
+      (filtreHasContact === "sans" && !client.contact);
+    
+    const createdDate = client.created_at ? new Date(client.created_at) : null;
+    
+    const dateMinMatch = !filtreDateMin || 
+      (createdDate && createdDate >= new Date(filtreDateMin));
+    
+    const dateMaxMatch = !filtreDateMax || 
+      (createdDate && createdDate <= new Date(filtreDateMax));
+    
+    return searchMatch && contactMatch && dateMinMatch && dateMaxMatch;
+  });
 
   const { currentRows: clientsDataRows, goToPage, currentPage, totalPages } =
-    usePagination(filteredClients, 5);
+    usePagination(filteredClients, 10); // Augmenté à 10 pour une meilleure visibilité
+
+  const reinitialiserFiltres = () => {
+    setSearchTerm("");
+    setFiltreDateMin("");
+    setFiltreDateMax("");
+    setFiltreHasContact("tous");
+  };
+
+  const hasActiveFilters = 
+    searchTerm || 
+    filtreDateMin || 
+    filtreDateMax || 
+    filtreHasContact !== "tous";
+
+  // Statistiques
+  const totalClients = clientsData.length;
+  const clientsAvecContact = clientsData.filter(c => c.contact).length;
+  const clientsSansContact = clientsData.filter(c => !c.contact).length;
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement des clients...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="livraison-container">
-      <div className="livraison-header">
-        <h2><FaUsers /> Gestion des Clients</h2>
-       
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <h1><FaUsers style={{marginRight: '10px'}} /> Gestion des Clients</h1>
+          <div className="stats-container" style={{ marginTop: '10px' }}>
+            <span className="stat-item">
+              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} trouvé{filteredClients.length !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
+              {totalClients} total
+            </span>
+            <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
+              {clientsAvecContact} avec contact
+            </span>
+            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
+              {clientsSansContact} sans contact
+            </span>
+          </div>
+        </div>
       </div>
 
-          <div className="frais-search-bar">
-                             <FaSearch />
-                             <input
-                               type="text"
-                               placeholder="Rechercher par nom, e-mail, contact..."
-                               value={search}
-                               onChange={(e) => setSearch(e.target.value)}
-                             />
+      {/* Barre de recherche et filtres */}
+      <div className="search-container">
+        <div className="search-bar">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom, email, contact ou ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+          >
+            <FaFilter />
+          </button>
+          <FaSync
+            onClick={reinitialiserFiltres}
+            style={{ marginRight: '8px', border:"none", color:"#28a458", cursor: "pointer" }}
+            title="Réinitialiser tous les filtres"
+          />
+        </div>
       </div>
 
-      <div className="table-container-bo">
-        <table className="livraison-table">
+      {/* Filtres avancés */}
+      {showAdvancedFilters && (
+        <div className="filters-container">
+          <div className="filters-row">
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date inscription min</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMin}
+                onChange={(e) => setFiltreDateMin(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date inscription max</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMax}
+                onChange={(e) => setFiltreDateMax(e.target.value)}
+              />
+            </div>
+            
+
+          </div>
+          
+          {/* Affichage des filtres actifs */}
+          <div className="active-filters">
+            {filtreDateMin && (
+              <span className="active-filter-tag">
+                Date min: {filtreDateMin}
+                <button onClick={() => setFiltreDateMin("")}>×</button>
+              </span>
+            )}
+            {filtreDateMax && (
+              <span className="active-filter-tag">
+                Date max: {filtreDateMax}
+                <button onClick={() => setFiltreDateMax("")}>×</button>
+              </span>
+            )}
+           
+          </div>
+        </div>
+      )}
+
+      {/* Tableau des clients */}
+      <div className="table-container">
+        <table className="data-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>ID Client</th>
               <th>Nom</th>
               <th>Email</th>
               <th>Contact</th>
@@ -73,77 +204,142 @@ const handleVoirCommande = (client) => {
             {clientsDataRows && clientsDataRows.length > 0 ? (
               clientsDataRows.map((client) => (
                 <tr key={client.numUtilisateur}>
-                  <td className="client-id">#{client.numUtilisateur}</td>
                   <td>
-                    <div className="client-name">{client.nomUtilisateur}</div>
-                  </td>
-                  <td>
-                    <div className="client-email">{client.email}</div>
-                  </td>
-                  <td>
-                    <span className={client.contact ? "client-contact" : "client-no-contact"}>
-                      {client.contact || "Non renseigné"}
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      color: '#8b5e3c',
+                      fontFamily: 'monospace'
+                    }}>
+                      #{client.numUtilisateur}
                     </span>
                   </td>
                   <td>
-                    <div className="client-date">
-                      {client.created_at
-                        ? new Date(client.created_at).toLocaleDateString("fr-FR", {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })
-                        : "---"}
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {client.image ? (
+  // Si le client a une image → afficher la photo
+  <img 
+    src={`${IMAGE_BASE_URL}${client.image}`}
+    alt={client.nomUtilisateur} 
+    style={{
+      width: "40px",
+      height: "40px",
+      borderRadius: "50%",
+      objectFit: "cover"
+    }}
+  />
+) : (
+  // Sinon → afficher le cercle avec l'initiale
+  <div style={{ 
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    backgroundColor: "#e3f2fd",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#1565c0",
+    fontWeight: "bold"
+  }}>
+    {client.nomUtilisateur?.charAt(0)?.toUpperCase() || "C"}
+  </div>
+)}
+
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>{client.nomUtilisateur || "N/A"}</div>
+                      </div>
                     </div>
                   </td>
                   <td>
-                    <button
-                      className="btn-edit"
-                      onClick={() => handleVoirCommande(client)}
-                      title="Voir les commandes de ce client"
-                    >
-                      <FaEye /> Voir
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <FaEnvelope style={{ color: "#6c757d" }} />
+                      <span>{client.email || "N/A"}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <FaPhone style={{ color: client.contact ? "#28a458" : "#dc3545" }} />
+                      <span className={`status ${client.contact ? 'active' : 'inactive'}`}>
+                        {client.contact || "Non renseigné"}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <FaCalendarAlt style={{ color: "#6c757d" }} />
+                      <span>
+                        {client.created_at
+                          ? new Date(client.created_at).toLocaleDateString("fr-FR", {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })
+                          : "---"}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        className="btn-consulter"
+                        onClick={() => handleVoirCommande(client)}
+                        title="Voir les commandes"
+                        style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                      >
+                        <FaEye /> Voir commandes
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="no-data">
-                  <div className="clients-empty">
-                    {search ? 'Aucun client ne correspond à votre recherche.' : 'Aucun client trouvé.'}
+                <td colSpan="6" className="empty-table">
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <h3>
+                      {hasActiveFilters
+                        ? "Aucun client ne correspond à vos critères"
+                        : "Aucun client trouvé"}
+                    </h3>
+                    <p>
+                      {hasActiveFilters
+                        ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
+                        : "Les clients apparaîtront ici lorsqu'ils s'inscriront."}
+                    </p>
                   </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="pagination-zone">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="pagination-btn"
-            >
-              &lt;
-            </button>
-
-            <span className="pagination-info">
-              Page {currentPage} sur {totalPages}
-            </span>
-
-            <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="pagination-btn"
-            >
-              &gt;
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination-zone" style={{ marginTop: '20px' }}>
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-btn prev"
+          >
+            &lt; Précédent
+          </button>
+
+          <div className="pagination-info">
+            <span>Page {currentPage} sur {totalPages}</span>
+            <span style={{ marginLeft: '15px', color: '#6c757d' }}>
+              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="pagination-btn next"
+          >
+            Suivant &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 };

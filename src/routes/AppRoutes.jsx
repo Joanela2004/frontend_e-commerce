@@ -19,7 +19,7 @@ import Cancel from "../pages/front-office/Cancel";
 // Pages Back-Office
 import LieuxLivraison from "../composants/back-office/Livraison/LieuxLivraison";
 import TableauLayout from "../pages/back-office/TableauLayout";
-import TableauDeBord from "../composants/back-office/Tableau/TableauDeBord";
+import Dashboard from "../composants/back-office/Tableau/Dashboard";
 import Produits from "../composants/back-office/Produits/Produits";
 import Paiements from "../composants/back-office/Paiements/Paiements"; // Corrigé le nom du fichier
 import ModesPaiement from "../composants/back-office/Paiements/ModesPaiement";
@@ -67,7 +67,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         >
-          <Route index element={<TableauDeBord />} />
+          <Route index element={<Dashboard />} />
           <Route path="produits" element={<Produits />} />
           <Route path="articles" element={<Articles />} />
           <Route path="commandes" element={<Commandes />} />

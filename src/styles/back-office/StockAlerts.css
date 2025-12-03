@@ -1,0 +1,51 @@
+.stock-alerts-container {
+  width: 100%;
+  max-width: 700px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
+  margin: 20px auto;
+  font-family: "Inter", sans-serif;
+}
+
+.stock-alerts-container h2 {
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: #333;
+  font-weight: 600;
+  text-align: center;
+}
+
+.stock-alerts-container p {
+  text-align: center;
+  font-size: 16px;
+  color: #555;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+thead th {
+  text-align: left;
+  padding: 12px;
+  background: #f3f3f3;
+  font-weight: 600;
+  color: #555;
+}
+
+tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+.loading {
+  text-align: center;
+  font-size: 18px;
+  color: #555;
+  margin-top: 40px;
+}

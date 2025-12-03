@@ -49,7 +49,7 @@ const Header = () => {
                 onClick={() => window.location.href = "/admin/commandes"}
                 title="Nouvelles commandes"
               >
-                <FaBell className="bell-icon" />
+                <FaBell style={{ color: "#28a458" }} className="bell-icon" />
                 {/* Affichage du compteur global */}
                 {newOrdersCount > 0 && !loading && (
                   <span className="notification-badge">
@@ -69,7 +69,7 @@ const Header = () => {
                 <span className="profile-name">
                   { userData?.nomUtilisateur || 'Admin'}
                 </span>
-                <FaCaretDown className={`caret-icon ${isProfileMenuOpen ? 'rotate' : ''}`} />
+                <FaCaretDown style={{ color: "#28a458" }} className={`caret-icon ${isProfileMenuOpen ? 'rotate' : ''}`} />
               </div>
               
               {isProfileMenuOpen && (
@@ -82,7 +82,7 @@ const Header = () => {
                     onClick={handleChangePassword}
                     className="dropdown-option change-password-btn"
                   >
-                    <FaLock className="dropdown-option-icon" />
+                    <FaLock className="dropdown-option-icon" style={{ color: "#28a458" }} />
                     Changer mot de passe
                   </button>
 

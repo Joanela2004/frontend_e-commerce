@@ -1,174 +1,520 @@
-// src/composants/back-office/Paiements/Paiements.jsx
 import React, { useEffect, useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import {
+  FaSearch,
+  FaSync,
+  FaFilter,
+  FaCheckCircle,
+  FaMoneyBillWave,
+  FaUser,
+  FaCalendarAlt,
+  FaCreditCard,
+  FaFileInvoiceDollar
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import "../../../styles/back-office/fraisLivraison.css";
+import "../../../styles/back-office/global.css";
+import "../../../styles/back-office/tableau.css";
+import "../../../styles/back-office/modal.css";
+import "../../../styles/back-office/toast.css";
 import { fetchPaiements, updatePaiement } from "../../../services/paiementService";
+import { useToast } from "../../../contexts/ToastContext";
 
 const Paiements = () => {
   const [paiements, setPaiements] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loadingAction, setLoadingAction] = useState(null); // Pour spinner sur le bouton
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null);
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
+  // États pour les filtres
+  const [filtreStatut, setFiltreStatut] = useState("tous");
+  const [filtreDateMin, setFiltreDateMin] = useState("");
+  const [filtreDateMax, setFiltreDateMax] = useState("");
+  const [filtreMontantMin, setFiltreMontantMin] = useState("");
+  const [filtreMontantMax, setFiltreMontantMax] = useState("");
+
+  // Modal de confirmation
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalData, setModalData] = useState({
+    title: "",
+    message: "",
+    paiementId: null,
+    onConfirm: null
+  });
 
   useEffect(() => {
     loadPaiements();
   }, []);
 
   const loadPaiements = async () => {
+    setLoading(true);
     try {
       const data = await fetchPaiements();
       setPaiements(data);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors du chargement des paiements");
-    }
-  };
-
-  // Nouvelle fonction : marquer un paiement comme payé
-  const handleMarkAsPaid = async (numPaiement) => {
-    if (!window.confirm("Marquer ce paiement comme payé ?")) return;
-
-    setLoadingAction(numPaiement);
-    try {
-      await updatePaiement(numPaiement, { statut: "effectué" });
-
-      // Mise à jour optimiste du state
-      setPaiements(prev =>
-        prev.map(p =>
-          p.numPaiement === numPaiement
-            ? { ...p, statut: "effectué", datePaiement: new Date().toISOString() }
-            : p
-        )
-      );
-
-      alert("Paiement marqué comme payé !");
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de la mise à jour du paiement");
+    } catch (error) {
+      console.error("Erreur lors du chargement des paiements:", error);
+      showToast("error", "Erreur lors du chargement des paiements");
     } finally {
-      setLoadingAction(null);
+      setLoading(false);
     }
   };
 
-  const filtered = paiements.filter((p) => {
-    const s = search.toLowerCase();
-    return (
-      p.numPaiement?.toString().includes(s) ||
-      p.numCommande?.toString().includes(s) ||
-      `${p.commande?.utilisateur?.prenom || ""} ${p.commande?.utilisateur?.nom || ""}`
-        .toLowerCase()
-        .includes(s) ||
-      p.commande?.utilisateur?.email?.toLowerCase().includes(s)
+  const showModal = (title, message, paiementId, onConfirm) => {
+    setModalData({
+      title,
+      message,
+      paiementId,
+      onConfirm
+    });
+    setShowConfirmModal(true);
+  };
+
+  const closeModal = () => {
+    setShowConfirmModal(false);
+    setModalData({
+      title: "",
+      message: "",
+      paiementId: null,
+      onConfirm: null
+    });
+  };
+
+  const handleMarkAsPaid = async (paiement) => {
+    showModal(
+      "Confirmer le paiement",
+      `Êtes-vous sûr de vouloir marquer le paiement #${paiement.numPaiement} comme effectué ?\n\nCommande: CMD-${paiement.numCommande}\nClient: ${paiement.commande?.utilisateur?.prenom || ''} ${paiement.commande?.utilisateur?.nom || ''}\nMontant: ${paiement.montantApayer || 0} €`,
+      paiement.numPaiement,
+      async () => {
+        setLoadingAction(paiement.numPaiement);
+        try {
+          await updatePaiement(paiement.numPaiement, { statut: "effectué" });
+
+          setPaiements(prev =>
+            prev.map(p =>
+              p.numPaiement === paiement.numPaiement
+                ? { 
+                    ...p, 
+                    statut: "effectué", 
+                    datePaiement: new Date().toISOString() 
+                  }
+                : p
+            )
+          );
+
+          showToast("success", "Paiement marqué comme effectué avec succès !");
+        } catch (err) {
+          console.error(err);
+          showToast("error", "Erreur lors de la mise à jour du paiement");
+        } finally {
+          setLoadingAction(null);
+        }
+      }
     );
+  };
+
+  // Filtrer les paiements
+  const filteredPaiements = paiements.filter(paiement => {
+    const searchMatch =
+      (paiement.numPaiement?.toString() || "").includes(searchTerm) ||
+      (paiement.numCommande?.toString() || "").includes(searchTerm) ||
+      (paiement.commande?.utilisateur?.prenom?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (paiement.commande?.utilisateur?.nom?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (paiement.commande?.utilisateur?.email?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+
+    const statutMatch = filtreStatut === "tous" || paiement.statut === filtreStatut;
+
+    const dateMinMatch = !filtreDateMin || 
+      (paiement.datePaiement && new Date(paiement.datePaiement) >= new Date(filtreDateMin));
+
+    const dateMaxMatch = !filtreDateMax || 
+      (paiement.datePaiement && new Date(paiement.datePaiement) <= new Date(filtreDateMax));
+
+    const montantMinMatch = !filtreMontantMin || 
+      (paiement.montantApayer || 0) >= parseFloat(filtreMontantMin);
+
+    const montantMaxMatch = !filtreMontantMax || 
+      (paiement.montantApayer || 0) <= parseFloat(filtreMontantMax);
+
+    return searchMatch && statutMatch && dateMinMatch && dateMaxMatch && montantMinMatch && montantMaxMatch;
   });
 
+  // Réinitialiser tous les filtres
+  const reinitialiserFiltres = () => {
+    setFiltreStatut("tous");
+    setFiltreDateMin("");
+    setFiltreDateMax("");
+    setFiltreMontantMin("");
+    setFiltreMontantMax("");
+    setSearchTerm("");
+    showToast("info", "Filtres réinitialisés");
+  };
+
+  // Vérifier si des filtres sont actifs
+  const hasActiveFilters =
+    searchTerm ||
+    filtreStatut !== "tous" ||
+    filtreDateMin ||
+    filtreDateMax ||
+    filtreMontantMin ||
+    filtreMontantMax;
+
+  // Statistiques
+  const paiementsEffectues = paiements.filter(p => p.statut === "effectué").length;
+  const paiementsEnAttente = paiements.filter(p => p.statut === "en attente").length;
+  const totalMontant = paiements.reduce((sum, p) => sum + (parseFloat(p.montantApayer) || 0), 0);
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement des paiements...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="frais-container">
-      <div className="frais-header">
-        <h2>Gestion des Paiements</h2>
-        <div className="livraison-tabs">
-          <button className="tab-active">Paiements</button>
-          <button
-            className="tab-inactive"
-            onClick={() => navigate("/admin/paiements/modes")}
-          >
-            Modes de paiement
-          </button>
+    <div className="page-container">
+      <div className="page-header">
+        <div>
+          <h1>Gestion des Paiements</h1>
+          <div className="stats-container" style={{ marginTop: '10px' }}>
+            <span className="stat-item">
+              {filteredPaiements.length} paiement{filteredPaiements.length !== 1 ? 's' : ''} trouvé{filteredPaiements.length !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item" style={{ background: 'rgba(40, 164, 88, 0.1)', color: '#28a458' }}>
+              <FaCheckCircle style={{marginRight: '5px'}} /> {paiementsEffectues} effectué{paiementsEffectues !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item" style={{ background: 'rgba(255, 193, 7, 0.1)', color: '#856404' }}>
+              <FaFileInvoiceDollar style={{marginRight: '5px'}} /> {paiementsEnAttente} en attente
+            </span>
+            <span className="stat-item" style={{ background: 'rgba(23, 162, 184, 0.1)', color: '#0c5460' }}>
+              <FaMoneyBillWave style={{marginRight: '5px'}} /> {totalMontant.toFixed(2)} € total
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="frais-search-bar">
-        <FaSearch />
-        <input
-          type="text"
-          placeholder="Rechercher par ID, commande, client..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        {search && (
-          <button className="btn-clear" onClick={() => setSearch("")}>
-            X Effacer
-          </button>
-        )}
+      {/* Navigation tabs */}
+      <div className="navigation-tabs">
+        <button className="tab-active">
+          <FaMoneyBillWave style={{marginRight:"8px"}} /> Paiements
+        </button>
+        <button 
+          className="tab-inactive"
+          onClick={() => navigate("/admin/paiements/modes")}
+        >
+          <FaCreditCard style={{marginRight:"8px"}} /> Modes de paiement
+        </button>
       </div>
 
-      <table className="frais-table">
-        <thead>
-          <tr>
-            <th>ID Paiement</th>
-            <th>Commande</th>
-            <th>Client</th>
-            <th>Montant</th>
-            <th>Mode</th>
-            <th>Statut</th>
-            <th>Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((p) => (
-            <tr key={p.numPaiement}>
-              <td>#{p.numPaiement}</td>
-              <td>CMD-{p.numCommande}</td>
-              <td>
-                {p.commande?.utilisateur?.prenom} {p.commande?.utilisateur?.nom}
-                <br />
-                <small>{p.commande?.utilisateur?.email}</small>
-              </td>
-              <td>{parseFloat(p.montantApayer || 0).toFixed(2)} €</td>
-              <td>
-                {p.mode_paiement?.image ? (
-                  <img
-                    src={`${IMAGE_BASE_URL}${p.mode_paiement.image}`}
-                    alt={p.mode_paiement.nomMode}
-                    style={{ width: 40, height: 30, objectFit: "contain" }}
-                  />
-                ) : (
-                  p.mode_paiement?.nomMode || "—"
-                )}
-              </td>
-              <td>
-                <span
-                  className={`status ${p.statut === "effectué" ? "active" : "inactive"}`}
-                >
-                  {p.statut === "effectué" ? "Payé" : "En attente"}
-                </span>
-              </td>
-              <td>
-                {p.datePaiement
-                  ? new Date(p.datePaiement).toLocaleDateString("fr-FR")
-                  : "—"}
-              </td>
-              <td>
-                {p.statut !== "effectué" && (
-                  <button
-                    className="btn-action btn-validate"
-                    onClick={() => handleMarkAsPaid(p.numPaiement)}
-                    disabled={loadingAction === p.numPaiement}
-                    style={{
-                      padding: "6px 12px",
-                      fontSize: "0.85rem",
-                      opacity: loadingAction === p.numPaiement ? 0.7 : 1,
-                    }}
-                  >
-                    {loadingAction === p.numPaiement ? "..." : "Marquer payé"}
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+      {/* Barre de recherche et filtres */}
+      <div className="search-container">
+        <div className="search-bar">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Rechercher par ID, commande, client ou email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+          >
+            <FaFilter />
+          </button>
+          <FaSync
+            onClick={reinitialiserFiltres}
+            style={{ marginRight: '8px', border:"none", color:"#28a458", cursor: "pointer" }}
+            title="Réinitialiser tous les filtres"
+          />
+        </div>
+      </div>
 
-          {filtered.length === 0 && (
+      {/* Filtres avancés */}
+      {showAdvancedFilters && (
+        <div className="filters-container">
+          <div className="filters-row">
+            <div className="filter-group">
+              <label>Statut</label>
+              <select
+                className="form-control"
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+              >
+                <option value="tous">Tous les statuts</option>
+                <option value="en attente">En attente</option>
+                <option value="effectué">Effectué</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMin}
+                onChange={(e) => setFiltreDateMin(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date max</label>
+              <input
+                type="date"
+                className="form-control"
+                value={filtreDateMax}
+                onChange={(e) => setFiltreDateMax(e.target.value)}
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Montant min</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="0"
+                value={filtreMontantMin}
+                onChange={(e) => setFiltreMontantMin(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Montant max</label>
+              <input
+                type="number"
+                className="form-control"
+                placeholder="10000"
+                value={filtreMontantMax}
+                onChange={(e) => setFiltreMontantMax(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+          
+          {/* Affichage des filtres actifs */}
+          <div className="active-filters">
+            {filtreStatut !== "tous" && (
+              <span className="active-filter-tag">
+                Statut: {filtreStatut}
+                <button onClick={() => setFiltreStatut("tous")}>×</button>
+              </span>
+            )}
+            {filtreDateMin && (
+              <span className="active-filter-tag">
+                Date min: {filtreDateMin}
+                <button onClick={() => setFiltreDateMin("")}>×</button>
+              </span>
+            )}
+            {filtreDateMax && (
+              <span className="active-filter-tag">
+                Date max: {filtreDateMax}
+                <button onClick={() => setFiltreDateMax("")}>×</button>
+              </span>
+            )}
+            {filtreMontantMin && (
+              <span className="active-filter-tag">
+                Montant min: {filtreMontantMin} €
+                <button onClick={() => setFiltreMontantMin("")}>×</button>
+              </span>
+            )}
+            {filtreMontantMax && (
+              <span className="active-filter-tag">
+                Montant max: {filtreMontantMax} €
+                <button onClick={() => setFiltreMontantMax("")}>×</button>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tableau des paiements */}
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan="8" style={{ textAlign: "center", padding: "3rem", color: "#777" }}>
-                {search ? "Aucun paiement trouvé" : "Aucun paiement enregistré"}
-              </td>
+              <th>ID Paiement</th>
+              <th>Commande</th>
+              <th>Client</th>
+              <th>Montant (en Ar)</th>
+              <th>Mode de paiement</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredPaiements.length > 0 ? (
+              filteredPaiements.map((paiement) => (
+                <tr key={paiement.numPaiement}>
+                  <td>#{paiement.numPaiement}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>{paiement.commande?.referenceCommande || "N/A"}</div>
+                      
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                   
+                      <div>
+                        <div style={{ fontWeight: "bold" }}>
+                          {paiement.commande?.utilisateur?.prenom || ''} {paiement.commande?.utilisateur?.nom || ''}
+                        </div>
+                        <div style={{ fontSize: "0.9em", color: "#666" }}>
+                          {paiement.commande?.utilisateur?.email || "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      
+                      <span style={{ fontWeight: "bold", color: "#8b5e3c" }}>
+                        {parseFloat(paiement.montantApayer || 0).toFixed(2)} 
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    {paiement.mode_paiement?.image ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <img
+                          src={`${IMAGE_BASE_URL}${paiement.mode_paiement.image}`}
+                          alt={paiement.mode_paiement.nomMode}
+                          style={{ width: "40px", height: "25px", objectFit: "contain" }}
+                        />
+                        <span>{paiement.mode_paiement?.nomMode }</span>
+                      </div>
+                    ) : (
+                      <span>{paiement.mode_paiement?.nomMode || "—"}</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`status ${paiement.statut === "effectué" ? "validée" : "en-attente"}`}>
+                      {paiement.statut === "effectué" ? "Payé" : "En attente"}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                         {paiement.datePaiement
+                        ? new Date(paiement.datePaiement).toLocaleDateString("fr-FR")
+                        : "—"}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      {paiement.statut !== "effectué" && (
+                        <button
+                          className="btn-validate"
+                          onClick={() => handleMarkAsPaid(paiement)}
+                          disabled={loadingAction === paiement.numPaiement}
+                          style={{
+                            opacity: loadingAction === paiement.numPaiement ? 0.7 : 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          {loadingAction === paiement.numPaiement ? (
+                            <>
+                              <div className="loading-spinner" style={{width: '16px', height: '16px', borderWidth: '2px'}}></div>
+                              Traitement...
+                            </>
+                          ) : (
+                            <>
+                              <FaCheckCircle style={{marginRight:"5px"}} /> Marquer payé
+                            </>
+                          )}
+                        </button>
+                      )}
+                      {paiement.statut === "effectué" && (
+                        <button className="btn-expediee" disabled>
+                          <FaCheckCircle style={{marginRight:"5px"}} /> Déjà payé
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="empty-table">
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <h3>
+                      {hasActiveFilters
+                        ? "Aucun paiement ne correspond à vos critères"
+                        : "Aucun paiement trouvé"}
+                    </h3>
+                    <p>
+                      {hasActiveFilters
+                        ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
+                        : "Les paiements apparaîtront ici lorsqu'ils seront enregistrés."}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal de confirmation */}
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <FaCheckCircle style={{ color: "#28a458" }} />
+                {modalData.title}
+              </h2>
+              <button className="modal-close" onClick={closeModal}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ 
+                fontSize: "16px", 
+                lineHeight: "1.5", 
+                marginBottom: "20px",
+                whiteSpace: 'pre-line'
+              }}>
+                {modalData.message}
+              </p>
+              
+              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-success"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+                    }
+                    closeModal();
+                  }}
+                  style={{ padding: "10px 30px" }}
+                >
+                  <FaCheckCircle style={{marginRight:"8px"}} /> Confirmer
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeModal}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

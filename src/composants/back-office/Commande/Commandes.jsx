@@ -140,8 +140,6 @@ const handleMarquerCommeVue = async (commandeId) => {
     setCommandes(prev => prev.map(cmd =>
       cmd.numCommande === commandeId ? { ...cmd, estConsulte: 0 } : cmd
     ));
-    console.error("Erreur lors de la consultation et de la navigation:", err);
-    showToast("error", "Erreur lors de la consultation de la commande");
   }
 };
 
@@ -574,8 +572,6 @@ const handleMarquerCommeVue = async (commandeId) => {
                    
                      <Link
                       className={`btn-consulter ${commande.estConsulte ? 'vu' : ''}`}
-                      // La navigation est gérée dans le onClick par la fonction,
-                      // mais nous gardons 'to' pour que le lien soit accessible (SEO, clic droit)
                       to={`/admin/commandes/${commande.numCommande}`}
                       onClick={() => handleMarquerCommeVue(commande.numCommande)} // <-- APPEL DE LA FONCTION MISE À JOUR
                       style={{ textDecoration: 'none', display: 'inline-block' }}
@@ -592,7 +588,6 @@ const handleMarquerCommeVue = async (commandeId) => {
                     </Link>
                   </td>
                   
-                  {/* ✨ CORRECTION DES ACTIONS SELON LE NOUVEAU FLUX ✨ */}
                   <td>
                     <div className="table-actions" style={{ flexWrap: "wrap", gap: "8px" }}>
                     

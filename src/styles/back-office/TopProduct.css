@@ -1,0 +1,32 @@
+/* Tooltip personnalisé */
+.custom-tooltip-box {
+  position: absolute;
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.15s;
+  transform: translateY(-5px);
+  font-family: "Inter", sans-serif;
+  z-index: 9999;
+}
+
+.tooltip-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tooltip-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tooltip-text {
+  font-size: 14px;
+  color: #333;
+}

@@ -463,11 +463,18 @@ const Decoupes = () => {
                 {modalData.message}
                 <br />
                 <span style={{ color: "#6c757d", fontSize: "14px", marginTop: "10px", display: "block" }}>
-                  Cette action est réversible, la découpe sera archivée.
+                  La découpe sera supprimée temporairement.
                 </span>
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                 <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-danger"
                   onClick={async () => {
@@ -480,13 +487,7 @@ const Decoupes = () => {
                 >
                   Supprimer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>
@@ -511,6 +512,13 @@ const Decoupes = () => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                 <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-success"
                   onClick={async () => {
@@ -523,13 +531,7 @@ const Decoupes = () => {
                 >
                   Restaurer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>

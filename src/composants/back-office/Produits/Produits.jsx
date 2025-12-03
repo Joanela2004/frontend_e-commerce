@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaPlus, FaSync, FaEdit, FaTrash, FaBox, FaTag, FaWeightHanging, FaImage, FaFilter, FaPercentage, FaList, FaUtensils, FaExclamationTriangle } from "react-icons/fa";
+import { FaSearch, FaPlus, FaSync, FaEdit, FaTrash, FaBox, FaTag, FaWeightHanging, FaImage, FaFilter, FaPercentage, FaList, FaUtensils, FaExclamationTriangle, FaEye, FaMoneyBillWave } from "react-icons/fa";
 import {
   createProduit,
   updateProduit,
@@ -15,8 +15,17 @@ import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
+import "../../../styles/back-office/produit.css";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
+const calculatePromotionalPrice = (originalPrice, discountPercentage) => {
+  return Math.round(originalPrice * (1 - discountPercentage / 100));
+};
+
+const calculateSavings = (originalPrice, discountPercentage) => {
+  return originalPrice - calculatePromotionalPrice(originalPrice, discountPercentage);
+};
 
 const Produits = () => {
   const navigate = useNavigate();
@@ -36,6 +45,7 @@ const Produits = () => {
   const [filtrePromotion, setFiltrePromotion] = useState("tous");
   const [filtrePrixMin, setFiltrePrixMin] = useState("");
   const [filtrePrixMax, setFiltrePrixMax] = useState("");
+  const [filtreStatut, setFiltreStatut] = useState("tous");
 
   // États pour les modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -58,9 +68,6 @@ const Produits = () => {
     numPromotion: "",
     image: null,
   });
-
-  // Toast pour restauration
-  const [restoreToast, setRestoreToast] = useState(null);
 
   useEffect(() => {
     chargerDonnees();
@@ -170,11 +177,6 @@ const Produits = () => {
 
       // Cas de produit soft-deleted
       if (err.response?.status === 409 && err.response?.data?.soft_deleted) {
-        setRestoreToast({
-          message: `Le produit "${err.response.data.produit_nom}" existe déjà mais est archivé.`,
-          id: err.response.data.produit_id,
-          nom: err.response.data.produit_nom,
-        });
         showModal(
           "restore",
           "Produit archivé trouvé",
@@ -257,10 +259,17 @@ const Produits = () => {
     // Filtre par prix maximum
     const prixMaxMatch = !filtrePrixMax || produit.prix <= parseFloat(filtrePrixMax);
     
-    return searchMatch && categorieMatch && promotionMatch && prixMinMatch && prixMaxMatch;
+    // Filtre par statut
+    const statutMatch = 
+      filtreStatut === "tous" || 
+      (filtreStatut === "actif" && produit.statut === 'actif') ||
+      (filtreStatut === "inactif" && produit.statut === 'inactif');
+    
+    return searchMatch && categorieMatch && promotionMatch && prixMinMatch && prixMaxMatch && statutMatch;
   });
 
-  const produitsEnPromotion = produits.filter(p => p.numPromotion).length;
+  const produitsEnPromotion = produits.filter(p => p.promotion).length;
+  const produitsActifs = produits.filter(p => p.statut === 'actif').length;
 
   // Réinitialiser tous les filtres
   const reinitialiserFiltres = () => {
@@ -268,6 +277,7 @@ const Produits = () => {
     setFiltrePromotion("tous");
     setFiltrePrixMin("");
     setFiltrePrixMax("");
+    setFiltreStatut("tous");
     setSearchTerm("");
     showToast("info", "Filtres réinitialisés");
   };
@@ -278,7 +288,8 @@ const Produits = () => {
     filtreCategorie !== "tous" || 
     filtrePromotion !== "tous" || 
     filtrePrixMin || 
-    filtrePrixMax;
+    filtrePrixMax ||
+    filtreStatut !== "tous";
 
   if (loading) {
     return (
@@ -296,12 +307,18 @@ const Produits = () => {
       <div className="page-header">
         <div>
           <h1>Gestion des Produits</h1>
-          <div className="stats-container">
+          <div className="stats-container" style={{ marginTop: '10px' }}>
             <span className="stat-item">
               {filteredProduits.length} produit{filteredProduits.length !== 1 ? 's' : ''} trouvé{filteredProduits.length !== 1 ? 's' : ''}
             </span>
-            <span className="stat-item recent">
+            <span className="stat-item" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
+              {produitsActifs} actif{produitsActifs !== 1 ? 's' : ''}
+            </span>
+            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
               {produitsEnPromotion} en promotion
+            </span>
+            <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
+              {produits.length} total
             </span>
           </div>
         </div>
@@ -382,6 +399,19 @@ const Produits = () => {
             </div>
             
             <div className="filter-group">
+              <label>Statut</label>
+              <select 
+                className="form-control"
+                value={filtreStatut} 
+                onChange={(e) => setFiltreStatut(e.target.value)}
+              >
+                <option value="tous">Tous les statuts</option>
+                <option value="actif">Actif</option>
+                <option value="inactif">Inactif</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
               <label>Prix minimum (Ar)</label>
               <input
                 type="number"
@@ -420,6 +450,12 @@ const Produits = () => {
               <span className="active-filter-tag">
                 Promotion: {filtrePromotion === "avec" ? "Avec promotion" : "Sans promotion"}
                 <button onClick={() => setFiltrePromotion("tous")}>×</button>
+              </span>
+            )}
+            {filtreStatut !== "tous" && (
+              <span className="active-filter-tag">
+                Statut: {filtreStatut}
+                <button onClick={() => setFiltreStatut("tous")}>×</button>
               </span>
             )}
             {filtrePrixMin && (
@@ -476,7 +512,7 @@ const Produits = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Prix (Ar)</label>
+                  <label><FaMoneyBillWave /> Prix (Ar)</label>
                   <input
                     type="number"
                     name="prix"
@@ -486,10 +522,8 @@ const Produits = () => {
                     step="0.01"
                     min="0"
                     placeholder="Ex: 1000"
-
                     className="form-control"
                   />
-                
                 </div>
                 
                 <div className="form-group">
@@ -498,8 +532,7 @@ const Produits = () => {
                     type="number"
                     name="poids"
                     value={form.poids}
-                     placeholder="Ex: 2"
-
+                    placeholder="Ex: 2"
                     onChange={handleChange}
                     required
                     step="0.01"
@@ -547,123 +580,182 @@ const Produits = () => {
               </div>
 
               <div className="modal-actions">
-                 <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                <button type="button" className="btn btn-secondary" onClick={resetForm}>
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-primary">
                   {editingId ? "Mettre à jour" : "Ajouter le produit"}
                 </button>
-               
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Grille de produits */}
-      {filteredProduits.length > 0 ? (
-        <div className="grid-container grid-4">
-          {filteredProduits.map((produit) => (
-            <div className="card" key={produit.numProduit}>
-              {produit.promotion && (
-                <div className="badge badge-promo">
-                  -{produit.promotion.valeur}%
-                </div>
-              )}
-              
-              <div className="image-container">
-                {produit.image ? (
-                  <img
-                    src={`${IMAGE_BASE_URL}${produit.image}`}
-                    alt={produit.nomProduit}
-                    className="card-image"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = `
-                        <div class="image-fallback">
-                          <FaBox style="font-size: 40px; color: #ccc;" />
-                        </div>
-                      `;
-                    }}
-                  />
+   <div className="grid-container grid-3">
+  {filteredProduits.length > 0 ? (
+    filteredProduits.map((produit) => {
+      const hasPromotion = produit.promotion && produit.promotion.valeur;
+      const promotionalPrice = hasPromotion
+        ? calculatePromotionalPrice(produit.prix, produit.promotion.valeur)
+        : null;
+      const savings = hasPromotion
+        ? calculateSavings(produit.prix, produit.promotion.valeur)
+        : null;
+
+      return (
+        <div key={produit.numProduit} className="card">
+          {/* Badge promo (utilise badge-promo du CSS) */}
+          {hasPromotion && (
+            <span className="badge-promo">-{produit.promotion.valeur}%</span>
+          )}
+
+          {/* Image */}
+          <div className="image-container">
+            {produit.image ? (
+              <img
+                src={`${IMAGE_BASE_URL}${produit.image}`}
+                alt={produit.nomProduit}
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.parentElement.innerHTML = `
+                    <div class='image-fallback'>
+                      <i class='fa fa-box' style='font-size:40px;color:#ccc;'></i>
+                    </div>
+                  `;
+                }}
+              />
+            ) : (
+              <div className="image-fallback">
+                <FaBox style={{ fontSize: "40px", color: "#ccc" }} />
+              </div>
+            )}
+          </div>
+
+          {/* Corps de la carte */}
+          <div className="card-body">
+            <h3 className="product-title" style={{ marginBottom: '2px' }}>
+              {produit.nomProduit}
+            </h3>
+          
+            
+            {produit.categorie && (
+              <span className="product-category" style={{ 
+                display: 'block', 
+                marginBottom: '10px',
+                backgroundColor: 'rgba(40, 164, 88, 0.1)',
+                color: '#28a458',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '0.85rem',
+                fontWeight: '500',
+                alignSelf: 'flex-start',
+                width: 'fit-content'
+              }}>
+                {produit.categorie.nomCategorie}
+              </span>
+            )}
+
+            {/* Section prix et poids alignés */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '10px',
+              borderTop: '1px dashed #e0e0e0',
+              paddingTop: '15px'
+            }}>
+              {/* Prix */}
+              <div style={{ flex: 1 }}>
+                {hasPromotion ? (
+                  <>
+                    <div style={{ 
+                      fontSize: '1rem',
+                      color: '#6c757d',
+                      textDecoration: 'line-through',
+                      marginBottom: '5px'
+                    }}>
+                      {produit.prix.toLocaleString()} Ar
+                    </div>
+                    <div style={{ 
+                      fontSize: '1.4rem',
+                      fontWeight: '800',
+                      color: '#dc3545',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}>
+                      <span>{promotionalPrice.toLocaleString()}</span>
+                      <span style={{ fontSize: '1rem', fontWeight: '600' }}>Ar</span>
+                    </div>
+                   
+                  </>
                 ) : (
-                  <div className="image-fallback">
-                    <FaBox  style={{ fontSize: "40px", color: "#ccc" }} />
+                  <div style={{ 
+                    fontSize: '1.4rem',
+                    fontWeight: '800',
+                    color: '#28a458',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    <span>{produit.prix.toLocaleString()}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: '600' }}>Ar</span>
                   </div>
                 )}
               </div>
-              
-              <div className="card-body">
-                <h3 className="article-title">
-                  {produit.nomProduit}
-                </h3>
-                
-                <div className="meta-info">
-                  <div className="meta-item">
-                    <FaTag className="meta-icon" />
-                    <span>{produit.categorie?.nomCategorie || "Non catégorisé"}</span>
-                  </div>
-                  <div className="meta-item">
-                    <FaWeightHanging className="meta-icon" />
-                    <span>{produit.poids} kg</span>
-                  </div>
+
+              {/* Poids aligné à droite */}
+              <div style={{ 
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                marginLeft: '20px'
+              }}>
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#6c757d',
+                  fontSize: '0.9rem'
+                }}>
+                  <FaWeightHanging style={{ color:"#28a458"}}/>
+                  <span style={{ color:"#28a458",fontWeight: '500' }}>{produit.poids} kg</span>
                 </div>
-                
-                <div className="price-container">
-                  {produit.promotion ? (
-                    <>
-                      <span className="price-old">{produit.prix} Ar</span>
-                      <span className="price-new">
-                        {Math.round(produit.prix * (1 - produit.promotion.valeur / 100))} Ar
-                      </span>
-                    </>
-                  ) : (
-                    <span className="price-normal">{produit.prix} Ar</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="actions-container">
-                <button 
-                  className="edit"
-                  onClick={() => handleEdit(produit)}
-                >
-                  <FaEdit style={{color:"#28a458", marginRight:"10px"}} /> Modifier
-                </button>
-                
-                <button 
-                  className="delete" 
-                  onClick={() => handleDeleteClick(produit.numProduit, produit.nomProduit)}
-                >
-                  <FaTrash style={{marginRight:"10px"}} /> Supprimer
-                </button>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Footer */}
+          <div className="card-footer">
+            <div className="table-actions">
+              <button className="edit" onClick={() => handleEdit(produit)}>
+                <FaEdit /> Modifier
+              </button>
+              <button
+                className="delete"
+                onClick={() =>
+                  handleDeleteClick(produit.numProduit, produit.nomProduit)
+                }
+              >
+                <FaTrash /> Supprimer
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="empty-state">
-          <h3>
-            {hasActiveFilters
-              ? "Aucun produit ne correspond à vos critères" 
-              : "Aucun produit trouvé"}
-          </h3>
-          <p>
-            {hasActiveFilters
-              ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
-              : "Commencez par ajouter votre premier produit"}
-          </p>
-          {!hasActiveFilters && (
-            <button 
-              className="btn btn-primary" 
-              onClick={() => setIsFormOpen(true)}
-              style={{ marginTop: "20px" }}
-            >
-              <FaPlus /> Ajouter un produit
-            </button>
-          )}
-        </div>
-      )}
+      );
+    })
+  ) : (
+    <div className="loading-state">
+      <h3>Aucun produit trouvé</h3>
+      <p>Commencez par ajouter votre premier produit</p>
+      <button className="btn btn-primary" onClick={() => setIsFormOpen(true)}>
+        <FaPlus /> Ajouter un produit
+      </button>
+    </div>
+  )}
+</div>
+
 
       {/* Modal de suppression */}
       {showDeleteModal && (
@@ -682,11 +774,18 @@ const Produits = () => {
                 {modalData.message}
                 <br />
                 <span style={{ color: "#6c757d", fontSize: "14px", marginTop: "10px", display: "block" }}>
-                  Cette action est réversible, le produit sera archivé.
+                   Ce produit sera supprimée temporairement.
                 </span>
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                 <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-danger"
                   onClick={async () => {
@@ -699,13 +798,7 @@ const Produits = () => {
                 >
                   Supprimer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>
@@ -730,6 +823,14 @@ const Produits = () => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-success"
                   onClick={async () => {
@@ -741,13 +842,6 @@ const Produits = () => {
                   style={{ padding: "10px 30px" }}
                 >
                   Restaurer
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
                 </button>
               </div>
             </div>

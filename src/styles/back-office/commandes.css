@@ -1,498 +1,316 @@
-/* --- Styles des Commandes (Similaire à Livraison.css, sauf pagination) --- */
-
-/* --- Container and General Layout --- */
-.livraison-container {
-    min-height: 100vh;
-    background-color: var(--color-background-light); 
-    padding: clamp(12px, 4vw, 20px);
-    font-family: 'Inter', sans-serif;
+.commande-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
-
-/* --- Header et Tabs --- */
-.livraison-header {
-    background: var(--color-background-white);
-    border-radius: var(--rayon);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.livraison-header h2 {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    color: var(--color-text-dark);
-    margin: 0;
-    font-weight: 700;
-}
-
-.livraison-header h2 svg {
-    color: var(--color-green-primary);
-}
-
-.livraison-tabs {
-    display: flex;
-    gap: 0.5rem;
-    background: var(--color-background-white);
-    padding: 0.25rem;
-    border-radius: var(--rayon);
-    flex-shrink: 0;
-}
-
-.livraison-tabs button {
-    padding: 0.625rem 1.25rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 0.95rem;
-    white-space: nowrap;
-}
-
-.livraison-tabs .tab-active {
-    background: var(--color-green-primary);
-    color: var(--color-background-white);
-}
-
-.livraison-tabs button:not(.tab-active) {
-    background: transparent;
-    color: var(--color-text-dark);
-}
-
-.livraison-tabs button:not(.tab-active):hover {
-    background: var(--color-background-light);
-}
-
-/* --- Search Bar / Filtres (combinés) --- */
-.livraison-search-bar {
-    background: var(--color-background-white);
-    border-radius: var(--rayon);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    border: 1px solid var(--color-border-light);
-}
-
-.livraison-search-bar svg {
-    color: #666; 
-    font-size: 1.25rem;
-}
-
-.livraison-search-bar input {
-    flex: 1;
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    outline: none;
-    transition: var(--transition);
-}
-
-.livraison-search-bar input:focus,
-.livraison-search-bar select.select-filter:focus {
-    border-color: var(--color-green-primary);
-    box-shadow: 0 0 0 3px rgba(40, 164, 88, 0.1); 
-}
-
-.livraison-search-bar select.select-filter {
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    outline: none;
-    transition: var(--transition);
-    cursor: pointer;
-    background: var(--color-background-white);
-    color: var(--color-text-dark);
-}
-
-/* --- Indicateur de nouvelles commandes --- */
-.new-orders-indicator {
-    background-color: #fff3cd; 
-    color: #856404;
-    padding: 0.75rem 1rem;
-    border: 1px solid #ffeeba;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-}
-
-/* --- Tableau --- */
-.livraison-table {
-    width: 100%;
-    background: var(--color-background-white);
-    border-radius: var(--rayon);
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border-collapse: collapse;
-}
-
-.livraison-table thead {
-    background: var(--color-green-primary);
-    color: var(--color-background-white);
-}
-
-.livraison-table th {
-    padding: 1rem 1.5rem;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.livraison-table tbody tr {
-    border-bottom: 1px solid var(--color-border-light);
-    transition: background 0.2s;
-}
-
-.livraison-table tbody tr:hover {
-    background: var(--color-background-light);
-}
-
-.livraison-table td {
-    padding: 1rem 1.5rem;
-    color: var(--color-text-dark);
-}
-
-.livraison-table td:first-child {
-    font-weight: 600;
-    color: var(--color-text-dark);
-}
-
-.new-order-row {
-    background-color: #e6f7ff !important; 
-    font-weight: 500;
-}
-
-/* --- Badges de Statut --- */
-.statut-badge {
-    display: inline-block;
-    padding: 0.3em 0.7em;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: capitalize;
-    text-align: center;
-    min-width: 80px;
-}
-
-.statut-reussi { 
-    background-color: #e6ffed;
-    color: #007c45; 
-}
-
-.statut-expediee { 
-    background-color: #fff4e6;
-    color: #ff9900; 
-}
-
-.statut-attente { 
-    background-color: #e9e9e9;
-    color: #6c757d; 
-}
-
-.statut-annule { 
-    background-color: #fbe6e6;
-    color: #dc3545; 
-}
-
-.badge-paid {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.badge-unpaid {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.mode-paiement-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-    border-radius: 8px;
-    border: 1px solid var(--color-border-light);
-    padding: 4px;
-    background: var(--color-background-white);
-}
-
-/* --- Boutons d'Action --- */
-.actions-cell-bo {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-action {
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    font-size: 0.85rem;
-    border: 1px solid transparent;
-    white-space: nowrap; 
-}
-
-.btn-validate {
-    background-color: var(--color-green-primary);
-    color: white;
-}
-.btn-validate:hover { background-color: var(--color-green-secondary); }
-
-.btn-cancel {
-    background-color: var(--color-danger-dark);
-    color: white;
-}
-.btn-cancel:hover { background-color: #bd2130; }
-
-.btn-delivery, .btn-pay {
-    background-color: #17a2b8; 
-    color: white;
-}
-.btn-delivery:hover, .btn-pay:hover { background-color: #117a8b; }
-
-.btn-action[disabled] {
-    background-color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.7;
-    box-shadow: none;
-}
-
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-    .livraison-container {
-        padding: 1rem;
-    }
-
-    .livraison-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .livraison-header h2 {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .livraison-tabs {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .livraison-tabs button {
-        flex: 1;
-        min-width: unset;
-    }
-
-    .livraison-search-bar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .livraison-search-bar input,
-    .livraison-search-bar select.select-filter {
-        width: 100%;
-    }
-
-    .livraison-table {
-        font-size: 0.875rem;
-        overflow-x: auto; 
-    }
-    
-    .livraison-table table {
-        min-width: 800px;
-    }
-
-    .livraison-table th,
-    .livraison-table td {
-        padding: 0.75rem;
-    }
-
-    .actions-cell-bo {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .btn-action {
-        width: 100%;
-        text-align: center;
-    }
-}
-/* src/components/back-office/Clients/CommandesClient.css */
-
-/* --- Réutilisation des Styles Globaux du Back-Office --- */
-/* (Assurez-vous que .livraison-container, .livraison-header et .livraison-table sont bien importés via un fichier global comme client.css ou commandes.css) */
-
-/* Style pour le bouton de retour */
-.btn-back {
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--color-border);
   background: var(--color-background-white);
-  color: var(--color-text-dark);
-  border: 1px solid var(--color-border-light);
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
+  padding: 15px 20px;
+  box-shadow: var(--shadow);
+}
+
+.details-header h2 {
+  color: var(--color-text);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin: 0;
+  font-weight: 700;
+}
+
+/* Informations de la commande - disposition spécifique */
+.commande-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: var(--radius);
+}
+
+.commande-info p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.commande-info strong {
+  
+  min-width: 180px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.statut-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statut-reussi {
+  background: rgba(39, 174, 96, 0.15);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+.statut-expediee {
+  background: rgba(52, 152, 219, 0.15);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+}
+
+.statut-attente {
+  background: rgba(243, 156, 18, 0.15);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+}
+
+.statut-annule {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.statut-default {
+  background: rgba(108, 117, 125, 0.15);
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.table-produits {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 20px 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-produits thead {
+  background: var(--color-primary);
+  color: white;
+}
+
+.table-produits th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-produits tbody tr {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--color-border);
+}
+
+
+
+.table-produits td {
+  padding: 1rem;
+  vertical-align: middle;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-produits tbody tr:last-child td {
+  border-bottom: none;
+}
+.img-produit {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.recap-financier {
+  margin-top: 30px;
+  padding: 25px;
+  
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  position: relative;
+}
+
+.recap-financier h3 {
+  color: var(--color-primary);
+  margin-bottom: 20px;
+  font-size: 1.4rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: var(--transition);
-  text-decoration: none;
-  font-size: 0.9rem;
+  gap: 10px;
 }
 
-.btn-back:hover {
-  background: var(--color-background-light);
-  border-color: var(--color-green-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.recap-financier p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.75rem 0;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--color-border);
+  font-size: 1.05rem;
+  color: var(--color-text);
 }
 
-/* Carte de détails du client */
-.client-details-card {
-  background: var(--color-background-white);
-  padding: 1.5rem;
-  border-radius: var(--rayon);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
-  border-left: 5px solid var(--color-green-primary);
+.recap-financier hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 2px solid var(--color-border);
 }
 
-.client-details-card h4 {
-  margin-top: 0;
-  color: var(--color-text-dark);
-  font-size: 1.2rem;
-  border-bottom: 1px solid var(--color-border-light);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.client-details-card p {
-  margin: 0.5rem 0;
-  font-size: 0.95rem;
-}
-
-.client-details-card strong {
+.montant-total {
+  font-size: 1.3rem !important;
   font-weight: 700;
-  color: var(--color-green-secondary);
+  color: var(--color-primary);
+  background: white;
+  padding: 1rem !important;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-primary) !important;
+  margin-top: 20px !important;
 }
 
-.section-title-commandes {
-    font-size: 1.3rem;
-    color: var(--color-text-dark);
-    margin-bottom: 1rem;
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 20px;
 }
 
-/* Style spécifique pour le tableau des commandes */
-.table-commandes-client td {
-    vertical-align: middle;
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--color-background);
+  border-top: 5px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.montant-cell {
-    text-align: right;
-    font-family: monospace;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.total-montant-cell {
-    font-size: 1.1rem;
-    color: var(--color-green-primary);
+.error-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-danger);
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-danger);
+  margin: 20px auto;
+  max-width: 600px;
 }
 
-/* Styles des badges (réutilisés de Commandes.jsx si possible) */
-.statut-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: capitalize;
-    display: inline-block;
-    white-space: nowrap;
+.error-message::before {
+  content: "⚠️ ";
+  font-size: 1.5rem;
 }
 
-/* Couleurs des statuts (à adapter à vos variables ou couleurs exactes) */
-.statut-en-attente, .statut-attente { 
-    background-color: var(--color-warning-light, #fffbe6); 
-    color: var(--color-warning-dark, #8a6d3b);
-}
-.statut-validée { 
-    background-color: var(--color-info-light, #d9edf7); 
-    color: var(--color-info-dark, #31708f); 
-}
-.statut-expédiée, .statut-en-cours { 
-    background-color: var(--color-blue-light, #e0f7fa); 
-    color: var(--color-blue-dark, #00796b); 
-}
-.statut-livrée { 
-    background-color: var(--color-success-light, #dff0d8); 
-    color: var(--color-success-dark, #3c763d);
-}
-.statut-annulée { 
-    background-color: var(--color-danger-light, #f2dede); 
-    color: var(--color-danger-dark, #a94442);
+/* Styles pour le téléchargement PDF */
+.pdf-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* Style en cas d'absence de données */
-.no-data-card {
-    background: var(--color-background-white);
-    padding: 2rem;
-    border-radius: var(--rayon);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    text-align: center;
-    color: var(--color-gray-light);
-    font-style: italic;
+.pdf-loading .loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
+/* Styles pour l'impression */
+@media print {
+  .actions-container,
+  .btn {
+    display: none !important;
+  }
+  
+  .commande-details-container {
+    box-shadow: none;
+    padding: 0;
+  }
+  
+  .commande-info,
+  .recap-financier {
+    break-inside: avoid;
+  }
+  
+  .table-produits {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
+
+/* Responsive pour détails de commande */
 @media (max-width: 768px) {
-    .table-commandes-client {
-        overflow-x: auto;
-        display: block;
-    }
-    
-    .table-commandes-client thead,
-    .table-commandes-client tbody {
-        display: block;
-    }
-    
-    .table-commandes-client tr {
-        display: flex;
-        flex-direction: column;
-        border: 1px solid var(--color-border-light);
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 8px;
-    }
-    
-    .table-commandes-client td,
-    .table-commandes-client th {
-        display: block;
-        width: 100%;
-        text-align: left !important;
-        padding: 5px 0;
-    }
-    
-    .table-commandes-client td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        margin-right: 10px;
-        color: var(--color-text-dark);
-        min-width: 120px;
-        display: inline-block;
-    }
+  .commande-details-container {
+    padding: 10px;
+  }
+  
+  .details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .commande-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-produits {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  .recap-financier p {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .commande-info p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .commande-info strong {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-produits th,
+  .table-produits td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .img-produit {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .recap-financier {
+    padding: 15px;
+  }
+  
+  .recap-financier h3 {
+    font-size: 1.2rem;
+  }
 }

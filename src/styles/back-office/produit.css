@@ -1,0 +1,519 @@
+/* ============================================
+   CARTES DE PRODUITS - AMÉLIORATIONS
+   ============================================ */
+
+/* Conteneur principal des cartes produits */
+.products-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+/* Carte produit améliorée */
+.product-card {
+  background: var(--color-background-white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-green-primary);
+}
+
+/* En-tête de la carte avec image */
+.product-card-header {
+  position: relative;
+  padding: 0;
+  height: 200px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Badge de promotion */
+.promotion-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promotion-badge::before {
+  content: "🔥";
+  font-size: 0.8rem;
+}
+
+/* Badge statut */
+.status-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 20;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, #28a458, #218838);
+  color: white;
+  box-shadow: 0 2px 6px rgba(40, 164, 88, 0.3);
+}
+
+.status-badge.inactive {
+  background: linear-gradient(135deg, #6c757d, #495057);
+  color: white;
+  box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+}
+
+/* Corps de la carte */
+.product-card-body {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Titre du produit */
+.product-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+/* Catégorie */
+.product-category {
+  display: inline-block;
+  background: rgba(40, 164, 88, 0.1);
+  color: var(--color-green-primary);
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+/* Description */
+.product-description {
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+  margin: 0;
+}
+
+/* Section prix */
+.product-price-section {
+  margin-top: auto;
+  padding-top: 15px;
+  border-top: 1px dashed var(--color-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Prix original barré (quand promotion) */
+.price-original {
+  font-size: 1rem;
+  color: #6c757d;
+  text-decoration: line-through;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0.7;
+}
+
+.price-original .amount {
+  font-weight: 500;
+}
+
+/* Prix promotionnel */
+.price-promotional {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-price {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #dc3545;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.promo-price .currency {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.promo-price .amount {
+  font-size: 1.4rem;
+}
+
+/* Prix normal (sans promotion) */
+.price-normal {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-green-primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.price-normal .currency {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.price-normal .amount {
+  font-size: 1.4rem;
+}
+
+/* Économie */
+.savings {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+.savings::before {
+  content: "💰";
+  font-size: 0.8rem;
+}
+
+/* Informations supplémentaires */
+.product-meta-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  margin-top: 10px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-icon {
+  color: #8b5e3c;
+  font-size: 0.9rem;
+}
+
+/* Pied de carte avec actions */
+.product-card-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--color-border-light);
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Actions */
+.product-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-product-action {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  min-width: 90px;
+  justify-content: center;
+}
+
+.btn-edit-product {
+  background: linear-gradient(135deg, #ffc107, #e0a800);
+  color: #212529;
+}
+
+.btn-edit-product:hover {
+  background: linear-gradient(135deg, #e0a800, #d39e00);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+.btn-delete-product {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+}
+
+.btn-delete-product:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-view-product {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+}
+
+.btn-view-product:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
+/* Stock */
+.stock-info {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-in {
+  background: rgba(40, 164, 88, 0.1);
+  color: var(--color-green-primary);
+}
+
+.stock-out {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.stock-icon {
+  font-size: 0.8rem;
+}
+
+/* Animation pour la promotion */
+@keyframes pulsePromo {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.product-card.has-promotion .promotion-badge {
+  animation: pulsePromo 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .products-grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 5px;
+  }
+  
+  .product-card-header {
+    height: 180px;
+  }
+  
+  .product-card-body {
+    padding: 15px;
+    gap: 10px;
+  }
+  
+  .product-title {
+    font-size: 1rem;
+  }
+  
+  .product-card-footer {
+    padding: 12px 15px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .product-actions {
+    justify-content: center;
+  }
+  
+  .btn-product-action {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .price-normal .amount,
+  .promo-price .amount {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .product-card-header {
+    height: 160px;
+  }
+  
+  .promotion-badge,
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+}
+
+/* État vide */
+.products-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--color-background-white);
+  border-radius: 12px;
+  border: 2px dashed var(--color-border);
+}
+
+.products-empty-state h3 {
+  color: var(--color-text);
+  margin-bottom: 15px;
+  font-size: 1.25rem;
+}
+
+.products-empty-state p {
+  color: var(--color-text-light);
+  max-width: 500px;
+  margin: 0 auto 25px;
+  line-height: 1.6;
+}
+
+/* Filtres produits */
+.products-filters {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: var(--color-background-white);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.filter-group-products {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group-products label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: white;
+  font-size: 0.95rem;
+  color: var(--color-text-dark);
+  transition: all 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-green-primary);
+  box-shadow: 0 0 0 3px rgba(40, 164, 88, 0.1);
+}
+
+/* Style spécial pour les produits en promotion */
+.product-card.has-promotion {
+  border: 2px solid rgba(220, 53, 69, 0.2);
+  position: relative;
+}
+
+.product-card.has-promotion::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #dc3545, #ffc107);
+  z-index: 10;
+}

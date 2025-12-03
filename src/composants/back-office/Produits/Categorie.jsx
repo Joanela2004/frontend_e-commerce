@@ -305,7 +305,7 @@ const Categorie = () => {
                             className="delete" 
                             onClick={() => handleDeleteClick(categorie.numCategorie, categorie.nomCategorie)}
                           >
-                            <FaTrash style={{marginRight:"8px"}} /> Archiver
+                            <FaTrash style={{marginRight:"8px"}} /> Supprimer
                           </button>
                         </>
                       ) : (
@@ -377,11 +377,18 @@ const Categorie = () => {
                 {modalData.message}
                 <br />
                 <span style={{ color: "#6c757d", fontSize: "14px", marginTop: "10px", display: "block" }}>
-                  Cette action est réversible, la catégorie sera archivée.
+                 La catégorie sera supprimée temporairement
                 </span>
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-danger"
                   onClick={async () => {
@@ -392,15 +399,9 @@ const Categorie = () => {
                   }}
                   style={{ padding: "10px 30px" }}
                 >
-                  Archiver
+                  Supprimer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+                
               </div>
             </div>
           </div>
@@ -426,6 +427,13 @@ const Categorie = () => {
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
                 <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+                <button
                   className="btn btn-success"
                   onClick={async () => {
                     if (modalData.onConfirm) {
@@ -437,13 +445,7 @@ const Categorie = () => {
                 >
                   Restaurer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>

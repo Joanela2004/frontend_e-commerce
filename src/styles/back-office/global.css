@@ -391,6 +391,13 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+.status.en-cours{
+   
+  background: #fff3cd;
+  color: #856404;
+
+   
+}
 
 .status.en-attente {
   background: #fff3cd;
@@ -427,6 +434,7 @@
   color: #383d41;
   border: 1px solid #d6d8db;
 }
+
 
 /* Bouton consulter */
 .btn-consulter {
