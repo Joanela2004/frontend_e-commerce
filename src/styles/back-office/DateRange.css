@@ -1,11 +1,189 @@
-.date-range {
+/* --- Conteneur Principal --- */
+.date-range-container {
+  background-color: #ffffff; /* Fond blanc propre */
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Ombre élégante */
+  padding: 20px;
+  max-width: fit-content; /* S'adapte au contenu */
+  font-family: 'Arial', sans-serif; /* Police claire */
+}
+
+/* --- En-tête de la Plage de Dates --- */
+.date-range-header h3 {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 20px;
+  color: #333; /* Couleur de texte sombre */
+  font-size: 1.2em;
+  font-weight: 600;
+  border-bottom: 1px solid #eee; /* Ligne de séparation légère */
+  padding-bottom: 10px;
 }
 
-.date-range input {
-  padding: 6px 10px;
+.date-range-header h3 svg {
+  color:  #28a458; /* Couleur d'accentuation pour l'icône */
+}
+
+/* --- Corps (Sélecteurs de Date) --- */
+.date-range-body {
+  display: flex;
+  align-items: flex-end; /* Aligner les éléments en bas pour l'harmonie */
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.date-picker-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-label label {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 500;
+}
+
+/* --- Séparateur (Flèche) --- */
+.date-separator {
+  color:  #28a458;
+  font-size: 1.2em;
+  /* La flèche est déjà alignée en bas grâce à align-items: flex-end; */
+  padding-bottom: 12px; /* Ajuster légèrement la position verticale */
+}
+
+/* --- Custom Input (Le champ cliquable) --- */
+.custom-date-input {
+  display: flex;
+  align-items: center;
   border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.custom-date-input:hover {
+  border-color:  #28a458;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+.calendar-icon {
+  color:  #28a458; /* Couleur d'accentuation */
+  margin-right: 10px;
+  font-size: 1.1em;
+}
+
+.date-text-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  font-size: 1em;
+  color: #333;
+  cursor: pointer; /* Indiquer que c'est cliquable */
+  width: 90px;
+}
+
+/* --- Input de Saisie Manuelle (Optionnel sous le champ) --- */
+.date-manual-input {
+  margin-top: 5px;
+  padding: 5px 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #555;
+  text-align: center;
+}
+
+/* --- Pied de Page (Boutons Rapides) --- */
+.date-range-footer {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.quick-date-btn {
+  background-color: #e9ecef; /* Fond gris clair */
+  color: #495057; /* Texte gris foncé */
+  border: none;
   border-radius: 6px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.quick-date-btn:hover {
+  background-color:  #28a458; /* Bleu au survol */
+  color: white;
+}
+
+/* --- PERSONNALISATION du CALENDRIER (react-datepicker) --- */
+
+/* Conteneur principal du calendrier */
+.react-datepicker-popper {
+  z-index: 1000; /* Assurez-vous qu'il est au-dessus des autres éléments */
+}
+
+.react-datepicker {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Header du calendrier (Mois et Année) */
+.react-datepicker__header {
+  background-color:  #28a458;
+  border-top-left-radius: 9px;
+  border-top-right-radius: 9px;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  border-bottom: none;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__navigation-icon::before {
+  color: white;
+}
+
+/* Styles pour les jours */
+.react-datepicker__day-name,
+.react-datepicker__day {
+  width: 2.2rem;
+  line-height: 2.2rem;
+  margin: 0.166rem;
+}
+
+/* Jours non dans le mois */
+.react-datepicker__day--outside-month {
+  color: #ccc;
+}
+
+/* Jour en survol (Hover) */
+.react-datepicker__day:hover {
+  background-color: #e0f7ff; /* Bleu très clair */
+  border-radius: 50%;
+}
+
+/* Jour sélectionné */
+.react-datepicker__day--selected,
+.react-datepicker__day--in-range {
+  background-color:  #28a458 !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+/* Jour d'aujourd'hui */
+.react-datepicker__day--today {
+  font-weight: bold;
+  border: 1px solid  #28a458;
+  border-radius: 50%;
+  background-color: transparent;
+  color: #333;
 }

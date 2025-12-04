@@ -28,12 +28,24 @@ export default function SalesByCategory() {
       const labels = res.data.map(item => item.nomCategorie);
       const values = res.data.map(item => item.total);
 
+     
       setChartData({
         labels,
         datasets: [
           {
             label: "Chiffre d’affaires",
-            data: values
+            data: values,
+            backgroundColor: [
+              '#8b5e3c',
+              '#28a458',
+              '#5E8BA8', // Bleu
+             
+              ' #0e6bc2dc', // Vert Clair
+              '#9FB3C3', // Bleu Gris
+              '#D2B48C', // Fauve
+            ],
+            borderColor: '#FFFFFF',
+            borderWidth: 2,
           }
         ]
       });
@@ -52,12 +64,14 @@ export default function SalesByCategory() {
   if (loading) return <div className="loading">Chargement...</div>;
 
   return (
-    <div className="sales-category-container">
-      <h2>Ventes par Catégorie</h2>
-
+    <div className="sales-category-container" >
+      
       {chartData && (
-        <div className="chart-wrapper">
-          <Pie data={chartData} />
+        
+        <div style={{width:"80%",height:"88%",padding:"20px"}}>
+          <h2>Ventes par Catégorie</h2>
+
+          <Pie  data={chartData} />
         </div>
       )}
     </div>

@@ -1,51 +1,236 @@
-.stock-alerts-container {
-  width: 100%;
-  max-width: 700px;
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.08);
-  margin: 20px auto;
-  font-family: "Inter", sans-serif;
+
+
+.stock-alerts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f4f8;
 }
 
-.stock-alerts-container h2 {
-  font-size: 22px;
-  margin-bottom: 18px;
-  color: #333;
+.stock-alerts-header h2 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stock-alerts-header h2::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 24px;
+ 
+  border-radius: 2px;
+}
+
+.stock-badge {
+  background: linear-gradient(135deg, #ef4444 0% );
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 600;
-  text-align: center;
 }
 
-.stock-alerts-container p {
-  text-align: center;
-  font-size: 16px;
-  color: #555;
+.stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
 }
 
-table {
+.stock-card {
+  background: white;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+  border-color: #28a458;
+}
+
+.stock-card.critical {
+  border-left: 4px solid #ef4444;
+}
+
+.stock-card.warning {
+  border-left: 4px solid #f59e0b;
+}
+
+
+
+.stock-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.stock-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-right: 16px;
+  flex-shrink: 0;
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stock-image img {
   width: 100%;
-  border-collapse: collapse;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stock-details {
+  flex: 1;
+}
+
+.product-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.seuil-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.seuil-info .icon {
+  color: #94a3b8;
+}
+
+.stock-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px dashed #eef2f7;
+}
+
+.stock-count-container {
+  text-align: center;
+  position: relative;
+}
+
+.stock-count {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.stock-card.critical .stock-count {
+  color: #ef4444;
+}
+
+.stock-card.warning .stock-count {
+  color: #f59e0b;
+}
+
+.stock-card.low .stock-count {
+  color: #28a458;
+}
+
+.stock-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.stock-progress {
+  width: 100%;
+  height: 6px;
+  background: #eef2f7;
+  border-radius: 3px;
+  overflow: hidden;
   margin-top: 12px;
 }
 
-thead th {
-  text-align: left;
-  padding: 12px;
-  background: #f3f3f3;
-  font-weight: 600;
-  color: #555;
+.stock-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 
-tbody td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-  color: #333;
+.stock-card.critical .stock-progress-bar {
+  background: linear-gradient(90deg, #ef4444, #f87171);
 }
 
-.loading {
+.stock-card.warning .stock-progress-bar {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stock-card.low .stock-progress-bar {
+  background: linear-gradient(90deg, #28a458, #60a5fa);
+}
+
+.stock-empty-state {
   text-align: center;
-  font-size: 18px;
-  color: #555;
-  margin-top: 40px;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+.stock-empty-state .icon {
+  font-size: 3rem;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #eef2f7;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stock-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stock-alerts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }

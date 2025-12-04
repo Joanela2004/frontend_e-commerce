@@ -22,32 +22,32 @@ export default function GetKpis({ range = "30d", start = null, end = null }) {
     fetchKpis();
   }, [start, end, range]);
 
-  if (loading) return <div className="loading">Chargement KPIs...</div>;
-  if (!kpis) return <div className="loading">Aucun KPI disponible</div>;
+  if (loading) return <div className="loading"></div>;
+  if (!kpis) return <div className="loading"></div>;
 
   return (
-    <div className="kpis-container">
+    <div className="getkpi-container">
 
       {/* Repeat Purchase Rate */}
-      <div className="kpi-card">
+      <div className="getkpi-card">
         <h3>Fréquence d’achat</h3>
         <p>{kpis.repeatPurchaseRate}%</p>
       </div>
 
       {/* Revenu */}
-      <div className="kpi-card">
+      <div className="getkpi-card">
         <h3>Revenu total</h3>
         <p>{kpis.revenuTotal.toLocaleString()} Ar</p>
       </div>
 
 
       
-
       {/* Taux retour/annulation */}
-      <div className="kpi-card">
+      <div className="getkpi-card">
         <h3>Taux d'annulation</h3>
         <p>{kpis.tauxRetour}%</p>
       </div>
     </div>
+    
   );
 }

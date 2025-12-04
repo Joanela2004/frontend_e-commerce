@@ -17,6 +17,9 @@ import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
 import { fetchPaiements, updatePaiement } from "../../../services/paiementService";
 import { useToast } from "../../../contexts/ToastContext";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
 
 const Paiements = () => {
   const [paiements, setPaiements] = useState([]);
@@ -191,14 +194,11 @@ const Paiements = () => {
             <span className="stat-item" style={{ background: 'rgba(255, 193, 7, 0.1)', color: '#856404' }}>
               <FaFileInvoiceDollar style={{marginRight: '5px'}} /> {paiementsEnAttente} en attente
             </span>
-            <span className="stat-item" style={{ background: 'rgba(23, 162, 184, 0.1)', color: '#0c5460' }}>
-              <FaMoneyBillWave style={{marginRight: '5px'}} /> {totalMontant.toFixed(2)} € total
-            </span>
+            
           </div>
         </div>
       </div>
 
-      {/* Navigation tabs */}
       <div className="navigation-tabs">
         <button className="tab-active">
           <FaMoneyBillWave style={{marginRight:"8px"}} /> Paiements
@@ -255,22 +255,28 @@ const Paiements = () => {
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMin}
-                onChange={(e) => setFiltreDateMin(e.target.value)}
-              />
+            <DatePicker
+    selected={filtreDateMin ? new Date(filtreDateMin) : null}
+    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date max</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMax}
-                onChange={(e) => setFiltreDateMax(e.target.value)}
-              />
+            <DatePicker
+    selected={filtreDateMax ? new Date(filtreDateMax) : null}
+    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
             
             <div className="filter-group">

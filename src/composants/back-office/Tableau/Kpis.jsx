@@ -22,44 +22,36 @@ export default function Kpis({ range = "30d", start = null, end = null }) {
     fetchKpis();
   }, [range, start, end]);
 
-  if (loading) return <div className="loading">Chargement KPIs...</div>;
-  if (!kpis) return <div className="loading">Aucun KPI disponible</div>;
+  if (loading) return <div className="loading"></div>;
+  if (!kpis) return <div className="loading"></div>;
 
   return (
     <div className="kpis-container">
       <div className="kpi-card">
         <h3>Chiffre d'affaires</h3>
-        <p>{kpis.totalRevenu.toLocaleString()} €</p>
-        <span className={kpis.totalRevenuChangePct >= 0 ? "up" : "down"}>
-          {kpis.totalRevenuChangePct >= 0 ? "▲" : "▼"} {Math.abs(kpis.totalRevenuChangePct)}%
-        </span>
+        <p>{kpis.totalRevenu.toLocaleString()} Ar</p>
+       
       </div>
 
       <div className="kpi-card">
+        <h3>CA produits vendus</h3>
+        <p>{kpis.produitsVendusCA.toLocaleString()} Ar</p>
+       
+      </div>
+      <div className="kpi-card">
         <h3>Commandes</h3>
         <p>{kpis.commandesCount}</p>
-        <span className={kpis.commandesCountChangePct >= 0 ? "up" : "down"}>
-          {kpis.commandesCountChangePct >= 0 ? "▲" : "▼"} {Math.abs(kpis.commandesCountChangePct)}%
-        </span>
+        
       </div>
 
       <div className="kpi-card">
         <h3>Nouveaux clients</h3>
         <p>{kpis.clientsNouveaux}</p>
-        <span className={kpis.clientsNouveauxChangePct >= 0 ? "up" : "down"}>
-          {kpis.clientsNouveauxChangePct >= 0 ? "▲" : "▼"} {Math.abs(kpis.clientsNouveauxChangePct)}%
-        </span>
+       
       </div>
 
-     
+      
 
-      <div className="kpi-card">
-        <h3>CA produits vendus</h3>
-        <p>{kpis.produitsVendusCA.toLocaleString()} €</p>
-        <span className={kpis.produitsVendusChangePct >= 0 ? "up" : "down"}>
-          {kpis.produitsVendusChangePct >= 0 ? "▲" : "▼"} {Math.abs(kpis.produitsVendusChangePct)}%
-        </span>
-      </div>
     </div>
   );
 }

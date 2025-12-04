@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FaSearch, FaFilter, FaSync } from "react-icons/fa";
 import Kpis from "./Kpis";
 import SalesByCategory from "./SalesByCategory";
 import SalesOverTime from "./SalesOverTime";
@@ -8,51 +9,90 @@ import StockAlerts from "./StockAlerts";
 import GetKpis from "./GetKpis";
 import DateRange from "./DateRange";
 import "../../../styles/back-office/Dashboard.css";
-import "../../../styles/back-office/modal.css";
+
+import dashboardApi from "../../../services/dashboardApi";
 
 export default function Dashboard() {
-  // Les vraies dates sélectionnées par l'utilisateur
   const [dates, setDates] = useState({ start: null, end: null });
+  const [stockAlerts, setStockAlerts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadStockAlerts = async () => {
+      try {
+        setLoading(true);
+        const res = await dashboardApi.stockAlerts(1);
+        setStockAlerts(res.data);
+      } catch (err) {
+        console.error("Erreur StockAlerts", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStockAlerts();
+  }, []);
 
-  // Optionnel : état de chargement global
-  const [loading, setLoading] = useState(false);
+  // Filtrer les alertes de stock
+  const filteredStockAlerts = stockAlerts.filter(alert => 
+    alert.nomProduit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    alert.categorie?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="dashboard-container">
-      <h1>Tableau de bord</h1>
-
-      {/* Le sélecteur de dates */}
-      <DateRange onChange={setDates} />
-
-      {/* Petite indication visuelle */}
-      {dates.start && dates.end && (
-        <p className="text-sm text-gray-600 mb-4">
-          Période sélectionnée : {dates.start} → {dates.end}
-        </p>
+     
+         
+      {/* Section Stock Alerts */}
+      {filteredStockAlerts.length > 0 && (
+        <div className="stock-section">
+          
+          <StockAlerts produits={filteredStockAlerts} />
+        </div>
       )}
 
-      {/* === TOUS LES COMPOSANTS REÇOIVENT MAINTENANT LES BONNES DATES === */}
-      <section className="kpis-section">
-        <GetKpis start={dates.start} end={dates.end} />
-      </section>
+      {/* Section KPIs */}
+      <div className="kpis-grid">
+        <div className="kpis-primary">
+      <Kpis start={dates.start} end={dates.end} />
+          <GetKpis start={dates.start} end={dates.end} />
+          
+        </div>
+           
 
-      <section className="kpis-section">
-        <Kpis start={dates.start} end={dates.end} />
-      </section>
+        <div style={{display:"flex",marginBottom:"20px"}}className="date-range-wrapper">
+          <DateRange onChange={setDates} />
+        </div>
+       
+      </div>
 
-      <section className="charts-section">
-        <SalesByCategory start={dates.start} end={dates.end} />
-        <SalesOverTime start={dates.start} end={dates.end} interval="day" />
-      </section>
+      {/* Section Graphiques */}
+      <div className="charts-main-section">
+        {/* Grand graphique à gauche */}
+        <div className="main-chart">
+          <SalesOverTime start={dates.start} end={dates.end} interval="day" />
+        </div>
+        
+        {/* Petits graphiques à droite */}
+        <div className="side-charts">
+          <div className="chart-card">
+            <SalesByCategory start={dates.start} end={dates.end} />
+          </div>
+          <div className="chart-card">
+            <TopProducts
+              start={dates.start}
+              end={dates.end}
+              limit={10}
+              metric="ca"
+            />
+          </div>
+        </div>
+      </div>
 
-      <section className="top-section">
-        <TopProducts start={dates.start} end={dates.end} limit={10} metric="ca" />
+      {/* Section Top Clients */}
+      <div className="top-clients-section">
         <TopClients start={dates.start} end={dates.end} limit={10} />
-      </section>
-
-      <section className="stock-section">
-        <StockAlerts threshold={1} />
-      </section>
+      </div>
     </div>
   );
 }

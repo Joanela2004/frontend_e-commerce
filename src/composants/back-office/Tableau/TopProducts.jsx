@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import dashboardApi from "../../../services/dashboardApi";
-import "../../../styles/back-office/TopProduct.css";
 
 import {
   Chart as ChartJS,
@@ -19,7 +18,6 @@ export default function TopProducts({ start = null, end = null, limit = 10, metr
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // --- Tooltip personnalisé sécurisé ---
   const customTooltip = (context) => {
     let tooltipEl = document.getElementById("custom-tooltip");
 
@@ -52,16 +50,15 @@ export default function TopProducts({ start = null, end = null, limit = 10, metr
       return;
     }
 
-   tooltipEl.innerHTML = `
-  <div class="tooltip-content">
-    <img src="${IMAGE_BASE_URL}${client.image || ''}" class="tooltip-img" />
-    <div class="tooltip-text">
-      <strong>${client.name}</strong><br/>
-      Total : ${dataset.data[index]}
-    </div>
-  </div>
-`;
-
+    tooltipEl.innerHTML = `
+      <div class="tooltip-content">
+        <img src="${IMAGE_BASE_URL}${client.image || ''}" class="tooltip-img" />
+        <div class="tooltip-text">
+          <strong>${client.name}</strong><br/>
+          Total : ${dataset.data[index]}
+        </div>
+      </div>
+    `;
 
     const { offsetLeft, offsetTop } = context.chart.canvas;
     tooltipEl.style.opacity = 1;
@@ -76,19 +73,19 @@ export default function TopProducts({ start = null, end = null, limit = 10, metr
       const labels = res.data.map(item => item.nomProduit);
       const values = res.data.map(item => item.total);
 
-         const clients = res.data.map(item => ({
+      const clients = res.data.map(item => ({
         name: item.clientName ?? "Client inconnu",
         image: item.clientImage ?? "/default-avatar.png"
       }));
 
-           setChartData({
+      setChartData({
         labels,
         datasets: [
           {
-            label: metric === "ca" ? "CA (€)" : "Quantité",
+            label: metric === "ca" ? "CA(Ar)" : "Quantité",
             data: values,
-            backgroundColor: "rgba(255, 99, 132, 0.6)",
-            clients: clients,  
+            backgroundColor: "#28a458",
+            clients: clients,
           },
         ],
       });
@@ -106,24 +103,42 @@ export default function TopProducts({ start = null, end = null, limit = 10, metr
   if (loading) return <div className="loading">Chargement top produits...</div>;
 
   return (
-    <div className="top-products-container">
-      <h2>Top Produits</h2>
-
+    <>
+      <h2>Vente par produits</h2>
       {chartData && (
-        <div className="chart-wrapper">
+        <div style={{width:"80%",height:"80%",marginTop:"40px",padding:"20px"}}>
           <Bar
             data={chartData}
             options={{
+              responsive: true,
+              maintainAspectRatio: false,
               plugins: {
                 tooltip: {
-                  enabled: false,     // désactive tooltip natif
+                  enabled: false,
                   external: customTooltip,
                 },
+                legend: {
+                  display: true,
+                  position: 'top',
+                }
               },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false,
+                  }
+                }
+              }
             }}
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -25,6 +25,9 @@ import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Commandes = () => {
@@ -319,6 +322,8 @@ const handleMarquerCommeVue = async (commandeId) => {
 
   // Statistiques
   const commandesEnAttente = commandes.filter(c => c.statut === "en attente").length;
+  
+  const commandesPaye = commandes.filter(c => c.statut === "payée").length;
   const commandesValidees = commandes.filter(c => c.statut === "validée").length;
   const commandesExpediees = commandes.filter(c => c.statut === "expédiée").length;
   const commandesLivrees = commandes.filter(c => c.statut === "livrée").length;
@@ -354,7 +359,9 @@ const handleMarquerCommeVue = async (commandeId) => {
             <span className="stat-item attente">
               {commandesEnAttente} en attente
             </span>
-           
+           <span className="stat-item paye">
+              {commandesPaye} Payée
+            </span>
             <span className="stat-item validee">
               {commandesValidees} validée{commandesValidees !== 1 ? 's' : ''}
             </span>
@@ -374,7 +381,7 @@ const handleMarquerCommeVue = async (commandeId) => {
       {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par référence, nom client ou mode de paiement..."
@@ -408,9 +415,9 @@ const handleMarquerCommeVue = async (commandeId) => {
                 onChange={(e) => setFiltreStatut(e.target.value)}
               >
                 <option value="tous">Tous les statuts</option>
-                <option value="en attente">En attente</option>
+                <option value="en attente">En attente de paiement</option>
 
-                <option value="payée">En attente</option>
+                <option value="payée">Payée</option>
                 <option value="validée">Validée</option>
                 <option value="expédiée">Expédiée</option>
                 <option value="livrée">Livrée</option>
@@ -420,22 +427,30 @@ const handleMarquerCommeVue = async (commandeId) => {
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMin}
-                onChange={(e) => setFiltreDateMin(e.target.value)}
-              />
+        <DatePicker
+    selected={filtreDateMin ? new Date(filtreDateMin) : null}
+    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+    popperPlacement="bottom"
+  />
             </div>
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date max</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMax}
-                onChange={(e) => setFiltreDateMax(e.target.value)}
-              />
+            <DatePicker
+    selected={filtreDateMax ? new Date(filtreDateMax) : null}
+    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+    popperPlacement="bottom"
+  />
             </div>
             
             <div className="filter-group">

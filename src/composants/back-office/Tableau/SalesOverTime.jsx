@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-
 import dashboardApi from "../../../services/dashboardApi";
-import "../../../styles/back-office/SalesOverTime.css";
 
 import {
   Chart as ChartJS,
@@ -38,11 +36,12 @@ export default function SalesOverTime({ start = null, end = null, interval = "da
         labels,
         datasets: [
           {
-            label: "Chiffre d’affaires",
+            label: "Chiffre d'affaires",
             data: values,
             fill: true,
-            backgroundColor: "rgba(54, 162, 235, 0.2)",
-            borderColor: "rgba(54, 162, 235, 1)",
+            backgroundColor: "rgba(40, 164, 88, 0.1)",
+            borderColor: "#28a458",
+            pointBackgroundColor: "#4B733D",
             tension: 0.3,
           },
         ],
@@ -61,13 +60,13 @@ export default function SalesOverTime({ start = null, end = null, interval = "da
   if (loading) return <div className="loading">Chargement ventes...</div>;
 
   return (
-    <div className="sales-over-time-container">
+    <>
       <h2>Ventes dans le temps</h2>
       {chartData && (
-        <div className="chart-wrapper">
+        <div style={{width:"100%",height:"90%",padding:"20px"}}>
           <Line data={chartData} />
         </div>
       )}
-    </div>
+    </>
   );
 }

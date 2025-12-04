@@ -4,12 +4,10 @@
   --color-text-dark: #3d3b3b;
   --color-background-white: #ffffff;
   --color-background-light: #f5f0e1;
-  --largeur-sidebar: 250px;
+  --largeur-sidebar: 200px;
   --rayon: 12px;
   --transition: all 0.3s ease;
 }
-
-/* ========== LAYOUT PRINCIPAL ========== */
 .dashboard-layout {
   display: flex;
   width: 100%;
@@ -22,7 +20,9 @@
   position: fixed;
   left: 0;
   top: 0;
+  gap: 40px;
   display: flex;
+  padding: 10px 40px;
   flex-direction: column;
   align-items: center;
   justify-content: space-between; 

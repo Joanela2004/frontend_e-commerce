@@ -16,6 +16,9 @@ import {
   FaExclamationTriangle,
   FaEdit,
 } from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { updateCommandeAdmin } from "../../../services/commandeService";
 import "../../../styles/back-office/global.css";
@@ -458,24 +461,30 @@ const Livraisons = () => {
               <label>
                 <FaCalendarAlt style={{ marginRight: "5px" }} /> Date min
               </label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMin}
-                onChange={(e) => setFiltreDateMin(e.target.value)}
-              />
+             <DatePicker
+    selected={filtreDateMin ? new Date(filtreDateMin) : null}
+    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
 
             <div className="filter-group">
               <label>
                 <FaCalendarAlt style={{ marginRight: "5px" }} /> Date max
               </label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMax}
-                onChange={(e) => setFiltreDateMax(e.target.value)}
-              />
+              <DatePicker
+    selected={filtreDateMax ? new Date(filtreDateMax) : null}
+    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
           </div>
 
@@ -531,7 +540,7 @@ const Livraisons = () => {
                 <tr key={livraison.numLivraison}>
                   <td>
                     <span
-                      style={{ fontFamily: "monospace", fontWeight: "bold" }}
+                      
                     >
                       #
                       {livraison.commande?.referenceCommande ||

@@ -106,7 +106,6 @@
 }
 
 .search-bar {
-  position: relative;
   display: flex;
   align-items: center;
   background: var(--color-background-white);
@@ -381,59 +380,6 @@
   margin: 0 auto;
   line-height: 1.5;
 }
-/* Styles pour les statuts de commande */
-.status {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.status.en-cours{
-   
-  background: #fff3cd;
-  color: #856404;
-
-   
-}
-
-.status.en-attente {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
-
-.status.validée {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.status.expédiée {
-  background: #cce5ff;
-  color: #004085;
-  border: 1px solid #b8daff;
-}
-
-.status.livrée {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-.status.annulée {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.status.default {
-  background: #e2e3e5;
-  color: #383d41;
-  border: 1px solid #d6d8db;
-}
 
 
 /* Bouton consulter */
@@ -655,10 +601,14 @@
   background: #f8d7da;
   color: #721c24;
 }
+.stat-item.paye{
+  background: #99cbec;
+  color: #25669c79;
+}
 
 .stat-item.new-orders {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: #28a458;
+  color: #e4eaeb;
   font-weight: 600;
 }
 
@@ -718,3 +668,4 @@
     align-items: flex-start;
   }
 }
+

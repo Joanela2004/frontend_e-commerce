@@ -1,32 +1,17 @@
-/* Tooltip personnalisé */
-.custom-tooltip-box {
-  position: absolute;
-  background: #fff;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s, transform 0.15s;
-  transform: translateY(-5px);
-  font-family: "Inter", sans-serif;
-  z-index: 9999;
+.top-products-container {
+  background: var(--color-background-white);
+  padding: 25px;
+  width: 100%;
+  border-radius: var(--rayon);
+  box-shadow: 0px 4px 12px var(--color-shadow);
+  margin-bottom: 20px;
 }
 
-.tooltip-content {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.top-products-container h2 {
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: var(--color-brown-dark);
+  font-weight: 600;
+  text-align: center;
 }
 
-.tooltip-img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.tooltip-text {
-  font-size: 14px;
-  color: #333;
-}

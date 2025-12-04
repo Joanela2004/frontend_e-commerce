@@ -11,7 +11,7 @@ import {
   FaTruck,
   FaHome
 } from 'react-icons/fa';
-import profile from '../../assets/icones/log.png';
+import logo from '../../assets/icones/log.png';
 import "../../styles/back-office/SideBar.css";
 
 const SideBar = () => {
@@ -32,7 +32,7 @@ const SideBar = () => {
  
        <div className="sidebar-top">
         <h2 className="sidebar-title"> 
-          <img src={profile} alt="admin-profile" style={{width: '38%'}} />
+          <img src={logo}  style={{width: '40px',height:"auto",objectFit:"contain"}} />
         </h2>
         
       </div>

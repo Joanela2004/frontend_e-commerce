@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
+
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Clients = () => {
@@ -14,10 +18,17 @@ const Clients = () => {
   const [loading, setLoading] = useState(true);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const navigate = useNavigate();
+  const [dateMinPicker, setDateMinPicker] = useState(null);
+const [dateMaxPicker, setDateMaxPicker] = useState(null);
 
   const [filtreDateMin, setFiltreDateMin] = useState("");
   const [filtreDateMax, setFiltreDateMax] = useState("");
   const [filtreHasContact, setFiltreHasContact] = useState("tous");
+
+  useEffect(() => {
+  setDateMinPicker(filtreDateMin ? new Date(filtreDateMin) : null);
+  setDateMaxPicker(filtreDateMax ? new Date(filtreDateMax) : null);
+}, [filtreDateMin, filtreDateMax]);
 
   useEffect(() => {
     const fetchClientsData = async () => {
@@ -119,7 +130,7 @@ const Clients = () => {
       {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}  />
           <input
             type="text"
             placeholder="Rechercher par nom, email, contact ou ID..."
@@ -147,22 +158,41 @@ const Clients = () => {
           <div className="filters-row">
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date inscription min</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMin}
-                onChange={(e) => setFiltreDateMin(e.target.value)}
-              />
+             <DatePicker
+    selected={dateMinPicker}
+    onChange={(date) => {
+      setDateMinPicker(date);
+      setFiltreDateMin(date ? date.toISOString().split("T")[0] : "");
+    }}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    showMonthDropdown
+    showYearDropdown
+    dropdownMode="select"
+    isClearable
+  />
             </div>
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date inscription max</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMax}
-                onChange={(e) => setFiltreDateMax(e.target.value)}
-              />
+              <DatePicker
+    selected={dateMaxPicker}
+    onChange={(date) => {
+      setDateMaxPicker(date);
+      setFiltreDateMax(date ? date.toISOString().split("T")[0] : "");
+    }}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    showMonthDropdown
+    showYearDropdown
+    dropdownMode="select"
+    minDate={dateMinPicker}
+    isClearable
+  />
             </div>
             
 
@@ -257,9 +287,9 @@ const Clients = () => {
                   </td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <FaPhone style={{ color: client.contact ? "#28a458" : "#dc3545" }} />
-                      <span className={`status ${client.contact ? 'active' : 'inactive'}`}>
-                        {client.contact || "Non renseigné"}
+                      <FaPhone style={{ color:  "#28a458" }} />
+                      <span>
+                        {client.contact}
                       </span>
                     </div>
                   </td>

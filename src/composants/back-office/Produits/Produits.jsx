@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { FaSearch, FaPlus, FaSync, FaEdit, FaTrash, FaBox, FaTag, FaWeightHanging, FaImage, FaFilter, FaPercentage, FaList, FaUtensils, FaExclamationTriangle, FaEye, FaMoneyBillWave } from "react-icons/fa";
+import { FaSearch, FaPlus, FaSync, FaEdit, FaTrash, FaBox, FaTag, FaWeightHanging, FaImage, FaFilter, FaPercentage, FaList, FaUtensils, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
 import {
   createProduit,
   updateProduit,
   fetchProduits,
   deleteProduit,
+  restoreProduit,
 } from "../../../services/produitService";
 import { getCategories } from "../../../services/categorieService";
 import { fetchPromotions } from "../../../services/promotionService";
-import { restoreProduit } from "../../../services/produitService";
 import { useToast } from "../../../contexts/ToastContext";
 import { useNavigate } from "react-router-dom";
+
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
@@ -21,10 +22,6 @@ const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const calculatePromotionalPrice = (originalPrice, discountPercentage) => {
   return Math.round(originalPrice * (1 - discountPercentage / 100));
-};
-
-const calculateSavings = (originalPrice, discountPercentage) => {
-  return originalPrice - calculatePromotionalPrice(originalPrice, discountPercentage);
 };
 
 const Produits = () => {
@@ -38,8 +35,8 @@ const Produits = () => {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  // États pour les filtres
+
+  // Filtres
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filtreCategorie, setFiltreCategorie] = useState("tous");
   const [filtrePromotion, setFiltrePromotion] = useState("tous");
@@ -47,18 +44,10 @@ const Produits = () => {
   const [filtrePrixMax, setFiltrePrixMax] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("tous");
 
-  // États pour les modals
+  // Modals suppression / restauration
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalData, setModalData] = useState({
-    title: "",
-    message: "",
-    type: "", // "delete", "restore", "success"
-    produitId: null,
-    produitNom: "",
-    onConfirm: null
-  });
+  const [produitEnCours, setProduitEnCours] = useState(null);
 
   const [form, setForm] = useState({
     nomProduit: "",
@@ -79,59 +68,22 @@ const Produits = () => {
       const [produitsData, categoriesData, promotionsData] = await Promise.all([
         fetchProduits(),
         getCategories(),
-        fetchPromotions()
+        fetchPromotions(),
       ]);
-      
       setProduits(produitsData);
       setCategories(categoriesData.filter((c) => !c.deleted_at));
       setPromotions(promotionsData);
     } catch (error) {
-      console.error("Erreur chargement des données:", error);
-      showModal("error", "Erreur", "Erreur lors du chargement des données");
+      showToast("error", "Erreur lors du chargement des données");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fonction pour afficher une modal
-  const showModal = (type, title, message, produitId = null, produitNom = "", onConfirm = null) => {
-    setModalData({
-      type,
-      title,
-      message,
-      produitId,
-      produitNom,
-      onConfirm
-    });
-    
-    if (type === "delete") {
-      setShowDeleteModal(true);
-    } else if (type === "restore") {
-      setShowRestoreModal(true);
-    } else if (type === "success") {
-      setShowSuccessModal(true);
-    }
-  };
-
-  // Fermer toutes les modals
-  const closeAllModals = () => {
-    setShowDeleteModal(false);
-    setShowRestoreModal(false);
-    setShowSuccessModal(false);
-    setModalData({
-      title: "",
-      message: "",
-      type: "",
-      produitId: null,
-      produitNom: "",
-      onConfirm: null
-    });
-  };
-
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
-      setForm({ ...form, image: files[0] });
+      setForm({ ...form, image: files[ SDValue] });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -152,7 +104,6 @@ const Produits = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("nomProduit", form.nomProduit.trim());
     formData.append("prix", form.prix);
@@ -164,40 +115,24 @@ const Produits = () => {
     try {
       if (editingId) {
         await updateProduit(editingId, formData);
-        showModal("success", "Succès", "Produit mis à jour avec succès !");
+        showToast("success", "Produit mis à jour avec succès !");
       } else {
         await createProduit(formData);
-        showModal("success", "Succès", "Produit ajouté avec succès !");
+        showToast("success", "Produit ajouté avec succès !");
       }
-
       resetForm();
       chargerDonnees();
     } catch (err) {
-      console.error("Erreur détaillée:", err);
-
-      // Cas de produit soft-deleted
       if (err.response?.status === 409 && err.response?.data?.soft_deleted) {
-        showModal(
-          "restore",
-          "Produit archivé trouvé",
-          `Le produit "${err.response.data.produit_nom}" existe déjà mais est archivé. Voulez-vous le restaurer ?`,
-          err.response.data.produit_id,
-          err.response.data.produit_nom,
-          async () => {
-            try {
-              await restoreProduit(err.response.data.produit_id);
-              showToast("success", "Produit restauré avec succès !");
-              chargerDonnees();
-            } catch (restoreErr) {
-              showToast("error", "Erreur lors de la restauration");
-            }
-          }
-        );
+        setProduitEnCours({
+          id: err.response.data.produit_id,
+          nom: err.response.data.produit_nom,
+        });
+        setShowRestoreModal(true);
         return;
       }
-
-      const msg = err.response?.data?.message || err.message;
-      showModal("error", "Erreur", `Erreur : ${msg}`);
+      const msg = err.response?.data?.message || "Erreur lors de l'enregistrement";
+      showToast("error", msg);
     }
   };
 
@@ -214,82 +149,75 @@ const Produits = () => {
     setIsFormOpen(true);
   };
 
-  const handleDeleteClick = (id, nom) => {
-    showModal(
-      "delete",
-      "Confirmer la suppression",
-      `Êtes-vous sûr de vouloir supprimer le produit "${nom}" ?`,
-      id,
-      nom,
-      async () => {
-        try {
-          await deleteProduit(id);
-          chargerDonnees();
-          showToast("success", "Produit supprimé temporairement !");
-        } catch (error) {
-          showToast("error", "Erreur lors de la suppression");
-        }
-      }
-    );
+  const openDeleteModal = (id, nom) => {
+    setProduitEnCours({ id, nom });
+    setShowDeleteModal(true);
   };
 
-  // Filtrer les produits
-  const filteredProduits = produits.filter(produit => {
-    // Filtre par recherche
-    const searchMatch = 
+  const confirmerSuppression = async () => {
+    try {
+      await deleteProduit(produitEnCours.id);
+      chargerDonnees();
+      showToast("success", "Produit supprimé temporairement !");
+    } catch (error) {
+      showToast("error", "Erreur lors de la suppression");
+    } finally {
+      setShowDeleteModal(false);
+      setProduitEnCours(null);
+    }
+  };
+
+  const confirmerRestauration = async () => {
+    try {
+      await restoreProduit(produitEnCours.id);
+      chargerDonnees();
+      showToast("success", `Produit "${produitEnCours.nom}" restauré avec succès !`);
+    } catch (error) {
+      showToast("error", "Erreur lors de la restauration");
+    } finally {
+      setShowRestoreModal(false);
+      setProduitEnCours(null);
+    }
+  };
+
+  // Filtrage
+  const filteredProduits = produits.filter((produit) => {
+    const searchMatch =
       produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
       produit.categorie?.nomCategorie.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filtre par catégorie
-    const categorieMatch = 
-      filtreCategorie === "tous" || 
-      produit.numCategorie === parseInt(filtreCategorie);
-    
-    // Filtre par promotion
-    let promotionMatch = true;
-    if (filtrePromotion === "avec") {
-      promotionMatch = produit.numPromotion !== null && produit.promotion !== null;
-    } else if (filtrePromotion === "sans") {
-      promotionMatch = produit.numPromotion === null || produit.promotion === null;
-    }
-    
-    // Filtre par prix minimum
+
+    const categorieMatch = filtreCategorie === "tous" || produit.numCategorie === parseInt(filtreCategorie);
+    const promotionMatch =
+      filtrePromotion === "tous" ||
+      (filtrePromotion === "avec" && produit.numPromotion !== null) ||
+      (filtrePromotion === "sans" && produit.numPromotion === null);
+
     const prixMinMatch = !filtrePrixMin || produit.prix >= parseFloat(filtrePrixMin);
-    
-    // Filtre par prix maximum
     const prixMaxMatch = !filtrePrixMax || produit.prix <= parseFloat(filtrePrixMax);
-    
-    // Filtre par statut
-    const statutMatch = 
-      filtreStatut === "tous" || 
-      (filtreStatut === "actif" && produit.statut === 'actif') ||
-      (filtreStatut === "inactif" && produit.statut === 'inactif');
-    
+    const statutMatch =
+      filtreStatut === "tous" ||
+      (filtreStatut === "actif" && produit.statut === "actif") ||
+      (filtreStatut === "inactif" && produit.statut === "inactif");
+
     return searchMatch && categorieMatch && promotionMatch && prixMinMatch && prixMaxMatch && statutMatch;
   });
 
-  const produitsEnPromotion = produits.filter(p => p.promotion).length;
-  const produitsActifs = produits.filter(p => p.statut === 'actif').length;
-
-  // Réinitialiser tous les filtres
   const reinitialiserFiltres = () => {
+    setSearchTerm("");
     setFiltreCategorie("tous");
     setFiltrePromotion("tous");
     setFiltrePrixMin("");
     setFiltrePrixMax("");
     setFiltreStatut("tous");
-    setSearchTerm("");
     showToast("info", "Filtres réinitialisés");
   };
 
-  // Vérifier si des filtres sont actifs
-  const hasActiveFilters = 
-    searchTerm || 
-    filtreCategorie !== "tous" || 
-    filtrePromotion !== "tous" || 
-    filtrePrixMin || 
-    filtrePrixMax ||
-    filtreStatut !== "tous";
+  const stats = {
+    total: produits.length,
+    actifs: produits.filter(p => p.statut === "actif").length,
+    enPromo: produits.filter(p => p.promotion).length,
+    filtered: filteredProduits.length,
+  };
 
   if (loading) {
     return (
@@ -304,64 +232,58 @@ const Produits = () => {
 
   return (
     <div className="page-container">
+      {/* Header */}
       <div className="page-header">
         <div>
           <h1>Gestion des Produits</h1>
-          <div className="stats-container" style={{ marginTop: '10px' }}>
-            <span className="stat-item">
-              {filteredProduits.length} produit{filteredProduits.length !== 1 ? 's' : ''} trouvé{filteredProduits.length !== 1 ? 's' : ''}
+          <div className="stats-container" style={{ marginTop: "10px" }}>
+            <span className="stat-item">{stats.filtered} produit{stats.filtered > 1 ? "s" : ""} trouvé{stats.filtered > 1 ? "s" : ""}</span>
+            <span className="stat-item" style={{ backgroundColor: "#d4edda", color: "#155724" }}>
+              {stats.actifs} actif{stats.actifs > 1 ? "s" : ""}
             </span>
-            <span className="stat-item" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
-              {produitsActifs} actif{produitsActifs !== 1 ? 's' : ''}
+            <span className="stat-item" style={{ backgroundColor: "#fff3cd", color: "#856404" }}>
+              {stats.enPromo} en promotion
             </span>
-            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
-              {produitsEnPromotion} en promotion
-            </span>
-            <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
-              {produits.length} total
+            <span className="stat-item" style={{ backgroundColor: "#e3f2fd", color: "#1565c0" }}>
+              {stats.total} total
             </span>
           </div>
         </div>
         <button className="ajout" onClick={() => setIsFormOpen(true)}>
-          <FaPlus style={{marginRight:"10px"}}/> Ajouter un produit
+          <FaPlus style={{ marginRight: "10px" }} /> Ajouter un produit
         </button>
       </div>
 
-      {/* Navigation tabs */}
+      {/* Navigation */}
       <div className="navigation-tabs">
         <button className="tab-active">
-          <FaBox style={{marginRight:"8px"}} /> Produits
+          <FaBox style={{ marginRight: "8px" }} /> Produits
         </button>
         <button className="tab-inactive" onClick={() => navigate("/admin/categories")}>
-          <FaList style={{marginRight:"8px"}} /> Catégories
+          <FaList style={{ marginRight: "8px" }} /> Catégories
         </button>
         <button className="tab-inactive" onClick={() => navigate("/admin/decoupes")}>
-          <FaUtensils style={{marginRight:"8px"}} /> Découpes
+          <FaUtensils style={{ marginRight: "8px" }} /> Découpes
         </button>
       </div>
 
-      {/* Barre de recherche et filtres */}
+      {/* Recherche + Filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
-            placeholder="Rechercher par nom de produit ou catégorie..."
+            placeholder="Rechercher par nom ou catégorie..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button 
-            className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+          <button
+            className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
           >
             <FaFilter />
           </button>
-          <FaSync  
-            onClick={reinitialiserFiltres} 
-            style={{ marginRight: '8px', border:"none", color:"#28a458", cursor: "pointer" }} 
-            title="Réinitialiser tous les filtres"
-          />
+          <FaSync onClick={reinitialiserFiltres} style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
         </div>
       </div>
 
@@ -370,106 +292,38 @@ const Produits = () => {
         <div className="filters-container">
           <div className="filters-row">
             <div className="filter-group">
-              <label><FaBox className="meta-icon"/> Catégorie</label>
-              <select 
-                className="form-control"
-                value={filtreCategorie} 
-                onChange={(e) => setFiltreCategorie(e.target.value)}
-              >
-                <option value="tous">Toutes les catégories</option>
-                {categories.map(categorie => (
-                  <option key={categorie.numCategorie} value={categorie.numCategorie}>
-                    {categorie.nomCategorie}
-                  </option>
+              <label>Catégorie</label>
+              <select className="form-control" value={filtreCategorie} onChange={(e) => setFiltreCategorie(e.target.value)}>
+                <option value="tous">Toutes</option>
+                {categories.map((c) => (
+                  <option key={c.numCategorie} value={c.numCategorie}>{c.nomCategorie}</option>
                 ))}
               </select>
             </div>
-            
             <div className="filter-group">
-              <label><FaPercentage className="meta-icon"/> Promotion</label>
-              <select 
-                className="form-control"
-                value={filtrePromotion} 
-                onChange={(e) => setFiltrePromotion(e.target.value)}
-              >
-                <option value="tous">Tous les produits</option>
-                <option value="avec">Produits en promotion</option>
-                <option value="sans">Produits sans promotion</option>
+              <label>Promotion</label>
+              <select className="form-control" value={filtrePromotion} onChange={(e) => setFiltrePromotion(e.target.value)}>
+                <option value="tous">Toutes</option>
+                <option value="avec">Avec promotion</option>
+                <option value="sans">Sans promotion</option>
               </select>
             </div>
-            
             <div className="filter-group">
               <label>Statut</label>
-              <select 
-                className="form-control"
-                value={filtreStatut} 
-                onChange={(e) => setFiltreStatut(e.target.value)}
-              >
-                <option value="tous">Tous les statuts</option>
+              <select className="form-control" value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+                <option value="tous">Tous</option>
                 <option value="actif">Actif</option>
                 <option value="inactif">Inactif</option>
               </select>
             </div>
-            
             <div className="filter-group">
-              <label>Prix minimum (Ar)</label>
-              <input
-                type="number"
-                className="form-control"
-                placeholder="0"
-                value={filtrePrixMin}
-                onChange={(e) => setFiltrePrixMin(e.target.value)}
-                min="0"
-                step="100"
-              />
+              <label>Prix min (Ar)</label>
+              <input type="number" className="form-control" value={filtrePrixMin} onChange={(e) => setFiltrePrixMin(e.target.value)} />
             </div>
-            
             <div className="filter-group">
-              <label>Prix maximum (Ar)</label>
-              <input
-                type="number"
-                className="form-control"
-                placeholder="1000000"
-                value={filtrePrixMax}
-                onChange={(e) => setFiltrePrixMax(e.target.value)}
-                min="0"
-                step="100"
-              />
+              <label>Prix max (Ar)</label>
+              <input type="number" className="form-control" value={filtrePrixMax} onChange={(e) => setFiltrePrixMax(e.target.value)} />
             </div>
-          </div>
-          
-          {/* Affichage des filtres actifs */}
-          <div className="active-filters">
-            {filtreCategorie !== "tous" && (
-              <span className="active-filter-tag">
-                Catégorie: {categories.find(c => c.numCategorie === parseInt(filtreCategorie))?.nomCategorie}
-                <button onClick={() => setFiltreCategorie("tous")}>×</button>
-              </span>
-            )}
-            {filtrePromotion !== "tous" && (
-              <span className="active-filter-tag">
-                Promotion: {filtrePromotion === "avec" ? "Avec promotion" : "Sans promotion"}
-                <button onClick={() => setFiltrePromotion("tous")}>×</button>
-              </span>
-            )}
-            {filtreStatut !== "tous" && (
-              <span className="active-filter-tag">
-                Statut: {filtreStatut}
-                <button onClick={() => setFiltreStatut("tous")}>×</button>
-              </span>
-            )}
-            {filtrePrixMin && (
-              <span className="active-filter-tag">
-                Prix min: {filtrePrixMin} Ar
-                <button onClick={() => setFiltrePrixMin("")}>×</button>
-              </span>
-            )}
-            {filtrePrixMax && (
-              <span className="active-filter-tag">
-                Prix max: {filtrePrixMax} Ar
-                <button onClick={() => setFiltrePrixMax("")}>×</button>
-              </span>
-            )}
           </div>
         </div>
       )}
@@ -482,94 +336,41 @@ const Produits = () => {
               <h2>{editingId ? "Modifier le produit" : "Ajouter un produit"}</h2>
               <button className="modal-close" onClick={resetForm}>×</button>
             </div>
-            
-            <form onSubmit={handleSubmit} className="modal-form" encType="multipart/form-data">
+            <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label><FaImage  /> Image du produit</label>
-                  <input 
-                    type="file" 
-                    name="image" 
-                    accept="image/*" 
-                    onChange={handleChange}
-                    className="form-control"
-                  />
+                  <label><FaImage /> Image</label>
+                  <input type="file" name="image" accept="image/*" onChange={handleChange} className="form-control" />
                 </div>
-                
                 <div className="form-group">
-                  <label><FaBox /> Nom du produit</label>
-                  <input
-                    type="text"
-                    name="nomProduit"
-                    value={form.nomProduit}
-                    onChange={handleChange}
-                    required
-                    className="form-control"
-                    placeholder="Ex: Carotte, Steak, etc."
-                  />
+                  <label><FaBox /> Nom</label>
+                  <input type="text" name="nomProduit" value={form.nomProduit} onChange={handleChange} required className="form-control" />
                 </div>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label><FaMoneyBillWave /> Prix (Ar)</label>
-                  <input
-                    type="number"
-                    name="prix"
-                    value={form.prix}
-                    onChange={handleChange}
-                    required
-                    step="0.01"
-                    min="0"
-                    placeholder="Ex: 1000"
-                    className="form-control"
-                  />
+                  <input type="number" name="prix" value={form.prix} onChange={handleChange} required className="form-control" />
                 </div>
-                
                 <div className="form-group">
                   <label><FaWeightHanging /> Poids (kg)</label>
-                  <input
-                    type="number"
-                    name="poids"
-                    value={form.poids}
-                    placeholder="Ex: 2"
-                    onChange={handleChange}
-                    required
-                    step="0.01"
-                    min="0"
-                    className="form-control"
-                  />
+                  <input type="number" step="0.01" name="poids" value={form.poids} onChange={handleChange} required className="form-control" />
                 </div>
               </div>
-
               <div className="form-row">
                 <div className="form-group">
                   <label>Catégorie</label>
-                  <select 
-                    name="numCategorie" 
-                    value={form.numCategorie} 
-                    onChange={handleChange} 
-                    required
-                    className="form-control"
-                  >
-                    <option value="">Sélectionner une catégorie...</option>
-                    {categories.map((cat) => (
-                      <option key={cat.numCategorie} value={cat.numCategorie}>
-                        {cat.nomCategorie}
-                      </option>
+                  <select name="numCategorie" value={form.numCategorie} onChange={handleChange} required className="form-control">
+                    <option value="">Choisir...</option>
+                    {categories.map((c) => (
+                      <option key={c.numCategorie} value={c.numCategorie}>{c.nomCategorie}</option>
                     ))}
                   </select>
                 </div>
-                
                 <div className="form-group">
                   <label><FaTag /> Promotion</label>
-                  <select 
-                    name="numPromotion" 
-                    value={form.numPromotion} 
-                    onChange={handleChange}
-                    className="form-control"
-                  >
-                    <option value="">Aucune promotion</option>
+                  <select name="numPromotion" value={form.numPromotion} onChange={handleChange} className="form-control">
+                    <option value="">Aucune</option>
                     {promotions.map((p) => (
                       <option key={p.numPromotion} value={p.numPromotion}>
                         {p.nomPromotion} ({p.valeur}%)
@@ -578,13 +379,10 @@ const Produits = () => {
                   </select>
                 </div>
               </div>
-
               <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                  Annuler
-                </button>
+                <button type="button" className="btn btn-secondary" onClick={resetForm}>Annuler</button>
                 <button type="submit" className="btn btn-primary">
-                  {editingId ? "Mettre à jour" : "Ajouter le produit"}
+                  {editingId ? "Mettre à jour" : "Ajouter"}
                 </button>
               </div>
             </form>
@@ -592,294 +390,110 @@ const Produits = () => {
         </div>
       )}
 
-   <div className="grid-container grid-3">
-  {filteredProduits.length > 0 ? (
-    filteredProduits.map((produit) => {
-      const hasPromotion = produit.promotion && produit.promotion.valeur;
-      const promotionalPrice = hasPromotion
-        ? calculatePromotionalPrice(produit.prix, produit.promotion.valeur)
-        : null;
-      const savings = hasPromotion
-        ? calculateSavings(produit.prix, produit.promotion.valeur)
-        : null;
+      {/* Grille des produits */}
+      <div className="grid-container grid-3">
+        {filteredProduits.length > 0 ? (
+          filteredProduits.map((produit) => {
+            const hasPromo = produit.promotion && produit.promotion.valeur;
+            const prixPromo = hasPromo ? calculatePromotionalPrice(produit.prix, produit.promotion.valeur) : null;
 
-      return (
-        <div key={produit.numProduit} className="card">
-          {/* Badge promo (utilise badge-promo du CSS) */}
-          {hasPromotion && (
-            <span className="badge-promo">-{produit.promotion.valeur}%</span>
-          )}
-
-          {/* Image */}
-          <div className="image-container">
-            {produit.image ? (
-              <img
-                src={`${IMAGE_BASE_URL}${produit.image}`}
-                alt={produit.nomProduit}
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.parentElement.innerHTML = `
-                    <div class='image-fallback'>
-                      <i class='fa fa-box' style='font-size:40px;color:#ccc;'></i>
+            return (
+              <div key={produit.numProduit} className="card">
+                {hasPromo && <span className="badge-promo">-{produit.promotion.valeur}%</span>}
+                <div className="image-container">
+                  {produit.image ? (
+                    <img src={`${IMAGE_BASE_URL}${produit.image}`} alt={produit.nomProduit} />
+                  ) : (
+                    <div className="image-fallback"><FaBox style={{ fontSize: "40px", color: "#ccc" }} /></div>
+                  )}
+                </div>
+                <div className="card-body">
+                  <h3 className="product-title">{produit.nomProduit}</h3>
+                  {produit.categorie && (
+                    <span className="product-category">{produit.categorie.nomCategorie}</span>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
+                    <div>
+                      {hasPromo ? (
+                        <>
+                          <div style={{ textDecoration: "line-through", color: "#888" }}>
+                            {produit.prix.toLocaleString()} Ar
+                          </div>
+                          <div style={{ fontSize: "1.4rem", fontWeight: "bold", color: "#dc3545" }}>
+                            {prixPromo.toLocaleString()} Ar
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ fontSize: "1.4rem", fontWeight: "bold", color: "#28a458" }}>
+                          {produit.prix.toLocaleString()} Ar
+                        </div>
+                      )}
                     </div>
-                  `;
-                }}
-              />
-            ) : (
-              <div className="image-fallback">
-                <FaBox style={{ fontSize: "40px", color: "#ccc" }} />
-              </div>
-            )}
-          </div>
-
-          {/* Corps de la carte */}
-          <div className="card-body">
-            <h3 className="product-title" style={{ marginBottom: '2px' }}>
-              {produit.nomProduit}
-            </h3>
-          
-            
-            {produit.categorie && (
-              <span className="product-category" style={{ 
-                display: 'block', 
-                marginBottom: '10px',
-                backgroundColor: 'rgba(40, 164, 88, 0.1)',
-                color: '#28a458',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                fontSize: '0.85rem',
-                fontWeight: '500',
-                alignSelf: 'flex-start',
-                width: 'fit-content'
-              }}>
-                {produit.categorie.nomCategorie}
-              </span>
-            )}
-
-            {/* Section prix et poids alignés */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '10px',
-              borderTop: '1px dashed #e0e0e0',
-              paddingTop: '15px'
-            }}>
-              {/* Prix */}
-              <div style={{ flex: 1 }}>
-                {hasPromotion ? (
-                  <>
-                    <div style={{ 
-                      fontSize: '1rem',
-                      color: '#6c757d',
-                      textDecoration: 'line-through',
-                      marginBottom: '5px'
-                    }}>
-                      {produit.prix.toLocaleString()} Ar
+                    <div style={{ textAlign: "right", color: "#28a458" }}>
+                      <FaWeightHanging /> {produit.poids} kg
                     </div>
-                    <div style={{ 
-                      fontSize: '1.4rem',
-                      fontWeight: '800',
-                      color: '#dc3545',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px'
-                    }}>
-                      <span>{promotionalPrice.toLocaleString()}</span>
-                      <span style={{ fontSize: '1rem', fontWeight: '600' }}>Ar</span>
-                    </div>
-                   
-                  </>
-                ) : (
-                  <div style={{ 
-                    fontSize: '1.4rem',
-                    fontWeight: '800',
-                    color: '#28a458',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px'
-                  }}>
-                    <span>{produit.prix.toLocaleString()}</span>
-                    <span style={{ fontSize: '1rem', fontWeight: '600' }}>Ar</span>
                   </div>
-                )}
-              </div>
-
-              {/* Poids aligné à droite */}
-              <div style={{ 
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end',
-                marginLeft: '20px'
-              }}>
-                <div style={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  color: '#6c757d',
-                  fontSize: '0.9rem'
-                }}>
-                  <FaWeightHanging style={{ color:"#28a458"}}/>
-                  <span style={{ color:"#28a458",fontWeight: '500' }}>{produit.poids} kg</span>
+                </div>
+                <div className="card-footer">
+                  <div className="table-actions">
+                    <button className="edit" onClick={() => handleEdit(produit)}>
+                      <FaEdit /> Modifier
+                    </button>
+                    <button className="delete" onClick={() => openDeleteModal(produit.numProduit, produit.nomProduit)}>
+                      <FaTrash /> Supprimer
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            );
+          })
+        ) : (
+          <div className="empty-state">
+            <h3>Aucun produit trouvé</h3>
+            <p>Commencez par ajouter votre premier produit !</p>
+            <button className="btn btn-primary" onClick={() => setIsFormOpen(true)}>
+              <FaPlus /> Ajouter un produit
+            </button>
           </div>
+        )}
+      </div>
 
-          {/* Footer */}
-          <div className="card-footer">
-            <div className="table-actions">
-              <button className="edit" onClick={() => handleEdit(produit)}>
-                <FaEdit /> Modifier
-              </button>
-              <button
-                className="delete"
-                onClick={() =>
-                  handleDeleteClick(produit.numProduit, produit.nomProduit)
-                }
-              >
-                <FaTrash /> Supprimer
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    })
-  ) : (
-    <div className="loading-state">
-      <h3>Aucun produit trouvé</h3>
-      <p>Commencez par ajouter votre premier produit</p>
-      <button className="btn btn-primary" onClick={() => setIsFormOpen(true)}>
-        <FaPlus /> Ajouter un produit
-      </button>
-    </div>
-  )}
-</div>
-
-
-      {/* Modal de suppression */}
+      {/* Modal Suppression */}
       {showDeleteModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
               <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaExclamationTriangle style={{ color: "#dc3545" }} />
-                {modalData.title}
+                <FaExclamationTriangle style={{ color: "#dc3545" }} /> Confirmer la suppression
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
             </div>
-            
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
-                {modalData.message}
-                <br />
-                <span style={{ color: "#6c757d", fontSize: "14px", marginTop: "10px", display: "block" }}>
-                   Ce produit sera supprimée temporairement.
-                </span>
-              </p>
-              
+              <p>Voulez-vous vraiment supprimer le produit <strong>{produitEnCours?.nom}</strong> ?</p>
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
-                 <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
-                <button
-                  className="btn btn-danger"
-                  onClick={async () => {
-                    if (modalData.onConfirm) {
-                      await modalData.onConfirm();
-                    }
-                    closeAllModals();
-                  }}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Supprimer
-                </button>
-               
+                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Annuler</button>
+                <button className="btn btn-danger" onClick={confirmerSuppression}>Supprimer</button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal de restauration */}
+      {/* Modal Restauration */}
       {showRestoreModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
               <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaExclamationTriangle style={{ color: "#ffc107" }} />
-                {modalData.title}
+                <FaExclamationTriangle style={{ color: "#ffc107" }} /> Produit archivé
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={() => setShowRestoreModal(false)}>×</button>
             </div>
-            
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
-                {modalData.message}
-              </p>
-              
+              <p>Le produit "<strong>{produitEnCours?.nom}</strong>" existe déjà mais est archivé.<br />Voulez-vous le restaurer ?</p>
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
-                
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={async () => {
-                    if (modalData.onConfirm) {
-                      await modalData.onConfirm();
-                    }
-                    closeAllModals();
-                  }}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Restaurer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de succès */}
-      {showSuccessModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "500px" }}>
-            <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaBox style={{ color: "#28a458" }} />
-                {modalData.title}
-              </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
-            </div>
-            
-            <div className="modal-body">
-              <p style={{ 
-                fontSize: "16px", 
-                lineHeight: "1.5", 
-                marginBottom: "20px",
-                textAlign: "center",
-                padding: "20px 0"
-              }}>
-                {modalData.message}
-              </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center" }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 40px" }}
-                >
-                  OK
-                </button>
+                <button className="btn btn-secondary" onClick={() => setShowRestoreModal(false)}>Annuler</button>
+                <button className="btn btn-success" onClick={confirmerRestauration}>Restaurer</button>
               </div>
             </div>
           </div>

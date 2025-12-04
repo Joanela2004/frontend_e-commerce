@@ -1,21 +1,20 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import dashboardApi from "../../../services/dashboardApi";
-import "../../../styles/back-office/tableau.css";
+import { usePagination } from "../../../pages/hooks/hooks";
 import "../../../styles/back-office/global.css";
-import { sendPromoEmail, fetchPromotions, checkPromoSent } from "../../../services/promotionService"; 
+import "../../../styles/back-office/tableau.css";
+import "../../../styles/back-office/modal.css";
+import { sendPromoEmail, fetchPromotions, checkPromoSent } from "../../../services/promotionService";
 import { toast } from "react-toastify";
-
 import {
-  FaEnvelope,
-  FaShoppingCart,
-  FaMoneyBillAlt,
   FaSearch,
   FaUsers,
   FaGift,
   FaTimes,
   FaPercentage,
-  FaCalendar,
-  FaStore
+  FaCalendarAlt,
+  FaShoppingCart,
+  FaMoneyBillAlt,
 } from "react-icons/fa";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
@@ -24,7 +23,6 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showModal, setShowModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [promotions, setPromotions] = useState([]);
@@ -34,10 +32,12 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
 
   const loadData = async () => {
     try {
-      const res = await dashboardApi.topClients(start, end, limit);
+      setLoading(true);
+      const res = await dashboardApi.topClients(start, end, 1000);
       setClients(res.data);
     } catch (err) {
       console.error("Erreur API TopClients:", err);
+      toast.error("Impossible de charger les top clients");
     } finally {
       setLoading(false);
     }
@@ -45,14 +45,18 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
 
   useEffect(() => {
     loadData();
-  }, [start, end, limit]);
+  }, [start, end]);
 
   const filteredClients = useMemo(() => {
-    return clients.filter(c =>
+    let list = clients.slice(0, limit);
+    return list.filter(c =>
       (c.nomUtilisateur || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c.email || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [clients, searchTerm]);
+  }, [clients, searchTerm, limit]);
+
+  const { currentRows: clientsDataRows, goToPage, currentPage, totalPages } =
+    usePagination(filteredClients, 10);
 
   const openPromoModal = async (client) => {
     setSelectedClient({
@@ -60,9 +64,8 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       nom: client.nomUtilisateur,
       email: client.email,
       commandes: client.commandes_count,
-      total: client.total_depense
+      total: Number(client.total_depense).toLocaleString('fr-FR', { minimumFractionDigits: 2 }),
     });
-
     setShowModal(true);
     setLoadingPromos(true);
     setSelectedPromo(null);
@@ -73,10 +76,8 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
 
       const activePromos = promos.filter(p => {
         const dateFin = new Date(p.dateFin);
-        return (
-          (p.statutPromotion === "active" || p.statutPromotion === "actif" || p.statutPromotion === true) &&
-          dateFin > now
-        );
+        const statut = (p.autoStatut || "").toLowerCase();
+        return statut === "active" && dateFin > now;
       });
 
       const promosWithStatus = await Promise.all(
@@ -87,77 +88,88 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       );
 
       setPromotions(promosWithStatus);
-    } catch {
-      toast.error("Erreur lors du chargement des promotions");
+    } catch (error) {
+      console.error(error);
+      toast.error("Impossible de charger les promotions");
     } finally {
       setLoadingPromos(false);
     }
   };
 
   const handleEnvoyerPromo = async () => {
-    if (!selectedPromo || !selectedClient) return;
-
-    if (selectedPromo.dejaEnvoye) {
-      toast.warning("Cette promotion a déjà été envoyée à ce client.");
-      return;
-    }
+    if (!selectedPromo || !selectedClient || sending) return;
 
     try {
       setSending(true);
 
-      const res = await sendPromoEmail({
-        email: selectedClient.email,
-        codePromo: selectedPromo.codePromo,
-        valeur: selectedPromo.valeur,
-        typePromotion: selectedPromo.typePromotion,
-        nomClient: selectedClient.nom,
+      const payload = {
         numUtilisateur: selectedClient.id,
         numPromotion: selectedPromo.numPromotion,
-      });
+        nomClient: selectedClient.nom,
+      };
+
+      const res = await sendPromoEmail(payload);
 
       if (res.success) {
-        toast.success(`Code promo ${selectedPromo.codePromo} envoyé à ${selectedClient.nom} !`);
-        setShowModal(false);
-        setSelectedPromo(null);
+        toast.success(`Code ${selectedPromo.codePromo} envoyé à ${selectedClient.nom} !`);
+
+        // Marquer comme déjà envoyé
+        setPromotions(prev =>
+          prev.map(p =>
+            p.numPromotion === selectedPromo.numPromotion
+              ? { ...p, dejaEnvoye: true }
+              : p
+          )
+        );
+        setSelectedPromo(prev => ({ ...prev, dejaEnvoye: true }));
+
+        // FERMER LA MODALE APRÈS SUCCÈS
+        setTimeout(() => {
+          setShowModal(false);
+        }, 800);
       } else {
-        toast.error(res.message || "Échec de l'envoi.");
+        toast.error(res.message || "Échec de l'envoi");
       }
     } catch (err) {
-      toast.error("Erreur lors de l'envoi du code promo");
-      console.error(err);
+      const msg = err.response?.data?.message || "Erreur serveur";
+      toast.error(msg);
     } finally {
       setSending(false);
     }
   };
 
-  if (loading) return <div className="loading">Chargement top clients...</div>;
-
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement des top clients...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
+      {/* HEADER */}
       <div className="page-header">
-        <h1>
-          <FaUsers style={{ marginRight: "10px", color: "#28a458" }} />
-          Top Clients
-        </h1>
-      </div>
-
-      {/* Barre de recherche */}
-      <div className="search-container">
-        <div className="search-bar">
-          <FaSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Rechercher un client..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      
+          <h1><FaUsers style={{ marginRight: "10px" }} /> Top Clients</h1>
+          <div className="stats-container" style={{ marginTop: '10px' }}>
+            <span className="stat-item">
+              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} trouvé{filteredClients.length !== 1 ? 's' : ''}
+            </span>
+          
+         
         </div>
       </div>
 
-      {/* Tableau */}
+     
+
+      {/* TABLEAU */}
       <div className="table-container">
         <table className="data-table">
           <thead>
@@ -168,75 +180,95 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
               <th>Action</th>
             </tr>
           </thead>
-
           <tbody>
-            {filteredClients.length > 0 ? (
-              filteredClients.map((c) => (
+            {clientsDataRows.length > 0 ? (
+              clientsDataRows.map((c) => (
                 <tr key={c.numUtilisateur}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       {c.image ? (
-  // Si le client a une image → afficher la photo
-  <img 
-    src={`${IMAGE_BASE_URL}${c.image}`}
-    alt={c.nomUtilisateur} 
-    style={{
-      width: "40px",
-      height: "40px",
-      borderRadius: "50%",
-      objectFit: "cover"
-    }}
-    className="tooltip-img"
-  />
-) : (
-   <div style={{ 
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
-    backgroundColor: "#e3f2fd",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#1565c0",
-    fontWeight: "bold"
-  }}>
-    {c.nomUtilisateur?.charAt(0)?.toUpperCase() || "C"}
-  </div>
-)}
-
-                      <div>
-                        <div style={{ fontWeight: "bold" }}>{c.nomUtilisateur || "N/A"}</div>
-                      </div>
+                        <img
+                          src={`${IMAGE_BASE_URL}${c.image}`}
+                          alt={c.nomUtilisateur}
+                          style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          backgroundColor: "#e3f2fd",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#1565c0",
+                          fontWeight: "bold"
+                        }}>
+                          {c.nomUtilisateur?.charAt(0)?.toUpperCase() || "C"}
+                        </div>
+                      )}
+                      <div style={{ fontWeight: "bold" }}>{c.nomUtilisateur || "N/A"}</div>
                     </div>
                   </td>
-
-                  <td>{c.commandes_count}</td>
-
-                  <td>{Number(c.total_depense).toLocaleString()} Ar</td>
-
                   <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <FaShoppingCart style={{ color: "#28a458" }} />
+                      <span>{c.commandes_count}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <FaMoneyBillAlt style={{ color: "#ffc107" }} />
+                      <span style={{ fontWeight: 'bold' }}>
+                        {Number(c.total_depense).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} Ar
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    
                     <button
-                      className="btn-promo"
-                      onClick={() => openPromoModal(c)}
-                    >
-                      <FaGift /> Envoyer promo
-                    </button>
+                              className="btn-primary"
+                              onClick={() => openPromoModal(c)}
+                              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                            >
+                              <FaGift />
+                                promotion
+                            </button>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr><td colSpan="5">Aucun client trouvé</td></tr>
+              <tr>
+                <td colSpan="4" className="empty-table">
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <h3>Aucun client trouvé</h3>
+                  </div>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* --- MODAL PROMO (inchangé, juste corrigé indentation) --- */}
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="pagination-zone" style={{ marginTop: '20px' }}>
+          <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="pagination-btn prev">
+            Précédent
+          </button>
+          <div className="pagination-info">
+            <span>Page {currentPage} sur {totalPages}</span>
+          </div>
+          <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="pagination-btn next">
+            Suivant
+          </button>
+        </div>
+      )}
 
+      {/* MODALE */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content modal-promo-envoi" onClick={(e) => e.stopPropagation()}>
-            
+          <div className="modal-content modal-promo-envoi" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3><FaGift /> Envoyer un code promo</h3>
               <button className="modal-close-btn" onClick={() => setShowModal(false)}>
@@ -249,13 +281,13 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
               <p><strong>Nom :</strong> {selectedClient?.nom}</p>
               <p><strong>Email :</strong> {selectedClient?.email}</p>
               <p><strong>Commandes :</strong> {selectedClient?.commandes}</p>
-              <p><strong>Total :</strong> {selectedClient?.total} Ar</p>
+              <p><strong>Total dépensé :</strong> {selectedClient?.total} Ar</p>
             </div>
 
             {loadingPromos ? (
               <p>Chargement des promotions...</p>
             ) : promotions.length === 0 ? (
-              <p>Aucune promotion active</p>
+              <p>Aucune promotion active disponible.</p>
             ) : (
               <div className="promo-grid">
                 {promotions.map((p) => (
@@ -263,19 +295,17 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
                     key={p.numPromotion}
                     className={`promo-card ${selectedPromo?.numPromotion === p.numPromotion ? "selected" : ""} ${p.dejaEnvoye ? "sent" : ""}`}
                     onClick={() => !p.dejaEnvoye && setSelectedPromo(p)}
+                    title={p.dejaEnvoye ? "Déjà envoyé" : "Cliquer pour sélectionner"}
                   >
                     <div className="promo-header">
                       <FaPercentage /> {p.codePromo}
                     </div>
-
                     <div className="promo-value">
                       -{p.valeur}{p.typePromotion === "Pourcentage" ? "%" : " Ar"}
                     </div>
-
                     <div className="promo-dates">
-                      <FaCalendar /> {formatDate(p.dateDebut)} → {formatDate(p.dateFin)}
+                      <FaCalendarAlt /> {formatDate(p.dateDebut)} → {formatDate(p.dateFin)}
                     </div>
-
                     {p.dejaEnvoye && <div className="promo-sent">Déjà envoyé</div>}
                   </div>
                 ))}
@@ -286,37 +316,17 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
               <button className="btn-secondary" onClick={() => setShowModal(false)}>
                 Annuler
               </button>
-
               <button
                 className="btn-primary"
                 onClick={handleEnvoyerPromo}
                 disabled={!selectedPromo || selectedPromo?.dejaEnvoye || sending}
               >
-                {sending ? "Envoi..." : "Envoyer"}
+                {sending ? "Envoi en cours..." : "Envoyer"}
               </button>
             </div>
-
           </div>
         </div>
       )}
-
-      {/* Bouton promo CSS */}
-      <style>
-        {`
-          .btn-promo {
-            background-color: var(--color-green-primary);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          }
-        `}
-      </style>
     </div>
   );
 }

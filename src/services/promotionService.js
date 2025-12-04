@@ -56,13 +56,12 @@ export const deletePromotion = async (id) => {
 export const sendPromoEmail = async (emailData) => {
     try {
         const res = await api.post(`/send-promo-to-client`, emailData, getConfig());
-        return res.data;
+        return res.data; // { success: true, message: "..." }
     } catch (error) {
-        console.error("Erreur envoi e-mails promo ciblé:", error.response?.data || error.message);
+        console.error("Erreur envoi promo:", error.response?.data || error.message);
         throw error;
     }
 };
-
 export const validerCodePromo = async (code, numUtilisateur) => {
   const response = await api.post(
     `/promotions/valider`,

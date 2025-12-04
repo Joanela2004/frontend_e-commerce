@@ -18,7 +18,9 @@ import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/commandeClient.css"
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
 const CommandesClient = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -146,9 +148,7 @@ const CommandesClient = () => {
             <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
               Total: {totalMontant.toLocaleString()} Ar
             </span>
-            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
-              Moyenne: {moyenneMontant.toLocaleString('fr-FR', { maximumFractionDigits: 0 })} Ar
-            </span>
+            
             <span className="stat-item attente">
               {commandesEnAttente} en attente
             </span>
@@ -164,15 +164,13 @@ const CommandesClient = () => {
                   >
                     <FaArrowLeft /> Retour
                   </button>
-                 
-                
-                </div>
+         </div>
       </div>
 
       
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par référence ou ID de commande..."
@@ -216,12 +214,15 @@ const CommandesClient = () => {
             
             <div className="filter-group">
               <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
-              <input
-                type="date"
-                className="form-control"
-                value={filtreDateMin}
-                onChange={(e) => setFiltreDateMin(e.target.value)}
-              />
+              <DatePicker
+    selected={filtreDateMin ? new Date(filtreDateMin) : null}
+    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
             
             <div className="filter-group">
@@ -236,15 +237,15 @@ const CommandesClient = () => {
             
             <div className="filter-group">
               <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Montant min</label>
-              <input
-                type="number"
-                className="form-control"
-                placeholder="0"
-                value={filtreMontantMin}
-                onChange={(e) => setFiltreMontantMin(e.target.value)}
-                min="0"
-                step="1000"
-              />
+              <DatePicker
+    selected={filtreDateMax ? new Date(filtreDateMax) : null}
+    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+    dateFormat="dd/MM/yyyy"
+    locale={fr}
+    placeholderText="jj/mm/aaaa"
+    className="form-control"
+    isClearable
+  />
             </div>
             
             <div className="filter-group">
@@ -316,7 +317,7 @@ const CommandesClient = () => {
               {filteredCommandes.map(commande => (
                 <tr key={commande.numCommande}>
                   <td>
-                    <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                    <span >
                       #{commande.referenceCommande || commande.numCommande}
                     </span>
                   </td>

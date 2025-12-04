@@ -5,7 +5,6 @@ import { fetchDetailCommande } from "../../../services/commandeService";
 import { FaDownload, FaArrowLeft, FaPrint, FaFilePdf } from "react-icons/fa";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-
 const CommandeDetails = () => {
   const { id } = useParams();
   const [commande, setCommande] = useState(null);
@@ -177,7 +176,12 @@ const handleDownloadPDF = async () => {
       <div className="details-content" ref={contentRef}>
         <div className="commande-info">
           <p><strong>Client :</strong> {commande.utilisateur?.nomUtilisateur || 'Inconnu'}</p>
-          <p><strong>Date :</strong> {commande.dateCommande}</p>
+          <p>
+  <strong>Date :</strong>{' '}
+  {commande.dateCommande
+    ? new Date(commande.dateCommande).toLocaleDateString('fr-FR')
+    : 'Non définie'}
+</p>
           <p><strong>Statut :</strong> <span className={`statut-badge ${getStatusClass(commande.statut)}`}>{commande.statut}</span></p>
           <p><strong>Nombre de produits commandés :</strong> {nombreProduits}</p>
           <p><strong>Lieu de livraison :</strong> {lieuLivraison}</p>
@@ -232,7 +236,7 @@ const handleDownloadPDF = async () => {
         </table>
 
         <div className="recap-financier">
-          <h3>Récapitulatif financier et logistique 💸🚚</h3>
+          <h3>Récapitulatif financier et logistique </h3>
           
           <p>
             <strong>Poids Total des produits :</strong> <span>{totalPoids} kg</span>
