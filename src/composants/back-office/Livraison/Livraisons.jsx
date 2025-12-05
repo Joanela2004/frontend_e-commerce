@@ -24,6 +24,11 @@ import { updateCommandeAdmin } from "../../../services/commandeService";
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
+
+// =========================================================================
+// COMPOSANT MODAL CORRIGÉ
+// =========================================================================
+
 const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -55,10 +60,12 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
     try {
       const updatedData = { ...formData };
 
+      // Si le statut passe à 'livrée' et que la date n'est pas déjà définie, on l'ajoute
       if (
         updatedData.statutLivraison === "livrée" &&
         !updatedData.dateLivraison
       ) {
+        // Format YYYY-MM-DD HH:MM:SS
         updatedData.dateLivraison = new Date()
           .toISOString()
           .slice(0, 19)
@@ -72,13 +79,11 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
         newStatutCommande = "livrée";
       }
 
+      // Mise à jour de la commande associée si nécessaire
       if (newStatutCommande) {
         await updateCommandeAdmin(updatedData.numCommande, {
           statut: newStatutCommande,
-          dateLivraison:
-            newStatutCommande === "livrée"
-              ? new Date().toISOString().slice(0, 19).replace("T", " ")
-              : undefined,
+          dateLivraison: updatedData.dateLivraison,
         });
       }
 
@@ -96,8 +101,9 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: "600px" }}>
         <div className="modal-header">
-          <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <FaEdit style={{ color: "#ffc107" }} />
+          <h2>
+            {/* Utilisation de var(--color-primary) ou #28a458 pour la cohérence */}
+            <FaEdit style={{ color: "var(--color-primary, #28a458)" }} />
             Modifier la Livraison #{livraison?.numCommande}
           </h2>
           <button className="modal-close" onClick={onClose}>
@@ -105,8 +111,11 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
           </button>
         </div>
 
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
+        {/* Ajout de la classe modal-form au formulaire */}
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="modal-body">
+            
+            {/* Ligne 1 : Transporteur & Référence Colis */}
             <div className="form-row">
               <div className="form-group">
                 <label>Transporteur</label>
@@ -117,6 +126,7 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   onChange={handleChange}
                   required
                   placeholder="Nom du transporteur"
+                  className="form-control" // Ajout de la classe
                 />
               </div>
 
@@ -129,80 +139,95 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   onChange={handleChange}
                   required
                   placeholder="Numéro de suivi"
+                  className="form-control" // Ajout de la classe
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Lieu de livraison</label>
-              <input
-                type="text"
-                name="lieuLivraison"
-                value={formData.lieuLivraison}
-                onChange={handleChange}
-                required
-                placeholder="Adresse de livraison"
-              />
+            {/* Ligne 2 : Lieu de livraison & Contact Transporteur */}
+            <div className="form-row">
+              <div className="form-group">
+                <label>Lieu de livraison</label>
+                <input
+                  type="text"
+                  name="lieuLivraison"
+                  value={formData.lieuLivraison}
+                  onChange={handleChange}
+                  required
+                  placeholder="Adresse de livraison"
+                  className="form-control" // Ajout de la classe
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Contact Transporteur</label>
+                <input
+                  type="text"
+                  name="contactTransporteur"
+                  value={formData.contactTransporteur}
+                  onChange={handleChange}
+                  placeholder="Téléphone ou email du transporteur"
+                  className="form-control" // Ajout de la classe
+                />
+              </div>
             </div>
 
-            <div className="form-group">
-              <label>Contact Transporteur</label>
-              <input
-                type="text"
-                name="contactTransporteur"
-                value={formData.contactTransporteur}
-                onChange={handleChange}
-                placeholder="Téléphone ou email du transporteur"
-              />
+            {/* Ligne 3 : Statut (Pleine largeur) */}
+            <div className="form-row" style={{ paddingBottom: '20px' }}> 
+                <div className="form-group" style={{ flex: '1 1 100%' }}>
+                  <label>Statut de la livraison</label>
+                  <select
+                    name="statutLivraison"
+                    value={formData.statutLivraison}
+                    onChange={handleChange}
+                    required
+                    className="form-control" 
+                  >
+                    <option value="en cours">En cours</option>
+                    <option value="livrée">Livrée</option>
+                  </select>
+                </div>
             </div>
 
-            <div className="form-group">
-              <label>Statut de la livraison</label>
-              <select
-                name="statutLivraison"
-                value={formData.statutLivraison}
-                onChange={handleChange}
-                required
-                className="form-control"
-              >
-                <option value="en cours">En cours</option>
-                <option value="livrée">Livrée</option>
-              </select>
-            </div>
+          </div> {/* Fin modal-body */}
 
-            <div className="modal-actions" style={{ marginTop: "20px" }}>
-              <button
-                type="submit"
-                className="btn btn-warning"
-                disabled={loading}
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
-                {loading ? (
-                  <>
-                    <div className="loading-spinner-small"></div>
-                    Enregistrement...
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle /> Enregistrer
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* Actions : alignement à droite et ordre standard (Annuler / Primaire) */}
+          <div className="modal-actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary"
+              disabled={loading}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary" // Utilisation de btn-primary
+              disabled={loading}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              {loading ? (
+                <>
+                  <div className="loading-spinner-small"></div>
+                  Enregistrement...
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle /> Enregistrer
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
+
+// =========================================================================
+// LE RESTE DU FICHIER (COMPOSANT Livraisons) EST INCHANGÉ
+// =========================================================================
 
 const Livraisons = () => {
   const [livraisons, setLivraisons] = useState([]);

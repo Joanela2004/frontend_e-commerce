@@ -25,6 +25,7 @@ import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/toast.css";
+import  "../../../styles/back-office/produit.css";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -195,10 +196,10 @@ const Articles = () => {
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            style={{ border: "none", background: "white", color: "#28a458" }}
-          >
-            <FaFilter />
-          </button>
+               style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+                      >
+                        <FaFilter />
+                      </button>
           <FaSync
             onClick={reinitialiserFiltres}
             style={{ marginRight: "8px", color: "#28a458", cursor: "pointer" }}
@@ -253,14 +254,12 @@ const Articles = () => {
 
       {/* Liste des articles */}
       {filteredArticles.length > 0 ? (
-        <div className="grid-container grid-3">
+        <div className="products-grid-container">
           {filteredArticles.map(article => {
             const articleDate = new Date(article.datePublication);
-            const isRecent = (new Date() - articleDate) / (1000 * 60 * 60 * 24) <= 7;
-
+          
             return (
               <div className="card" key={article.numArticle}>
-                {isRecent && <div className="badge badge-new">NOUVEAU</div>}
                 <div className="image-container">
                   <img
                     src={`${IMAGE_BASE_URL}${article.image}`}
@@ -277,18 +276,18 @@ const Articles = () => {
                   <p className="article-description">
                     {article.description?.substring(0, 150) || "Aucune description"}...
                   </p>
-                  <div className="meta-info">
-                    <div className="meta-item">
-                      <FaUser className="meta-icon" />
+                  <div style={{ display: "flex", gap:"70px", alignItems: "center", marginTop: "10px" }}>
+                    <div className="prix-poids">
+                      <FaUser style={{marginRight:"10px"}} className="meta-icon" />
                       <span>{article.auteur}</span>
                     </div>
                     <div className="meta-item">
-                      <FaCalendarAlt className="meta-icon" />
+                      <FaCalendarAlt style={{marginRight:"10px"}} className="meta-icon" />
                       <span>{articleDate.toLocaleDateString("fr-FR")}</span>
                     </div>
                   </div>
                 </div>
-                <div className="actions-container">
+                <div className="table-actions">
                   <button className="edit" onClick={() => handleModifier(article)}>
                     <FaEdit style={{ color: "#28a458", marginRight: "10px" }} /> Modifier
                   </button>

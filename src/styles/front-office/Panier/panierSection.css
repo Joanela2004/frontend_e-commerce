@@ -625,10 +625,11 @@ border-bottom: 2px solid var(--color-green-primary);
 }
 .passer-commande-btn-retour {
   width: 100%;
-  background: var(--color-border-light);
+  background-color: var(--color-background-white);
+  border: 2px solid var(--color-green-primary);
   color: var(--color-green-primary);
   padding: 15px 20px;
-  border: none;
+ 
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
@@ -747,7 +748,7 @@ border-bottom: 2px solid var(--color-green-primary);
 
 .success-message-card {
   background: #f8fff9;
-  border: 2px solid #28a745;
+  border: 2px solid var(--color-green-primary);
   border-radius: 20px;
   padding: 40px;
   margin-bottom: 40px;
@@ -780,13 +781,13 @@ border-bottom: 2px solid var(--color-green-primary);
 }
 
 .mode-paiement-card:hover {
-  border-color: #3b82f6;
+  border-color: var(--color-green-primary);
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 .mode-paiement-card.selected {
-  border-color: #28a745;
+  border-color: var(--color-green-primary);
   background: #f0fff4;
 }
 
@@ -794,7 +795,7 @@ border-bottom: 2px solid var(--color-green-primary);
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #28a745;
+  background: var(--color-green-primary);
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -820,7 +821,7 @@ border-bottom: 2px solid var(--color-green-primary);
 }
 
 .btn-continuer-achats {
-  background: #3b82f6;
+  background: var(--color-green-primary);
   color: white;
   border: none;
 }
@@ -829,11 +830,11 @@ border-bottom: 2px solid var(--color-green-primary);
 
 .btn-suivre-commande {
   background: white;
-  color: #28a745;
-  border: 2px solid #28a745;
+  color: var(--color-green-primary);
+  border: 2px solid var(--color-green-primary);
 }
 
 .btn-suivre-commande:hover {
-  background: #28a745;
+  background: var(--color-green-primary);
   color: white;
 }

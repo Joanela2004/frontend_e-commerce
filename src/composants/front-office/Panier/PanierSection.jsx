@@ -10,10 +10,6 @@ import {
   FaExclamationCircle,
   FaArrowLeft,
 } from "react-icons/fa";
-// Importations de composants inutilisées dans le PanierSection actuel (laisser pour la complétude)
-// import CheckoutPayment from "./CheckoutPayment";
-// import Success from "../../../pages/front-office/Success";
-// import Cancel from "../../../pages/front-office/Cancel";
 import { createStripeSession } from "../../../services/StripeService";
 import { validerCodePromo } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";
@@ -460,20 +456,72 @@ const handleChoisirPaiement = async (mode) => {
                             </select>
                           </div>
                         )}
-                      <div className="quantite-control-group">
-                        <button
-                          onClick={() => handleQuantityChange(produit.id, -1)}
-                          disabled={Number(produit.poids) <= 1}
-                        >
-                          -
-                        </button>
-                        <span>{Number(produit.poids)} kg</span>
-                        <button
-                          onClick={() => handleQuantityChange(produit.id, 1)}
-                        >
-                          +
-                        </button>
-                      </div>
+                      {/* REMPLACE TOUTE LA PARTIE "quantite-control-group" PAR CECI */}
+
+<div className="quantite-control-group editable">
+  <button
+    onClick={() => {
+      const newPoids = Math.max(0.25, Number(produit.poids) - 0.25);
+      updateQuantity(produit.id, newPoids);
+    }}
+    className="quantity-btn"
+    disabled={Number(produit.poids) <= 0.25}
+  >
+    −
+  </button>
+  <input
+    type="number"
+    min="0.25"
+    max={produit.poidsDisponible || 999}
+    step="0.25"
+    value={Number(produit.poids).toFixed(2)}
+    onChange={(e) => {
+      let value = parseFloat(e.target.value) || 0;
+      if (value < 0.25) value = 0.25;
+      if (value > (produit.poidsDisponible || 999)) {
+        setErrorModalData({
+          nom: produit.nom,
+          maxPoids: produit.poidsDisponible || 999,
+        });
+        setShowErrorModal(true);
+        value = produit.poidsDisponible || 999;
+      }
+      updateQuantity(produit.id, value);
+    }}
+    className="quantity-input-editable"
+    style={{
+      width: "90px",
+      textAlign: "center",
+      border: "2px solid #28a745",
+      borderRadius: "12px",
+      padding: "5px 8px",
+      fontWeight: "bold",
+      color: "#28a745",
+      background: "white",
+      marginLeft:"10px"
+    }}
+  />
+
+  <span style={{ fontWeight: "bold", fontSize: "1.1rem", color: "#28a745" }}></span>
+
+  <button
+    onClick={() => {
+      const newPoids = Number(produit.poids) + 0.25;
+      if (newPoids > (produit.poidsDisponible || 999)) {
+        setErrorModalData({
+          nom: produit.nom,
+          maxPoids: produit.poidsDisponible || 999,
+        });
+        setShowErrorModal(true);
+        return;
+      }
+      updateQuantity(produit.id, newPoids);
+    }}
+    className="quantity-btn" 
+  >
+    +
+  </button>
+</div>
                     </div>
                     <div className="produit-final-row">
                       <p className="total-item-prix">
@@ -510,8 +558,7 @@ const handleChoisirPaiement = async (mode) => {
               />
             )}
 
-            {/* ⭐️ BOUTONS D'ACTION POUR LE PANIER */}
-            <div className="bouton-paiement">
+                    <div className="bouton-paiement">
               <button
                 className="passer-commande-btn-retour"
                 onClick={handleContinueShopping}
@@ -523,15 +570,14 @@ const handleChoisirPaiement = async (mode) => {
                   className="passer-commande-btn"
                   onClick={handlePasserCommande}
                 >
-                  Passer Commande <FaChevronRight />
+                  Voir récapitulatif <FaChevronRight />
                 </button>
               )}
             </div>
           </div>
         )}
 
-        {/* ⭐️ ÉTAPE 2: AFFICHAGE DES DÉTAILS DE COMMANDE (Livraison/Code Promo) */}
-        {currentStep === 2 && cartItems.length > 0 && (
+             {currentStep === 2 && cartItems.length > 0 && (
           <div className="right-panel-wrapper">
             <div className="panier-total-card livraison-info-card">
               <h3>
@@ -567,25 +613,24 @@ const handleChoisirPaiement = async (mode) => {
               {erreurDate && (
                 <div className="message-erreur-inline">{erreurDate}</div>
               )}
-              <div className="livraison-input-group">
-                <FaCalendarAlt className="input-icon" />
-                <DatePicker
-                  selected={dateLivraison ? parseISO(dateLivraison) : null}
-                  dateFormat="dd/MM/yyyy"
-                  locale="fr"
-                  placeholderText="JJ/MM/AAAA"
-                  onChange={(date) => {
-                    const isoString = date ? format(date, "yyyy-MM-dd") : "";
-                    setDateLivraison(isoString);
-                    if (erreurDate) {
-                      setErreurDate(null);
-                    }
-                  }}
-                  minDate={new Date(getMinDate())}
-                  className="date-input-custom"
-                  required
-                />
-              </div>
+             <div className="livraison-input-group">
+            <FaCalendarAlt className="input-icon" />
+            <DatePicker
+              selected={dateLivraison ? parseISO(dateLivraison) : null}
+              onChange={(date) => {
+                const iso = date ? format(date, "yyyy-MM-dd") : "";
+                setDateLivraison(iso);
+                if (erreurDate) setErreurDate(null);
+              }}
+              dateFormat="dd/MM/yyyy"
+              locale="fr"
+              placeholderText="Choisir une date"
+              minDate={new Date()} // ← C'est tout ! Aujourd’hui et après uniquement
+              className="date-input-custom"
+              required
+              popperClassName="datepicker-popper"
+            />
+          </div>
               <div
                 className="livraison-input-group"
                 style={{ marginTop: "10px" }}
@@ -686,7 +731,7 @@ const handleChoisirPaiement = async (mode) => {
             
               <div className="bouton-paiement">
               <button
-                className="passer-commande-btn-retour"
+                className="passer-commande-btn-retour" 
                 onClick={handleGoBack}
               >
                 <FaArrowLeft /> Revenir au Panier

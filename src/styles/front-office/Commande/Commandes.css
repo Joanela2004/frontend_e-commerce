@@ -284,14 +284,6 @@
     margin-top: 40px;
     padding:10px 20px;
 }
-
-/* ========================================================================= */
-/* --- STYLES MODIFIÉS POUR L'INTÉGRATION DU PAIEMENT MODAL ET LA SÉLECTION DE LA CARTE --- */
-/* ========================================================================= */
-
-/* --- 1. Styles pour la CarteCommande sélectionnée (Harmonisation) --- */
-
-/* Laisser tel quel, utilise déjà --color-marron */
 .carte-commande-selected {
     border: 2px solid var(--color-marron); 
     box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4); /* Rendre l'ombre un peu plus présente */

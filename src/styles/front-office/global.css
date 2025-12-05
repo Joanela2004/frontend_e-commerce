@@ -161,7 +161,7 @@ footer{
   flex-direction: row;
   background-color: #ffff;
   justify-content: center;
-  padding: 50px 40px;
+  padding: 50px 80px;
   flex-wrap: wrap-reverse;
   
 }
@@ -296,7 +296,7 @@ footer{
 }
 
 .footer-bottom-bottom {
-  padding: 0 20px;
+  padding: 0 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;

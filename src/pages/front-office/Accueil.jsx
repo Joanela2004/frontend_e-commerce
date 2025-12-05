@@ -8,7 +8,6 @@ import HeroSection from "../../composants/front-office/Accueil/HeroSection";
 import ProduitsSection from "../../composants/front-office/Accueil/ProduitsSection";
 import PointsFortSection from "../../composants/front-office/Accueil/PointsFortSection";
 import AProposSection from "../../composants/front-office/Accueil/AboutSection";
-import NewsLetterSection from "../../composants/front-office/Accueil/NewsLetterSection";
 import FooterSection from "../../composants/FooterSection";
 
 export default function Accueil() {
@@ -50,7 +49,6 @@ export default function Accueil() {
       <ProduitsSection />
       <PointsFortSection />
       <AProposSection />
-      <NewsLetterSection />
       <FooterSection />
 
            <ToastContainer />

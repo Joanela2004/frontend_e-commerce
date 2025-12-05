@@ -1,3 +1,6 @@
+/* ===========================
+   MODAL OVERLAY
+   =========================== */
 
 .modal-overlay {
   position: fixed;
@@ -5,15 +8,31 @@
   left: 0;
   right: 0;
   bottom: 0;
-  display: flex;
+
+  /* Caché par défaut */
+  display: none;
+
   align-items: center;
   justify-content: center;
+
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
+
   animation: fadeIn 0.3s ease;
   padding: 20px;
 }
 
-.modal {
+/* Quand la modale est activée */
+.modal-overlay.active {
+  display: flex;
+}
+
+/* ===========================
+   CONTENU DE LA MODAL
+   =========================== */
+
+.modal,
+.modal-content {
   background: var(--color-background-white);
   border-radius: var(--radius);
   width: 100%;
@@ -21,9 +40,16 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
- }
+
+  /* IMPORTANT : être au-dessus de l'overlay */
+  position: relative;
+  z-index: 2000 !important;
+}
 
 
+.btn-danger{
+  border-radius: 20px;
+}
 .modal-header {
   padding: 20px;
   border-bottom: 1px solid var(--color-border);
@@ -42,22 +68,80 @@
   font-size: 1.3rem;
 }
 
+/* Bouton de fermeture */
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-light);
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--color-danger);
+}
 
 
 .modal-body {
-  padding: 20px;
+    /* Padding standard */
+    margin-top: 20px;
+    padding: 20px;
 }
 
+/* Conteneur pour aligner les boutons d'action (RÉVISÉ) */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end; 
+    gap: 15px; 
+    padding: 20px;
+    border-top: 1px solid var(--color-border); /* Ajout d'une ligne de séparation */
+}
+
+
+
+.form-row{
+    display: flex;
+    flex-direction: row;
+    /* Espace entre les deux colonnes */
+    gap: 30px; 
+    width: 100%;
+    flex-wrap: wrap; 
+    /* Padding pour aligner avec le contenu de la modale */
+    padding: 0 20px; 
+}
+
+/* Pour le formulaire ModalLivraison, on retire le padding vertical par défaut 
+   du modal-body et on laisse form-row gérer les paddings horizontaux */
+.modal-form .modal-body {
+    padding: 20px 0 0 0;
+}
+
+
 .form-group {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
+    /* Retrait des paddings initiaux pour mieux contrôler la largeur */
+    padding: 0; 
+    display: flex;
+    flex-direction: column; /* Label au-dessus de l'input */
+    /* Chaque groupe prend environ la moitié de l'espace sur les grands écrans */
+    flex: 1 1 45%; 
+    gap: 5px; /* Espace entre label et input */
+}
+
+/* Règle initiale à supprimer ou à ignorer pour les sélecteurs qui doivent prendre toute la largeur */
+.form-group select {
+    width: 100%;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--color-text);
-  font-size: 0.95rem;
+    display: flex; /* Permet d'aligner l'icône et le texte */
+    align-items: center;
+    margin-bottom: 5px; 
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: 0.95rem;
+    gap: 8px; /* Espace entre l'icône et le texte */
 }
 
 .form-group label.required::after {
@@ -67,7 +151,8 @@
 
 .form-control {
   width: 100%;
-  padding: 12px;
+  /* Padding ajusté et uniforme */
+  padding: 10px; 
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   font-size: 0.95rem;
@@ -95,239 +180,118 @@
 
 select.form-control {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  /* Assurer le bon padding pour le sélecteur */
+  padding: 10px 40px 10px 10px; 
+  background-image: url("data:image:...");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  padding-right: 40px;
 }
 
-/* Champs de fichier */
-.file-input-container {
-  position: relative;
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius);
-  padding: 30px;
-  text-align: center;
-  transition: var(--transition);
-  cursor: pointer;
+/* ... (Champs de fichier et messages d'erreur inchangés) ... */
+
+/* ===================================================================
+   STYLES POUR LA MODALE DE CONFIRMATION PERSONNALISÉE (DARK MODE)
+   =================================================================== */
+
+.modal-content.custom-confirm-modal {
+    max-width: 400px !important;
+    background-color: var(--color-background-darker, #2f3136) !important; 
+    color: var(--color-background-white, white) !important;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7) !important;
+    padding: 0 !important;
+    overflow-y: hidden;
 }
 
-.file-input-container:hover {
-  border-color: var(--color-primary);
-  background: rgba(40, 167, 69, 0.05);
-}
-
-.file-input-container input[type="file"] {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.file-input-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-text-light);
-}
-
-.file-input-label svg {
-  font-size: 2rem;
-  color: var(--color-primary);
-}
-
-.file-info {
-  margin-top: 10px;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: var(--radius);
-  font-size: 0.85rem;
-  color: var(--color-text-light);
-}
-
-.file-preview {
-  margin-top: 15px;
-  max-width: 200px;
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.error-message {
-  color: var(--color-danger);
-  font-size: 0.85rem;
-  margin-top: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.form-control.error {
-  border-color: var(--color-danger);
-}
-
-.form-control.error:focus {
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
-}
-
-.alert {
-  padding: 15px;
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: slideDown 0.3s ease;
-}
-
-.alert-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.alert-warning {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
-
-.alert-info {
-  background: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-/* Éditeur de texte riche */
-.editor-container {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.editor-toolbar {
-  background: #f8f9fa;
-  padding: 10px;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.editor-content {
-  min-height: 200px;
-  padding: 15px;
-  outline: none;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-@media (max-width: 768px) {
-  .modal {
-    max-height: 80vh;
-  }
-  
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: 15px;
-  }
-  
-  .modal-footer {
-    flex-direction: column;
-  }
-  
-  .modal-footer button {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal-overlay {
-    padding: 10px;
-  }
-  
-  .modal {
-    max-height: 85vh;
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-  }
-  
-  .form-control {
-    padding: 10px;
-  }
-}
-
-
-
-/* Styles pour la modale de Confirmation Personnalisée */
-
-.modal.custom-confirm-modal {
-    max-width: 400px;
-    background-color: var(--color-background-dark, #36393f); /* Fond sombre */
-    color: var(--color-background-white, white); /* Texte clair */
-    border: none;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-    padding: 0;
-}
-
-.confirm-header {
-    background: var(--color-background-darker, #2f3136); /* Couleur un peu plus foncée pour le header */
+.custom-confirm-modal .modal-header {
+    background: var(--color-background-darker, #2f3136); 
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
     padding: 15px 20px;
+    position: static;
 }
 
-.confirm-header h2 {
-    margin: 0;
-    font-size: 1.1rem;
+.custom-confirm-modal .modal-header h2 {
     color: white;
-    flex-grow: 1;
+    font-size: 1.2rem;
 }
 
-.alert-icon {
-    color: var(--color-danger, #f04747); /* Rouge d'alerte */
+.custom-confirm-modal .alert-icon {
+    color: var(--color-danger, #f04747);
     margin-right: 10px;
     font-size: 1.5rem;
 }
 
-.modal.custom-confirm-modal .modal-body {
-    padding: 20px;
+.custom-confirm-modal .modal-body {
+    padding: 30px 20px 20px; 
     text-align: center;
     font-size: 1rem;
+    color: var(--color-background-white, white); 
 }
 
-.modal.custom-confirm-modal .actions-container {
+.custom-confirm-modal .modal-actions {
+    /* Centraliser les boutons pour les modales de confirmation */
+    justify-content: center !important; 
+    gap: 15px;
     background: var(--color-background-darker, #2f3136);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    justify-content: space-around;
     padding: 15px 20px;
 }
 
-/* Boutons */
-.confirm-actions .btn-secondary {
-    background: #5c5c5c; /* Gris pour Annuler */
+/* Boutons de confirmation */
+.custom-confirm-modal .btn-secondary {
+    background-color: #5c5c5c;
+    border-color: #5c5c5c;
     color: white;
-    border: none;
+}
+.custom-confirm-modal .btn-danger {
+    background-color: var(--color-danger, #f04747);
+    border-color: var(--color-danger, #f04747);
+}
+.custom-confirm-modal .btn-success {
+    background-color: var(--color-primary, #28a458);
+    border-color: var(--color-primary, #28a458);
 }
 
-.confirm-actions .btn-danger {
-    background: var(--color-danger, #f04747); 
-    color: white;
-    border: none;
+
+/* ===================================================================
+   MEDIA QUERIES (RÉVISÉ)
+   =================================================================== */
+
+@media (max-width: 768px) {
+    /* Modales générales */
+    .modal-header,
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        padding: 15px;
+        justify-content: flex-start !important; /* Force l'alignement à gauche/start sur mobile */
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+
+    /* Formulaire (2 colonnes -> 1 colonne) */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+        padding: 0 15px;
+    }
+    .form-group {
+        flex: 1 1 100%;
+        margin-bottom: 15px;
+    }
 }
-.confirm-body p strong, .confirm-body p **{
-    font-weight: 700;
-    color: white; 
+
+@media (max-width: 480px) {
+    .modal-overlay {
+        padding: 10px;
+    }
+    .form-control {
+        padding: 10px;
+    }
 }
+

@@ -152,7 +152,7 @@ const handleMarquerCommeVue = async (commandeId) => {
       "Valider la commande",
       `Êtes-vous sûr de vouloir valider la commande #${commande.referenceCommande || commande.numCommande} ?`,
       commande.numCommande,
-      `Commande #${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
+      `Commande # ${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
       async () => {
         try {
           await updateCommandeAdmin(commande.numCommande, { statut: 'validée' });
@@ -250,9 +250,7 @@ const handleMarquerCommeVue = async (commandeId) => {
     }
   };
 
-  // *** LOGIQUE D'EXPÉDITION DIRECTE SUPPRIMÉE CONFORMÉMENT À VOTRE DEMANDE ***
-  // La fonction handleExpedierDirectClick a été retirée.
-
+ 
   const handlePayLivraisonClick = (commande) => {
     showModal(
       "pay",

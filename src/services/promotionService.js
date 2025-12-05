@@ -65,7 +65,7 @@ export const sendPromoEmail = async (emailData) => {
 export const validerCodePromo = async (code, numUtilisateur) => {
   const response = await api.post(
     `/promotions/valider`,
-    { codePromo: code, numUtilisateur },
+    { codePromo: code, numUtilisateur:numUtilisateur,montantPanier: montantPanier },
     getConfig()
   );
   return response.data;

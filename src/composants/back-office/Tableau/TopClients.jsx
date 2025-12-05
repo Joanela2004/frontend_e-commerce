@@ -15,6 +15,8 @@ import {
   FaCalendarAlt,
   FaShoppingCart,
   FaMoneyBillAlt,
+  FaCheckCircle, 
+  FaEnvelope, 
 } from "react-icons/fa";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
@@ -33,7 +35,8 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await dashboardApi.topClients(start, end, 1000);
+      // Charger plus de données que la limite pour permettre la recherche avant la pagination
+      const res = await dashboardApi.topClients(start, end, 1000); 
       setClients(res.data);
     } catch (err) {
       console.error("Erreur API TopClients:", err);
@@ -48,11 +51,12 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
   }, [start, end]);
 
   const filteredClients = useMemo(() => {
-    let list = clients.slice(0, limit);
-    return list.filter(c =>
-      (c.nomUtilisateur || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (c.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let list = clients.filter(c =>
+        (c.nomUtilisateur || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    // Appliquer la limite après le filtre de recherche
+    return list.slice(0, limit); 
   }, [clients, searchTerm, limit]);
 
   const { currentRows: clientsDataRows, goToPage, currentPage, totalPages } =
@@ -77,7 +81,8 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       const activePromos = promos.filter(p => {
         const dateFin = new Date(p.dateFin);
         const statut = (p.autoStatut || "").toLowerCase();
-        return statut === "active" && dateFin > now;
+        // Inclure seulement les promotions actives et non expirées
+        return statut === "active" && dateFin > now; 
       });
 
       const promosWithStatus = await Promise.all(
@@ -111,7 +116,17 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       const res = await sendPromoEmail(payload);
 
       if (res.success) {
-        toast.success(`Code ${selectedPromo.codePromo} envoyé à ${selectedClient.nom} !`);
+         // TOAST DE SUCCÈS AMÉLIORÉ
+         toast.success(
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <FaCheckCircle style={{ marginRight: '10px' }} />
+                Code promo **{selectedPromo.codePromo}** envoyé à **{selectedClient.nom}** !
+            </div>,
+            {
+                autoClose: 3000,
+                position: "top-center"
+            }
+        );
 
         // Marquer comme déjà envoyé
         setPromotions(prev =>
@@ -157,17 +172,31 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       {/* HEADER */}
       <div className="page-header">
       
-          <h1><FaUsers style={{ marginRight: "10px" }} /> Top Clients</h1>
+          <h1><FaUsers style={{ marginRight: "10px" }} /> Top Clients ({limit} )</h1>
           <div className="stats-container" style={{ marginTop: '10px' }}>
             <span className="stat-item">
               {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} trouvé{filteredClients.length !== 1 ? 's' : ''}
-            </span>
-          
-         
+            </span>    
         </div>
       </div>
-
      
+      <div className="search-container" style={{ marginBottom: '20px' }}>
+          <div className="search-bar">
+              <FaSearch className="search-icon" />
+              <input
+                  type="text"
+                  placeholder="Rechercher par nom ou email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                  <button className="btn-clear" onClick={() => setSearchTerm("")}>
+                      ✕ Effacer
+                  </button>
+              )}
+          </div>
+      </div>
+
 
       {/* TABLEAU */}
       <div className="table-container">
@@ -232,7 +261,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
                               style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
                             >
                               <FaGift />
-                                promotion
+                                Promotion
                             </button>
                   </td>
                 </tr>
@@ -265,63 +294,106 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
         </div>
       )}
 
-      {/* MODALE */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content modal-promo-envoi" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3><FaGift /> Envoyer un code promo</h3>
-              <button className="modal-close-btn" onClick={() => setShowModal(false)}>
-                <FaTimes />
-              </button>
-            </div>
+          <div className="modal-content modal-promo-envoi" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+          
 
-            <div className="promo-client-info">
-              <h4>Client sélectionné</h4>
-              <p><strong>Nom :</strong> {selectedClient?.nom}</p>
-              <p><strong>Email :</strong> {selectedClient?.email}</p>
-              <p><strong>Commandes :</strong> {selectedClient?.commandes}</p>
-              <p><strong>Total dépensé :</strong> {selectedClient?.total} Ar</p>
-            </div>
-
-            {loadingPromos ? (
-              <p>Chargement des promotions...</p>
-            ) : promotions.length === 0 ? (
-              <p>Aucune promotion active disponible.</p>
-            ) : (
-              <div className="promo-grid">
-                {promotions.map((p) => (
-                  <div
-                    key={p.numPromotion}
-                    className={`promo-card ${selectedPromo?.numPromotion === p.numPromotion ? "selected" : ""} ${p.dejaEnvoye ? "sent" : ""}`}
-                    onClick={() => !p.dejaEnvoye && setSelectedPromo(p)}
-                    title={p.dejaEnvoye ? "Déjà envoyé" : "Cliquer pour sélectionner"}
-                  >
-                    <div className="promo-header">
-                      <FaPercentage /> {p.codePromo}
-                    </div>
-                    <div className="promo-value">
-                      -{p.valeur}{p.typePromotion === "Pourcentage" ? "%" : " Ar"}
-                    </div>
-                    <div className="promo-dates">
-                      <FaCalendarAlt /> {formatDate(p.dateDebut)} → {formatDate(p.dateFin)}
-                    </div>
-                    {p.dejaEnvoye && <div className="promo-sent">Déjà envoyé</div>}
-                  </div>
-                ))}
+            <div className="modal-body">
+              <div className="info-card client-summary" style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderLeft: '5px solid var(--color-primary)' }}>
+                  <p><strong>Nom :</strong> {selectedClient?.nom}</p>
+                  <p><strong>Commandes passées :</strong> {selectedClient?.commandes}</p>
+                  <p><strong>Dépense Totale :</strong> <span style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>{selectedClient?.total} Ar</span></p>
               </div>
-            )}
 
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setShowModal(false)}>
+              <h4 style={{ marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+                  Sélectionnez une promotion active :
+              </h4>
+
+              {loadingPromos ? (
+                  <div className="loading-state" style={{ minHeight: '100px' }}>
+                      <div className="loading-spinner-small"></div>
+                      <p>Chargement des promotions...</p>
+                  </div>
+              ) : promotions.length === 0 ? (
+                  <p style={{ color: '#dc3545', padding: '20px', textAlign: 'center' }}>
+                      Aucune promotion active disponible.
+                  </p>
+              ) : (
+                  <div className="promo-grid" style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                      gap: '15px'
+                  }}>
+                      {promotions.map((p) => (
+                          <div
+                              key={p.numPromotion}
+                              className={`promo-card ${selectedPromo?.numPromotion === p.numPromotion ? "selected" : ""} ${p.dejaEnvoye ? "sent" : ""}`}
+                              onClick={() => !p.dejaEnvoye && setSelectedPromo(p)}
+                              title={p.dejaEnvoye ? `Déjà envoyé` : "Cliquer pour sélectionner"}
+                              style={{
+                                  border: `2px solid ${p.dejaEnvoye ? '#ccc' : (selectedPromo?.numPromotion === p.numPromotion ? 'var(--color-primary)' : '#eee')}`,
+                                  borderRadius: '8px',
+                                  padding: '15px',
+                                  cursor: p.dejaEnvoye ? 'not-allowed' : 'pointer',
+                                  transition: 'all 0.2s',
+                                  opacity: p.dejaEnvoye ? 0.6 : 1,
+                                  position: 'relative',
+                                  backgroundColor: selectedPromo?.numPromotion === p.numPromotion ? '#e6f7ef' : 'white',
+                                  boxShadow: selectedPromo?.numPromotion === p.numPromotion ? '0 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
+                              }}
+                          >
+                              <div className="promo-header" style={{ fontWeight: 'bold', fontSize: '1.1em', color: 'var(--color-text)', marginBottom: '10px' }}>
+                                  <FaPercentage style={{ marginRight: '5px', color: 'var(--color-accent)' }} /> {p.codePromo}
+                              </div>
+                              <div className="promo-value" style={{ fontSize: '1.5em', fontWeight: 'bold', color: p.dejaEnvoye ? '#777' : 'var(--color-primary)', marginBottom: '10px' }}>
+                                  -{p.valeur}{p.typePromotion === "Pourcentage" ? "%" : " Ar"}
+                              </div>
+                              <div className="promo-dates" style={{ fontSize: '0.9em', color: '#666' }}>
+                                  <FaCalendarAlt style={{ marginRight: '5px' }} /> 
+                                  {formatDate(p.dateDebut)} → {formatDate(p.dateFin)}
+                              </div>
+                              {p.dejaEnvoye && (
+                                  <div className="promo-sent" style={{ 
+                                      position: 'absolute', 
+                                      top: '0', right: '0', 
+                                      backgroundColor: '#d4edda', 
+                                      color: '#155724', 
+                                      padding: '5px 10px', 
+                                      borderRadius: '0 8px 0 8px', 
+                                      fontWeight: 'bold',
+                                      fontSize: '0.8em'
+                                  }}>
+                                      <FaCheckCircle style={{ marginRight: '5px' }} /> Déjà envoyé
+                                  </div>
+                              )}
+                          </div>
+                      ))}
+                  </div>
+              )}
+            </div>
+
+            {/* Actions Modale */}
+            <div className="modal-actions" style={{ paddingTop: '20px', borderTop: '1px solid #eee' }}>
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)} disabled={sending}>
                 Annuler
               </button>
               <button
-                className="btn-primary"
-                onClick={handleEnvoyerPromo}
-                disabled={!selectedPromo || selectedPromo?.dejaEnvoye || sending}
+                  className="btn btn-primary"
+                  onClick={handleEnvoyerPromo}
+                  disabled={!selectedPromo || selectedPromo?.dejaEnvoye || sending}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
-                {sending ? "Envoi en cours..." : "Envoyer"}
+                  {sending ? (
+                      <>
+                          <div className="loading-spinner-small"></div>
+                          Envoi en cours...
+                      </>
+                  ) : (
+                      <>
+                          <FaEnvelope /> Envoyer le code promo
+                      </>
+                  )}
               </button>
             </div>
           </div>

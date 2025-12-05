@@ -212,8 +212,8 @@ const Promotions = () => {
 
       {/* Barre de recherche */}
       <div className="search-container">
-        <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
+              <div className="search-bar">
+                <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par code, nom ou type..."
@@ -223,9 +223,10 @@ const Promotions = () => {
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          >
-            <FaFilter style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}/>
-          </button>
+             style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+                    >
+                      <FaFilter />
+                    </button>
           <FaSync
             onClick={reinitialiserFiltres}
             style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}
@@ -256,7 +257,7 @@ const Promotions = () => {
               </select>
             </div>
             <div className="filter-group">
-              <label>Date début ≥</label>
+              <label>Date début </label>
               <DatePicker
                 selected={filtreDateMin ? new Date(filtreDateMin) : null}
                 onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
@@ -268,7 +269,7 @@ const Promotions = () => {
               />
             </div>
             <div className="filter-group">
-              <label>Date fin ≤</label>
+              <label>Date fin </label>
               <DatePicker
                 selected={filtreDateMax ? new Date(filtreDateMax) : null}
                 onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
@@ -295,12 +296,12 @@ const Promotions = () => {
             )}
             {filtreDateMin && (
               <span className="active-filter-tag">
-                Début ≥ {filtreDateMin} <button onClick={() => setFiltreDateMin("")}>×</button>
+                Début  {filtreDateMin} <button onClick={() => setFiltreDateMin("")}>×</button>
               </span>
             )}
             {filtreDateMax && (
               <span className="active-filter-tag">
-                Fin ≤ {filtreDateMax} <button onClick={() => setFiltreDateMax("")}>×</button>
+                Fin  {filtreDateMax} <button onClick={() => setFiltreDateMax("")}>×</button>
               </span>
             )}
           </div>

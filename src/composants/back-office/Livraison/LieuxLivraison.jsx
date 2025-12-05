@@ -259,12 +259,7 @@ const LieuxLivraison = () => {
             <span className="stat-item" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
               {totalLieux} lieux total
             </span>
-            <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
-              Total frais: {fraisTotal.toLocaleString()} Ar
-            </span>
-            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
-              Moyenne: {Math.round(fraisMoyen).toLocaleString()} Ar
-            </span>
+           
           </div>
         </div>
         <button 

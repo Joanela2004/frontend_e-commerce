@@ -20,10 +20,8 @@ const AboutSection = () => {
       
       <div className='about-text'>
         <h3>A propos</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      <p>Chez Arato Agri, nous  vendons   des légumes, de la viande  : nous livrons le goût de la vraie campagne malgache directement à votre table.
+Chaque jour, nous travaillons main dans la main avec des agriculteurs et éleveurs passionnés des Hauts-Plateaux, de Fianarantsoa, et bien d’autres régions. Ils cultivent et élèvent avec soin, sans excès de produits chimiques, pour vous offrir des produits sains, savoureux et 100 % locaux.
 </p>
       </div>
     </section>
