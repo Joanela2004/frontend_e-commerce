@@ -388,7 +388,7 @@ const Produits = () => {
       )}
 
       {/* Grille des produits */}
-      <div className="products-grid-container" >
+      <div className="products-grid-container" style={{height:"400px"}}>
         {filteredProduits.length > 0 ? (
           filteredProduits.map((produit) => {
             const hasPromo = produit.promotion && produit.promotion.valeur;

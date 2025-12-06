@@ -88,11 +88,11 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
       {showHeader && (
         <div className="produit-header">
           <h3>Nos produits frais</h3>
-          <p>Découvrez nos produits locaux, récoltés ou abattus le jour même</p>
+          <p>« Nous mettons un point d’honneur à vous offrir des produits d’une fraîcheur irréprochable. légumes, viandes ou volailles : tout provient de producteurs locaux et est préparé le jour même pour garantir un goût authentique et naturel. »</p>
         </div>
       )}
 
-      <div className="products-grid-container">
+      <div className="products-grid-container" style={{height:"400px"}}>
         {produitsAffiches.length > 0 ? (
           produitsAffiches.map((produit) => {
             const hasPromo = produit.promotion && produit.promotion.valeur;
@@ -155,7 +155,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
                   </div>
 
                   {/* Bouton panier */}
-                  <div className="btn" style={{backgroundColor:"white"}} >
+                  <div className="btn" style={{backgroundColor:"white",marginTop:"40px"}} >
                     {inCart ? (
                       <div className="quantite-control-group" >
                         <button onClick={() => cartItem.poids > 1 && updateQuantity(cartItem.id, cartItem.poids - 1)} className="quantity-btn">

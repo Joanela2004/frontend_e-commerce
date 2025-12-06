@@ -254,7 +254,7 @@ const Articles = () => {
 
       {/* Liste des articles */}
       {filteredArticles.length > 0 ? (
-        <div className="products-grid-container">
+        <div className="products-grid-container" style={{height:"400px"}}>
           {filteredArticles.map(article => {
             const articleDate = new Date(article.datePublication);
           
