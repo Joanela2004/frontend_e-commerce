@@ -62,7 +62,7 @@ export const sendPromoEmail = async (emailData) => {
         throw error;
     }
 };
-export const validerCodePromo = async (code, numUtilisateur) => {
+export const validerCodePromo = async (code, numUtilisateur,montantPanier) => {
   const response = await api.post(
     `/promotions/valider`,
     { codePromo: code, numUtilisateur:numUtilisateur,montantPanier: montantPanier },
@@ -70,7 +70,18 @@ export const validerCodePromo = async (code, numUtilisateur) => {
   );
   return response.data;
 };
-
+export const appliquerPromotionAutomatique = async (montantPanier) => {
+  try {
+    const res = await api.post(
+      "/promotions/auto",
+      { montantPanier },
+      getConfig()
+    );
+    return res.data; 
+  } catch (err) {
+    return null; 
+  }
+};
 
 
 export const checkPromoSent = async (numPromotion, numUtilisateur) => {

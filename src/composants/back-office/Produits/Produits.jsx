@@ -11,7 +11,9 @@ import { getCategories } from "../../../services/categorieService";
 import { fetchPromotions } from "../../../services/promotionService";
 import { useToast } from "../../../contexts/ToastContext";
 import { useNavigate } from "react-router-dom";
+import "../../../styles/front-office/Accueil/produitSection.css";
 import "../../../styles/back-office/global.css";
+import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
 import "../../../styles/back-office/produit.css";
@@ -81,7 +83,7 @@ const Produits = () => {
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
-      setForm({ ...form, image: files[0] });
+      setForm({ ...form, image: files[ SDValue] });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -178,6 +180,7 @@ const Produits = () => {
     }
   };
 
+  // Filtrage
   const filteredProduits = produits.filter((produit) => {
     const searchMatch =
       produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -264,6 +267,7 @@ const Produits = () => {
         </button>
       </div>
 
+      {/* Recherche + Filtres */}
       <div className="search-container">
         <div className="search-bar">
           <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
@@ -276,10 +280,9 @@ const Produits = () => {
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
-                   >
-                     <FaFilter />
-                   </button>
+          >
+            <FaFilter />
+          </button>
           <FaSync onClick={reinitialiserFiltres} style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
         </div>
       </div>
@@ -388,11 +391,12 @@ const Produits = () => {
       )}
 
       {/* Grille des produits */}
-      <div className="products-grid-container" style={{height:"400px"}}>
+      <div className="products-grid-container">
         {filteredProduits.length > 0 ? (
           filteredProduits.map((produit) => {
             const hasPromo = produit.promotion && produit.promotion.valeur;
             const prixPromo = hasPromo ? calculatePromotionalPrice(produit.prix, produit.promotion.valeur) : null;
+
             return (
               <div key={produit.numProduit} className="card">
                 {hasPromo && <span className="badge-promo">-{produit.promotion.valeur}%</span>}
@@ -408,17 +412,17 @@ const Produits = () => {
                   {produit.categorie && (
                     <span className="product-category">{produit.categorie.nomCategorie}</span>
                   )}
-                  <div style={{ display: "flex", gap:"40px", alignItems: "center", marginTop: "10px" }}>
-                    <div className="prix-poids">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
+                    <div>
                       {hasPromo ? (
-                        <div style={{display:"flex",flexDirection:"column"}}>
+                        <>
                           <div style={{ textDecoration: "line-through", color: "#888" }}>
                             {produit.prix.toLocaleString()} Ar
                           </div>
                           <div style={{ fontSize: "1.4rem", fontWeight: "bold", color: "#dc3545" }}>
                             {prixPromo.toLocaleString()} Ar
                           </div>
-                        </div>
+                        </>
                       ) : (
                         <div style={{ fontSize: "1.4rem", fontWeight: "bold", color: "#28a458" }}>
                           {produit.prix.toLocaleString()} Ar
@@ -430,8 +434,8 @@ const Produits = () => {
                     </div>
                   </div>
                 </div>
-                <div >
-                  <div className="table-actions" style={{display:"flex",flexDirection:"row",gap:"20px"}}>
+                <div className="card-footer">
+                  <div className="table-actions">
                     <button className="edit" onClick={() => handleEdit(produit)}>
                       <FaEdit /> Modifier
                     </button>

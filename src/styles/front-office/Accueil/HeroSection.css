@@ -38,12 +38,13 @@
  
  
 }
+
 .hero-text h1{
-  
+  margin-top: 40px;
   font-size: 3em;
   color:var(--color-text-dark);
   text-align:left;
-  width: 800px ;
+  width: 700px ;
  margin-bottom: 40px;
 
 }
@@ -81,7 +82,17 @@
     transform: translateX(0);
   }
 }
+@media (max-width:770px){
+  .hero-text{
 
+ margin-top: 100px;
+ 
+ 
+}
+.hero-text h1{
+font-size: 16px;
+}
+}
 @media (max-width:900px){
   .hero{
     flex-direction: column;
@@ -100,6 +111,16 @@
     animation: imageEnter 1s ease-in forwards;
    animation-delay: 0.3s;
 }
+.hero-text{
+
+ margin-top: 100px;
+ 
+ 
+}
+.hero-text h1{
+font-size: 24px;
+}
+
 @keyframes imageEnter{
   from{
     opacity: 0;
@@ -132,3 +153,97 @@
 
 }
 
+
+.promo-banner {
+  width: 100vw;
+  margin-top: 50px;
+  background: var(--color-green-primary);
+  color: white;
+  text-align: center;
+  padding: 14px 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px var(--color-green-secondary) 0.3;
+  position: fixed;
+  overflow: hidden;
+  top:0;
+  animation: slideDown 0.6s ease-out;
+  z-index: 99;
+}
+
+.promo-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+.promo-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  font-size: 1.1rem;
+}
+
+.fire {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  animation: pulse 2s infinite;
+}
+
+.promo-name {
+  font-style: italic;
+  opacity: 0.95;
+}
+
+.min-amount {
+  font-size: 0.9rem;
+  background-color:  #8b5e3c;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.hero {
+  margin-top: 60px;
+}
+
+@media (max-width: 768px) {
+  .promo-content {
+    font-size: 0.95rem;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .hero {
+    margin-top: 80px;
+  }
+}

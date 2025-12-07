@@ -535,8 +535,6 @@ footer{
 }
 
 
-/* Styles pour le badge de notification dans le Header */
-
 .panier-icon-wrapper {
   position: relative; /* Point d'ancrage pour le badge */
   display: inline-block;

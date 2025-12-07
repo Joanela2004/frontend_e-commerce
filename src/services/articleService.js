@@ -23,6 +23,10 @@ export const createArticle = async (formData) => {
   return res.data;
 };
 
+export const fetchArticleById = async (id) => {
+  const response = await api.get(`${ARTICLE_URL}/${id}`);
+  return response.data;
+};
 
 export const updateArticle = async (id, formData) => {
   const res = await api.post(`${ARTICLE_URL}/${id}?_method=PUT`, formData, getConfig(true));

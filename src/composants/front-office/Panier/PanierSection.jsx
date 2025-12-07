@@ -11,7 +11,7 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { createStripeSession } from "../../../services/StripeService";
-import { validerCodePromo } from "../../../services/promotionService";
+import { validerCodePromo,appliquerPromotionAutomatique } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";
 import { fetchModesActifs } from "../../../services/paiementService";
 import PaginationProduits from "../Accueil/PaginationProduits";
@@ -212,7 +212,23 @@ const PanierSection = () => {
   const sousTotal = subtotal;
   const montantBrut = sousTotal + (payerLivraisonChecked ? fraisLivraisonTotal : 0);
   const montantAPayer = montantBrut - remise;
-  
+
+  useEffect(() => {
+  const appliquerPromoAuto = async () => {
+    if (subtotal === 0) return;
+
+    const promoAuto = await appliquerPromotionAutomatique(subtotal);
+    if (promoAuto && promoAuto.reduction > 0) {
+      setRemise(promoAuto.reduction);
+      toast.success(
+        `Promo automatique appliquée ! -${promoAuto.reduction.toLocaleString()} Ar`,
+        { position: "top-center" }
+      );
+    }
+  };
+
+  appliquerPromoAuto();
+}, [subtotal]);
   const handleApplyCodePromo = async () => {
   const code = codePromo.trim().toUpperCase();
   if (!code) {
@@ -237,7 +253,6 @@ try {
 const result = await validerCodePromo(code, numUtilisateur);
 
 
-// Le backend renvoie déjà 'message', 'valeur', 'typePromotion'
 if (result.message === "Code promo valide") {
   setRemise(Number(result.valeur));
   toast.success(
@@ -256,11 +271,6 @@ toast.error("Impossible de valider le code promo. Réessayez plus tard.");
 }
 };
 
-
-  const getMinDate = () => {
-    const today = new Date();
-    return format(today, "dd/MM/yyyy");
-  };
 
 const handleCreateCommande = async () => {
   if (cartItems.length === 0 || !selectedLieuNum || !dateLivraison) return;

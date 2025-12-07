@@ -3,7 +3,7 @@ import AjouterPromotionModal from "./AjouterPromotionModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
-
+import "../../../styles/back-office/promotion.css";
 import {
   fetchPromotions,
   createPromotion,
@@ -344,9 +344,19 @@ const Promotions = () => {
                   <td>{promo.dateDebut ? new Date(promo.dateDebut).toLocaleDateString("fr-FR") : "—"}</td>
                   <td>{promo.dateFin ? new Date(promo.dateFin).toLocaleDateString("fr-FR") : "—"}</td>
                   <td>
-                    <span className={`status ${promo.statutPromotion?.toLowerCase().replace("é", "e") || "inactive"}`}>
-                      {promo.statutPromotion || "Inactive"}
-                    </span>
+                <td>
+  <span className={`status ${
+    promo.statut === "active" ? "active" :
+    promo.statut === "en_attente" ? "en-attente" :
+    promo.statut === "expirée" ? "expiree" :
+    "inactive"
+  }`}>
+    {promo.statut === "active" ? "Active" :
+     promo.statut === "en_attente" ? "En attente" :
+     promo.statut === "expirée" ? "Expirée" :
+     "Inactive"}
+  </span>
+</td>
                   </td>
                   <td>
                     <div className="table-actions">

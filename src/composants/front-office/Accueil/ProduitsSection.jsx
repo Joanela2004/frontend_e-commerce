@@ -2,13 +2,11 @@
 import React, { useEffect, useState, useContext } from "react";
 import { FaWeightHanging, FaTag } from "react-icons/fa";
 import panierIcon from "../../../assets/icones/panier.png";
-import "../../../styles/front-office/global.css";
 import "../../../styles/front-office/Accueil/produitSection.css";
 import PaginationProduits from "./PaginationProduits";
 import { fetchProduits } from "../../../services/produitService";
 import { CartContext } from "../../../contexts/CartContext";
 import ModalAvertissement from "../Panier/ModalAvertissement";
-import "../../../styles/back-office/tableau.css";
 const ProduitsSection = ({ categorieActive, showHeader = true }) => {
   const { cartItems, addToCart, updateQuantity } = useContext(CartContext);
   const [produits, setProduits] = useState([]);
@@ -148,7 +146,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
                     </div>
 
                     {/* Poids disponible */}
-                    <div style={{ marginLeft:"60px",textAlign: "right", color: "#8b5e3c" }}>
+                    <div className="poids">
                       <FaWeightHanging style={{ color:"#8b5e3c",marginRight: "6px" }} />
                       <strong>{produit.poids} kg</strong> 
                     </div>

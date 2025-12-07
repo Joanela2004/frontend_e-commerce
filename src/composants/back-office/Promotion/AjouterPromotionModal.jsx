@@ -9,7 +9,8 @@ import "../../../styles/back-office/modal.css";
 const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) => {
   const [code, setCode] = useState('');
   const [nom, setNom] = useState('');
-  const [type, setType] = useState('Pourcentage');
+  const [typePromotion, setTypePromotion] = useState('Pourcentage'); // Type de réduction
+  const [typeMode, setTypeMode] = useState('code'); // "code" ou "automatique"
   const [valeur, setValeur] = useState('');
   const [dateDebut, setDateDebut] = useState(null);
   const [dateFin, setDateFin] = useState(null);
@@ -17,7 +18,6 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
   const [statut, setStatut] = useState('Active');
   const [loading, setLoading] = useState(false);
 
-  // Date du jour (minuit) → fixée automatiquement comme date de début
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -25,19 +25,20 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
     if (promotionAEditer) {
       setCode(promotionAEditer.codePromo || '');
       setNom(promotionAEditer.nomPromotion || '');
-      setType(promotionAEditer.typePromotion || 'Pourcentage');
+      setTypePromotion(promotionAEditer.typePromotion || 'Pourcentage');
+      setTypeMode(promotionAEditer.automatique ? 'automatique' : 'code');
       setValeur(promotionAEditer.valeur || '');
       setDateDebut(promotionAEditer.dateDebut ? new Date(promotionAEditer.dateDebut) : today);
       setDateFin(promotionAEditer.dateFin ? new Date(promotionAEditer.dateFin) : null);
       setMontantMinimum(promotionAEditer.montantMinimum || '');
-      setStatut(promotionAEditer.statutPromotion || 'Active');
+      setStatut(promotionAEditer.statutPromotion ? 'Active' : 'Inactive');
     } else {
-      // Création : date de début = aujourd'hui (fixe)
       setCode('');
       setNom('');
-      setType('Pourcentage');
+      setTypePromotion('Pourcentage');
+      setTypeMode('code');
       setValeur('');
-      setDateDebut(today);        
+      setDateDebut(today);
       setDateFin(null);
       setMontantMinimum('');
       setStatut('Active');
@@ -51,14 +52,15 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
     setLoading(true);
 
     const promotionData = {
-      codePromo: code.trim().toUpperCase(),
       nomPromotion: nom.trim(),
-      typePromotion: type,
+      typePromotion: typePromotion, // CORRIGÉ ICI
       valeur: parseFloat(valeur),
+      automatique: typeMode === "automatique",
+      codePromo: typeMode === "automatique" ? null : (code.trim().toUpperCase() || null),
       dateDebut: dateDebut ? dateDebut.toISOString().split('T')[0] : null,
       dateFin: dateFin ? dateFin.toISOString().split('T')[0] : null,
-      montantMinimum: montantMinimum ? parseFloat(montantMinimum) : null,
-      statutPromotion: statut,
+      montantMinimum: montantMinimum ? parseFloat(montantMinimum) : 0,
+      statutPromotion: statut === "Active",
     };
 
     onSave(promotionData);
@@ -73,38 +75,95 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
             <FaTag style={{ marginRight: "10px", color: "#28a745" }} />
             {promotionAEditer ? 'Modifier la promotion' : 'Nouvelle promotion'}
           </h3>
-          <button onClick={onClose} className="modal-close" disabled={loading}>
-            ×
-          </button>
+          <button onClick={onClose} className="modal-close" disabled={loading}>×</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
 
-            {/* Code & Nom */}
+            {/* Type de promotion : Automatique ou Code */}
             <div className="form-row">
               <div className="form-group">
-                <label className="required"><FaTag /> Code Promo</label>
-                <input type="text" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required placeholder="EXEMPLE20" maxLength="20" className="form-control" />
-              </div>
-              <div className="form-group">
-                <label className="required"><FaTag /> Nom / Description</label>
-                <input type="text" value={nom} onChange={(e) => setNom(e.target.value)} required placeholder="Black Friday 2025" className="form-control" />
+                <label className="required">Type de promotion</label>
+                <div style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                    <input
+                      type="radio"
+                      name="typeMode"
+                      checked={typeMode === "automatique"}
+                      onChange={() => {
+                        setTypeMode("automatique");
+                        setCode("");
+                      }}
+                    />
+                    <span>Automatique (appliquée à tous)</span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                    <input
+                      type="radio"
+                      name="typeMode"
+                      checked={typeMode === "code"}
+                      onChange={() => setTypeMode("code")}
+                    />
+                    <span>Code unique (à envoyer manuellement)</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            {/* Type & Valeur */}
+            {/* Code Promo */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className={typeMode === "code" ? "required" : ""}>
+                  <FaTag /> Code Promo {typeMode === "automatique" && "(non requis)"}
+                </label>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  required={typeMode === "code"}
+                  disabled={typeMode === "automatique"}
+                  placeholder={typeMode === "automatique" ? "Laisser vide" : "BLACKFRIDAY2025"}
+                  maxLength="20"
+                  className="form-control"
+                  style={{
+                    backgroundColor: typeMode === "automatique" ? "#f8f9fa" : "white",
+                    cursor: typeMode === "automatique" ? "not-allowed" : "text"
+                  }}
+                />
+                {typeMode === "automatique" && (
+                  <small style={{ color: "#28a745" }}>Promo automatique → pas de code requis</small>
+                )}
+              </div>
+            </div>
+
+            {/* Nom */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="required">Nom de la promotion</label>
+                <input
+                  type="text"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  required
+                  placeholder="Soldes d'été 2025"
+                  className="form-control"
+                />
+              </div>
+            </div>
+
+            {/* Type de réduction + Valeur */}
             <div className="form-row">
               <div className="form-group">
                 <label className="required">Type de réduction</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} required className="form-control">
+                <select value={typePromotion} onChange={(e) => setTypePromotion(e.target.value)} className="form-control">
                   <option value="Pourcentage">Pourcentage (%)</option>
                   <option value="Montant fixe">Montant fixe (Ar)</option>
                 </select>
               </div>
               <div className="form-group">
                 <label className="required">
-                  Valeur {type === 'Pourcentage' ? '(%)' : '(Ar)'}
+                  Valeur {typePromotion === 'Pourcentage' ? '(%)' : '(Ar)'}
                 </label>
                 <input
                   type="number"
@@ -112,29 +171,38 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                   onChange={(e) => setValeur(e.target.value)}
                   required
                   min="0"
-                  step={type === 'Pourcentage' ? "1" : "100"}
-                  placeholder={type === 'Pourcentage' ? "20" : "10000"}
+                  step={typePromotion === 'Pourcentage' ? "1" : "100"}
+                  placeholder={typePromotion === 'Pourcentage' ? "20" : "15000"}
                   className="form-control"
                 />
               </div>
             </div>
 
+            {/* Montant min + Statut */}
             <div className="form-row">
               <div className="form-group">
                 <label><FaMoneyBillWave /> Montant minimum d'achat (Ar)</label>
-                <input type="number" value={montantMinimum} onChange={(e) => setMontantMinimum(e.target.value)} min="0" step="100" placeholder="0 (aucun minimum)" className="form-control" />
-                <small style={{ color: '#718096', fontSize: '0.85rem' }}>Laissez vide ou 0 pour désactiver</small>
+                <input
+                  type="number"
+                  value={montantMinimum}
+                  onChange={(e) => setMontantMinimum(e.target.value)}
+                  min="0"
+                  step="100"
+                  placeholder="0 (aucun minimum)"
+                  className="form-control"
+                />
+                <small style={{ color: '#718096' }}>Laissez vide ou 0 pour désactiver</small>
               </div>
               <div className="form-group">
                 <label><FaCheckCircle /> Statut</label>
                 <select value={statut} onChange={(e) => setStatut(e.target.value)} className="form-control">
                   <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>       
+                  <option value="Inactive">Inactive</option>
                 </select>
               </div>
             </div>
 
-            {/* DATES */}
+            {/* Dates */}
             <div className="form-row">
               <div className="form-group">
                 <label className="required"><FaCalendarAlt /> Date de début</label>
@@ -146,28 +214,23 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                   color: "#495057",
                   fontWeight: "600",
                   fontSize: "1rem",
-                  cursor: "not-allowed",
-                  userSelect: "none"
+                  cursor: "not-allowed"
                 }}>
                   {today.toLocaleDateString("fr-FR")}
                 </div>
-                <small style={{ color: "#28a745", fontSize: "0.8rem", marginTop: "6px" }}>
-                  La promotion démarre automatiquement aujourd’hui
-                </small>
+                <small style={{ color: "#28a745" }}>Démarre aujourd’hui</small>
               </div>
-
               <div className="form-group">
                 <label className="required"><FaCalendarAlt /> Date de fin</label>
                 <DatePicker
                   selected={dateFin}
                   onChange={(date) => setDateFin(date)}
-                  minDate={today}                     // Commence à partir d’aujourd’hui
+                  minDate={today}
                   dateFormat="dd/MM/yyyy"
                   locale={fr}
                   placeholderText="jj/mm/aaaa"
                   className="form-control"
                   isClearable
-                  showPopperArrow={false}
                 />
               </div>
             </div>
@@ -179,14 +242,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
               Annuler
             </button>
             <button type="submit" className="btn btn-primary" disabled={loading || !dateFin}>
-              {loading ? (
-                <>
-                  <div className="loading-spinner-small"></div>
-                  Enregistrement...
-                </>
-              ) : (
-                promotionAEditer ? 'Sauvegarder' : 'Créer la promotion'
-              )}
+              {loading ? "Enregistrement..." : (promotionAEditer ? 'Sauvegarder' : 'Créer')}
             </button>
           </div>
         </form>

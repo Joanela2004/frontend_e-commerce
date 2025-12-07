@@ -45,7 +45,6 @@ const CategorieSection = () => {
          <div className="categorie-filter">
             <FaFilter size={24}  />
           </div>
-          <p>Catégories :</p>
         <ul>
           <li>
             <button
