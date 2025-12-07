@@ -1,12 +1,13 @@
-// Fichier : ProduitsSection.jsx (Front-office)
+// Fichier : ProduitsSection.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { FaWeightHanging, FaTag } from "react-icons/fa";
 import panierIcon from "../../../assets/icones/panier.png";
-import "../../../styles/front-office/Accueil/produitSection.css";
+import "../../../styles/front-office/Accueil/produitSection.css"; // ← Ton nouveau CSS
 import PaginationProduits from "./PaginationProduits";
 import { fetchProduits } from "../../../services/produitService";
 import { CartContext } from "../../../contexts/CartContext";
 import ModalAvertissement from "../Panier/ModalAvertissement";
+
 const ProduitsSection = ({ categorieActive, showHeader = true }) => {
   const { cartItems, addToCart, updateQuantity } = useContext(CartContext);
   const [produits, setProduits] = useState([]);
@@ -82,24 +83,29 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
   };
 
   return (
-    <section className="produit-section">
+    <section className="produits-section">
       {showHeader && (
-        <div className="produit-header">
+        <div className="produits-header">
           <h3>Nos produits frais</h3>
-          <p>« Nous mettons un point d’honneur à vous offrir des produits d’une fraîcheur irréprochable. légumes, viandes ou volailles : tout provient de producteurs locaux et est préparé le jour même pour garantir un goût authentique et naturel. »</p>
+          <p>
+            « Nous mettons un point d’honneur à vous offrir des produits d’une fraîcheur irréprochable.
+            Légumes, viandes ou volailles : tout provient de producteurs locaux et est préparé le jour même
+            pour garantir un goût authentique et naturel. »
+          </p>
         </div>
       )}
 
-      <div className="products-grid-container" style={{height:"400px"}}>
+      <div className="produits-grid">
         {produitsAffiches.length > 0 ? (
           produitsAffiches.map((produit) => {
             const hasPromo = produit.promotion && produit.promotion.valeur;
             const prixPromo = hasPromo ? calculatePromotionalPrice(produit.prix, produit.promotion) : null;
             const inCart = cartItems.some((item) => item.nom === produit.nomProduit);
             const cartItem = cartItems.find((item) => item.nom === produit.nomProduit);
+
             return (
-              <div key={produit.numProduit} className="card">
-                {/* Badge promotion */}
+              <div key={produit.numProduit} className="produit-card">
+                {/* Badge Promo */}
                 {hasPromo && (
                   <span className="badge-promo">
                     -{produit.promotion.valeur}
@@ -108,7 +114,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
                 )}
 
                 {/* Image */}
-                <div className="image-container">
+                <div className="produit-image">
                   <img
                     src={produit.image ? `${IMAGE_BASE_URL}${produit.image}` : "/placeholder.png"}
                     alt={produit.nomProduit}
@@ -117,57 +123,52 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
                 </div>
 
                 {/* Contenu */}
-                <div className="card-body">
-                  <h3 className="product-title">{produit.nomProduit}</h3>
+                <div className="produit-body">
+                  <h3 className="produit-title">{produit.nomProduit}</h3>
+
                   {produit.categorie && (
-                    <span className="product-category">
-                      <FaTag style={{ fontSize: "0.8rem", marginRight: "5px" }} />
-                      {produit.categorie.nomCategorie}
+                    <span className="produit-categorie">
+                      <FaTag /> {produit.categorie.nomCategorie}
                     </span>
                   )}
 
-                  <div className="prix-poids">
-                    {/* Prix */}
-                    <div>
+                  <div className="produit-prix-poids">
+                    <div className="prix-container">
                       {hasPromo ? (
-                        <div style={{display:"flex",flexDirection:"column"}}>
-                          <div style={{ textDecoration: "line-through", color: "#888", fontSize: "0.9rem" }}>
-                            {Number(produit.prix).toLocaleString()} Ar
-                          </div>
-                          <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#dc3545" }}>
-                            {prixPromo.toLocaleString()} Ar
-                          </div>
-                        </div>
+                        <>
+                          <span className="ancien-prix">{Number(produit.prix).toLocaleString()} Ar</span>
+                          <span className="nouveau-prix">{prixPromo.toLocaleString()} Ar</span>
+                        </>
                       ) : (
-                        <div style={{ fontSize: "1.2rem", fontWeight: "bold", color: "#28a458" }}>
-                          {Number(produit.prix).toLocaleString()} Ar
-                        </div>
+                        <span className="prix-normal">{Number(produit.prix).toLocaleString()} Ar</span>
                       )}
                     </div>
 
-                    {/* Poids disponible */}
-                    <div className="poids">
-                      <FaWeightHanging style={{ color:"#8b5e3c",marginRight: "6px" }} />
-                      <strong>{produit.poids} kg</strong> 
+                    <div className="poids-disponible">
+                      <FaWeightHanging />
+                      <strong>{produit.poids} kg</strong>
                     </div>
                   </div>
 
                   {/* Bouton panier */}
-                  <div className="btn" style={{backgroundColor:"white",marginTop:"40px"}} >
+                  <div className="panier-actions">
                     {inCart ? (
-                      <div className="quantite-control-group" >
-                        <button onClick={() => cartItem.poids > 1 && updateQuantity(cartItem.id, cartItem.poids - 1)} className="quantity-btn">
+                      <div className="quantity-control">
+                        <button
+                          onClick={() => cartItem.poids > 1 && updateQuantity(cartItem.id, cartItem.poids - 1)}
+                          className="btn-moins"
+                        >
                           −
                         </button>
-                        <span className="quantity">{cartItem.poids} </span>
-                        <button onClick={() => handleAddToCart(produit)} className="quantity-btn">
+                        <span className="quantity">{cartItem.poids}</span>
+                        <button onClick={() => handleAddToCart(produit)} className="btn-plus">
                           +
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => handleAddToCart(produit)} className="add-to-cart-btn" style={{ backgroundColor:"transparent",border:"none" }}>
-                        <img src={panierIcon} alt="Ajouter au panier" style={{ width: "20px", marginRight: "8px" }} />
-                       
+                      <button onClick={() => handleAddToCart(produit)} className="btn-add-cart">
+                        <img src={panierIcon} alt="Ajouter" />
+                        Ajouter
                       </button>
                     )}
                   </div>
@@ -176,18 +177,20 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
             );
           })
         ) : (
-          <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "60px 20px" }}>
-            <p style={{ fontSize: "1.2rem", color: "#666" }}>Aucun produit disponible pour le moment</p>
+          <div className="no-products">
+            <p>Aucun produit disponible pour le moment</p>
           </div>
         )}
       </div>
 
-      <PaginationProduits
-        totalProduits={produitsFiltre.length}
-        produitsParPage={produitsParPage}
-        currentPage={page}
-        onPageChange={setPage}
-      />
+      <div className="pagination-container">
+        <PaginationProduits
+          totalProduits={produitsFiltre.length}
+          produitsParPage={produitsParPage}
+          currentPage={page}
+          onPageChange={setPage}
+        />
+      </div>
 
       {showErrorModal && errorModalData && (
         <ModalAvertissement

@@ -166,8 +166,7 @@ const Paiements = () => {
   // Statistiques
   const paiementsEffectues = paiements.filter(p => p.statut === "effectué").length;
   const paiementsEnAttente = paiements.filter(p => p.statut === "en attente").length;
-  const totalMontant = paiements.reduce((sum, p) => sum + (parseFloat(p.montantApayer) || 0), 0);
-
+ 
   if (loading) {
     return (
       <div className="page-container">
