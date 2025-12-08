@@ -125,9 +125,7 @@ const PaiementModal = ({ order, onClose }) => {
                 Payer {total} Ar maintenant
             </button>
             
-            <p className="securite-note">
-                🔒 Paiement 100% sécurisé et crypté
-            </p>
+           
         </div>
       </div>
     </div>

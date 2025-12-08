@@ -13,7 +13,7 @@ const getConfig = (isFormData = false) => {
 };
 
 export const fetchArticles = async () => {
-  const res = await api.get(ARTICLE_URL,getConfig());
+  const res = await api.get(ARTICLE_URL);
   return res.data;
 };
 

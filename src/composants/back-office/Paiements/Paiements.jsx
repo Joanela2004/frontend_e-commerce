@@ -213,7 +213,8 @@ const Paiements = () => {
       {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}  />
+                 
           <input
             type="text"
             placeholder="Rechercher par ID, commande, client ou email..."

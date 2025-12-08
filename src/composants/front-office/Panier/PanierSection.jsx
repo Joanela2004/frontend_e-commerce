@@ -220,10 +220,7 @@ const PanierSection = () => {
     const promoAuto = await appliquerPromotionAutomatique(subtotal);
     if (promoAuto && promoAuto.reduction > 0) {
       setRemise(promoAuto.reduction);
-      toast.success(
-        `Promo automatique appliquée ! -${promoAuto.reduction.toLocaleString()} Ar`,
-        { position: "top-center" }
-      );
+     
     }
   };
 

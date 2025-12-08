@@ -1,7 +1,7 @@
 
 .produits-section {
   padding: 60px 20px;
-  background-color: #f8f9fa;
+  
   font-family: 'Poppins', sans-serif;
 }
 
@@ -42,7 +42,8 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   position: relative;
-  width: 300px;
+  width: 250px;
+  height: 450px;
 }
 
 .produit-card:hover {
@@ -301,7 +302,6 @@
   margin-right: 6px;
   font-size: 0.8rem;
 }
-/* Contrôle quantité */
 .quantity-control {
   display: flex;
   align-items: center;

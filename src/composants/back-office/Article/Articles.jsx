@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaSearch,
-  FaPlus,
-  FaSync,
-  FaCalendarAlt,
-  FaUser,
-  FaFilter,
-  FaEdit,
-  FaTrash,
-  FaExclamationTriangle,
+  FaSearch, FaPlus, FaSync, FaCalendarAlt, FaUser, FaFilter,
+  FaEdit, FaTrash, FaExclamationTriangle
 } from "react-icons/fa";
 import { fetchArticles, deleteArticle } from "../../../services/articleService";
 import AjouterArticleModal from "./AjouterArticleModal";
@@ -17,14 +10,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
 
-import "../../../styles/back-office/article.css";
-import "../../../styles/back-office/global.css";
-import "../../../styles/back-office/modal.css";
-import "../../../styles/back-office/toast.css";
-// Tu peux aussi importer le CSS du front si tu veux 100% même style :
-import "../../../styles/front-office/Actualite/ActualiteSection.css";
+import "../../../styles/front-office/Accueil/produitSection.css";
+import "../../../styles/back-office/article.css"; // ← Pour les overrides back-office
 
-const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
@@ -36,8 +25,6 @@ const Articles = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [articleAEditer, setArticleAEditer] = useState(null);
-
-  // Modal suppression
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState({ id: null, titre: "" });
 
@@ -52,7 +39,7 @@ const Articles = () => {
       setLoading(true);
       const data = await fetchArticles();
       setArticles(data || []);
-    } catch (err) {
+    } catch {
       showToast("error", "Erreur lors du chargement des articles");
     } finally {
       setLoading(false);
@@ -61,7 +48,7 @@ const Articles = () => {
 
   // Filtrage
   const filteredArticles = articles.filter((article) => {
-    const texte = `${article.titre} ${article.description} ${article.contenu} ${article.auteur}`.toLowerCase();
+    const texte = `${article.titre} ${article.description} ${article.auteur}`.toLowerCase();
     const searchOk = texte.includes(searchTerm.toLowerCase());
     const auteurOk = filtreAuteur === "tous" || article.auteur === filtreAuteur;
     const dateOk = !filtreDate || new Date(article.datePublication).toISOString().slice(0, 10) === filtreDate;
@@ -101,7 +88,7 @@ const Articles = () => {
     try {
       await deleteArticle(articleToDelete.id);
       chargerArticles();
-      showToast("success", `Article "${articleToDelete.titre}" supprimé avec succès`);
+      showToast("success", `Article "${articleToDelete.titre}" supprimé`);
     } catch {
       showToast("error", "Erreur lors de la suppression");
     } finally {
@@ -124,38 +111,40 @@ const Articles = () => {
   return (
     <div className="page-container">
 
-      {/* En-tête */}
+      {/* Header + Stats + Bouton Ajouter */}
       <div className="page-header">
         <div>
           <h1>Gestion des Articles</h1>
           <div className="stats-container">
-            <span className="stat-item">{articles.length} article{articles.length > 1 ? "s" : ""}</span>
+            <span className="stat-item">{filteredArticles.length} article{filteredArticles.length > 1 ? "s" : ""}</span>
             <span className="stat-item recent">{articlesRecents} récent{articlesRecents > 1 ? "s" : ""}</span>
           </div>
         </div>
         <button className="ajout" onClick={() => { setArticleAEditer(null); setIsModalOpen(true); }}>
-          <FaPlus style={{ marginRight: "10px" }} /> Ajouter un article
+          <FaPlus /> Ajouter un article
         </button>
       </div>
 
-      {/* Barre de recherche */}
+      {/* Recherche + Filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}  />
+                 
           <input
             type="text"
-            placeholder="Rechercher par titre, description, auteur..."
+            placeholder="Rechercher par titre, auteur..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+           style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+     
           >
             <FaFilter />
           </button>
-          <FaSync onClick={reinitialiserFiltres} style={{ marginLeft: "8px", cursor: "pointer", color: "#28a458" }} />
+          <FaSync className="reset-icon" onClick={reinitialiserFiltres} />
         </div>
       </div>
 
@@ -165,13 +154,13 @@ const Articles = () => {
           <div className="filters-row">
             <div className="filter-group">
               <label>Auteur</label>
-              <select value={filtreAuteur} onChange={(e) => setFiltreAuteur(e.target.value)} className="form-control">
-                <option value="tous">Tous les auteurs</option>
+              <select value={filtreAuteur} onChange={(e) => setFiltreAuteur(e.target.value)}>
+                <option value="tous">Tous</option>
                 {auteursUniques.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
             <div className="filter-group">
-              <label>Date précise</label>
+              <label>Date</label>
               <DatePicker
                 selected={filtreDate ? new Date(filtreDate) : null}
                 onChange={(date) => setFiltreDate(date ? date.toISOString().slice(0, 10) : "")}
@@ -179,17 +168,14 @@ const Articles = () => {
                 locale={fr}
                 placeholderText="jj/mm/aaaa"
                 className="form-control"
-                showMonthDropdown
-                showYearDropdown
-                dropdownMode="select"
                 isClearable
               />
             </div>
             <div className="filter-group">
               <label>Statut</label>
-              <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)} className="form-control">
+              <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
                 <option value="tous">Tous</option>
-                <option value="recent">Récents (7 jours)</option>
+                <option value="recent">Récents (7j)</option>
                 <option value="ancien">Anciens (+1 mois)</option>
               </select>
             </div>
@@ -197,51 +183,66 @@ const Articles = () => {
         </div>
       )}
 
-      {/* Grille d'articles - MÊME STYLE QUE FRONT */}
-      <div className="articles-grid">
+      {/* GRILLE D'ARTICLES – MÊME STYLE QUE LES PRODUITS */}
+      <div className="produits-grid back-office-grid">
         {filteredArticles.length > 0 ? (
           filteredArticles.map((article) => {
             const date = new Date(article.datePublication).toLocaleDateString("fr-FR");
-            return (
-              <div key={article.numArticle} className="article-card">
 
-                <div className="image-container">
+            return (
+              <div key={article.numArticle} className="produit-card back-office-card">
+
+                {/* Image */}
+                <div className="produit-image">
                   <img
-                    src={`${IMAGE_BASE_URL}${article.image}`}
+                    src={article.image ? `${IMAGE_BASE_URL}${article.image}` : "/placeholder.png"}
                     alt={article.titre}
-                    onError={(e) => { e.target.src = "/placeholder.png"; }}
+                    onError={(e) => e.target.src = "/placeholder.png"}
                   />
                 </div>
 
-                <div className="article-info">
-                  <h3>{article.titre}</h3>
-                  <p className="article-info-extrait">
-                    {article.description?.substring(0, 150) || "Aucune description"}...
-                  </p>
-                  <span className="article-meta">
-                    <FaUser style={{ marginRight: "6px" }} /> {article.auteur} - 
-                    <FaCalendarAlt style={{ margin: "0 6px" }} /> {date}
-                  </span>
+                {/* Corps */}
+                <div className="produit-body">
+                  <h3 className="produit-title">{article.titre}</h3>
 
-                  {/* BOUTONS MODIFIER ET SUPPRIMER - STYLE INCHANGÉ */}
-                  <div className="table-actions" style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
-                    <button className="edit" onClick={() => { setArticleAEditer(article); setIsModalOpen(true); }}>
-                      <FaEdit style={{ marginRight: "8px" }} /> Modifier
-                    </button>
-                    <button className="delete" onClick={() => handleSupprimer(article.numArticle, article.titre)}>
-                      <FaTrash style={{ marginRight: "8px" }} /> Supprimer
-                    </button>
+                  <div className="produit-categorie" style={{ fontSize: "0.85rem", color: "#888" }}>
+                    <FaUser /> {article.auteur || "Anonyme"} • <FaCalendarAlt /> {date}
+                  </div>
+
+                  <p style={{
+                    flexGrow: 1,
+                    fontSize: "0.95rem",
+                    color: "#666",
+                    lineHeight: "1.5",
+                    margin: "12px 0",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden"
+                  }}>
+                    {article.description || "Aucune description disponible."}
+                  </p>
+
+                  {/* Boutons Modifier / Supprimer (tes classes conservées) */}
+                  <div className="panier-actions">
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button className="edit" onClick={() => { setArticleAEditer(article); setIsModalOpen(true); }}>
+                        <FaEdit /> Modifier
+                      </button>
+                      <button className="delete" onClick={() => handleSupprimer(article.numArticle, article.titre)}>
+                        <FaTrash /> Supprimer
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })
         ) : (
-          <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "80px 20px", color: "#666" }}>
-            <h3>Aucun article trouvé</h3>
-            <p>Modifiez vos critères ou ajoutez un nouvel article.</p>
-            <button className="ajout" onClick={() => setIsModalOpen(true)} style={{ marginTop: "20px" }}>
-              <FaPlus style={{ marginRight: "10px" }} /> Ajouter un article
+          <div className="no-products">
+            <p>Aucun article trouvé</p>
+            <button className="ajout" onClick={() => setIsModalOpen(true)}>
+              <FaPlus /> Ajouter un article
             </button>
           </div>
         )}
@@ -262,23 +263,14 @@ const Articles = () => {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaExclamationTriangle style={{ color: "#dc3545" }} />
-                Confirmer la suppression
-              </h2>
+              <h2><FaExclamationTriangle style={{ color: "#dc3545" }} /> Confirmer la suppression</h2>
               <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
             </div>
             <div className="modal-body">
-              <p>Êtes-vous sûr de vouloir supprimer l'article :<br />
-                <strong>"{articleToDelete.titre}"</strong> ?
-              </p>
-              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px", marginTop: "20px" }}>
-                <button className="btn btn-danger" onClick={confirmerSuppression}>
-                  Supprimer
-                </button>
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
-                  Annuler
-                </button>
+              <p>Supprimer l'article :<br /><strong>"{articleToDelete.titre}"</strong> ?</p>
+              <div className="modal-actions">
+                <button className="btn btn-danger" onClick={confirmerSuppression}>Supprimer</button>
+                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Annuler</button>
               </div>
             </div>
           </div>

@@ -1,69 +1,114 @@
-import React from "react";
-import { useParams } from "react-router-dom";
-import legume from "../../../assets/images/legume3.jpg";
-import volaille from "../../../assets/images/elevage.jpg";
-import boeuf from "../../../assets/images/boeuf.jpeg";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { FaUser, FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
+import { fetchArticleById } from "../../../services/articleService";
 import "../../../styles/front-office/Actualite/ActualiteDetail.css";
-import "../../../styles/front-office/global.css";
+
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+
 const ActualiteDetail = () => {
   const { id } = useParams();
- const articles = [
-    {
-      id: 1,
-      titre: "L'élevage bio de poulet fermier",
-      image: volaille,
-      contenu: `
-        Découvrez les secrets d'un élevage de poulets fermiers respectueux du bien-être animal.
-        Les éleveurs travaillent en harmonie avec la nature et privilégient une alimentation saine.
-        Ce mode d'élevage permet d’obtenir une viande savoureuse et naturelle, tout en protégeant l’environnement.
-      `,
-      auteur: "Marie Dubois",
-      date: "15 Oct 2025",
-    },
-    {
-      id: 2,
-      titre: "Le bœuf de race Charolaise",
-      image: boeuf,
-      contenu: `
-        Le bœuf Charolais est une fierté française reconnue pour sa qualité exceptionnelle.
-        Les éleveurs privilégient un élevage extensif dans le respect du bien-être animal.
-        Cette viande tendre et goûteuse séduit les amateurs de gastronomie traditionnelle.
-      `,
-      auteur: "Pierre Lefèvre",
-      date: "16 Oct 2025",
-    },
-    {
-      id: 3,
-      titre: "Nouvelle récolte de légumes",
-      image: legume,
-      contenu: `
-        Nos producteurs viennent de récolter une nouvelle variété de légumes bio, riches en saveurs et en couleurs.
-        Carottes, choux, tomates et pommes de terre arrivent directement du champ à votre table.
-        Des produits sains, frais et locaux pour une alimentation équilibrée et responsable.
-      `,
-      auteur: "Claire Martin",
-      date: "17 Oct 2025",
-    },
-  ];
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const article = articles.find(a => a.id === parseInt(id));
+  useEffect(() => {
+    const loadArticle = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchArticleById(id);
+        setArticle(data);
+      } catch (err) {
+        setError("Article introuvable ou erreur de chargement.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadArticle();
+  }, [id]);
 
-  if (!article) {
-    return <p>Article introuvable.</p>;
+  if (loading) {
+    return (
+      <div className="actualite-detail-loading">
+        <div className="loading-spinner"></div>
+        <p>Chargement de l'article...</p>
+      </div>
+    );
   }
 
-  return (
-    <section className="actualite-detail">
-      <h1>{article.titre}</h1>
-      <p className="article-meta">Par {article.auteur} — {article.date}</p>
-      <img src={article.image} alt={article.titre} className="article-image" />
-      <div className="article-contenu">
-        {article.contenu.split("\n").map((para, i) => (
-          <p key={i}>{para.trim()}</p>
-        ))}
+  if (error || !article) {
+    return (
+      <div className="actualite-detail-error">
+        <p>{error || "Article non trouvé."}</p>
+        <Link to="/actualites" className="btn-back">
+          Retour aux actualités
+        </Link>
       </div>
-    </section>
-    
+    );
+  }
+
+  const dateFormatee = new Date(article.datePublication).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  return (
+    <article className="actualite-detail">
+
+      {/* Bouton retour */}
+      <div className="detail-back">
+        <Link to="/actualites" className="btn-back-article">
+          <FaArrowLeft /> Retour aux actualités
+        </Link>
+      </div>
+
+      {/* Image principale */}
+      <div className="detail-image-container">
+        <img
+          src={article.image ? `${IMAGE_BASE_URL}/${article.image}` : "/placeholder.png"}
+          alt={article.titre}
+          className="detail-image"
+          onError={(e) => e.target.src = "/placeholder.png"}
+        />
+      </div>
+
+      {/* Contenu */}
+      <div className="detail-content">
+
+        <header className="detail-header">
+          <h1 className="detail-title">{article.titre}</h1>
+
+          <div className="detail-meta">
+            <span className="meta-item">
+              <FaUser /> {article.auteur || "Anonyme"}
+            </span>
+            <span className="meta-item">
+              <FaCalendarAlt /> {dateFormatee}
+            </span>
+          </div>
+        </header>
+
+        {/* Description courte */}
+        {article.description && (
+          <p className="detail-extrait">{article.description}</p>
+        )}
+
+       <div
+  className="detail-body"
+  dangerouslySetInnerHTML={{ __html: article.contenu }}
+></div>
+
+
+        {/* Bouton retour en bas */}
+        <div className="detail-footer">
+          <Link to="/actualite" className="btn-back-article large">
+            <FaArrowLeft /> Retour aux actualités
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 };
 

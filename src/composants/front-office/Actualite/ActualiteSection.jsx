@@ -3,8 +3,8 @@ import { FaSearch, FaSync, FaUser, FaCalendarAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { fetchArticles } from "../../../services/articleService";
 import PaginationProduits from '../Accueil/PaginationProduits';
-import "../../../styles/front-office/global.css";
 import "../../../styles/front-office/Actualite/ActualiteSection.css";
+import "../../../styles/front-office/Produits/heroSection.css"; // ← On réutilise le hero des produits
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
 
@@ -12,12 +12,10 @@ const ActualiteSection = () => {
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [recherche, setRecherche] = useState("");
   const [page, setPage] = useState(1);
   const articlesParPage = 6;
 
-  // Chargement des articles
   useEffect(() => {
     const loadArticles = async () => {
       try {
@@ -27,7 +25,6 @@ const ActualiteSection = () => {
         setFilteredArticles(data || []);
       } catch (err) {
         console.error("Erreur chargement articles:", err);
-        setError("Impossible de charger les actualités.");
       } finally {
         setLoading(false);
       }
@@ -35,10 +32,8 @@ const ActualiteSection = () => {
     loadArticles();
   }, []);
 
-  // Filtrage uniquement par recherche (comme dans le back-office)
   useEffect(() => {
     let resultats = [...articles];
-
     if (recherche.trim()) {
       const terme = recherche.toLowerCase();
       resultats = resultats.filter(a =>
@@ -47,19 +42,14 @@ const ActualiteSection = () => {
         (a.auteur?.toLowerCase().includes(terme))
       );
     }
-
     setFilteredArticles(resultats);
     setPage(1);
   }, [recherche, articles]);
 
-  // Pagination
   const indexDebut = (page - 1) * articlesParPage;
   const articlesAffiches = filteredArticles.slice(indexDebut, indexDebut + articlesParPage);
 
-  // Réinitialiser la recherche
-  const reinitialiserRecherche = () => {
-    setRecherche("");
-  };
+  const reinitialiserRecherche = () => setRecherche("");
 
   if (loading) {
     return (
@@ -72,70 +62,42 @@ const ActualiteSection = () => {
     );
   }
 
-  if (error) {
-    return (
-      <section className="actualite-section">
-        <div style={{ textAlign: "center", padding: "100px 20px", color: "#dc3545" }}>
-          <p>{error}</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="actualite-section">
 
-      {/* Header + Barre de recherche (style back-office) */}
-      <div className="actualite-header">
-        <h2>
-          Retrouvez ici toutes nos actualités : conseils, innovations et reportages autour de nos produits, de nos éleveurs et de nos producteurs partenaires.
-        </h2>
+      {/* HERO IDENTIQUE À CELUI DES PRODUITS */}
+      <div className="heroProduit">
+        <div className="heroProduit-header">
+          <h2 className="heroProduit-header-text">
+            Retrouvez ici toutes nos actualités : conseils, innovations et reportages autour de nos produits, de nos éleveurs et de nos producteurs partenaires.
+          </h2>
+        </div>
 
-        {/* BARRE DE RECHERCHE IDENTIQUE AU BACK-OFFICE */}
-        <div className="search-container" style={{ maxWidth: "600px", margin: "20px auto 0" }}>
-          <div className="search-bar" style={{
-            display: "flex",
-            alignItems: "center",
-            border: "2px solid #e0e0e0",
-            borderRadius: "12px",
-            padding: "8px 12px",
-            backgroundColor: "#fff",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-          }}>
-            <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
+        <div className="heroProduit-middle">
+          {/* BARRE DE RECHERCHE IDENTIQUE À CATEGORIESECTION */}
+          <form className="heroProduit-form" onSubmit={(e) => e.preventDefault()}>
             <input
               type="text"
-              placeholder="Rechercher un article par titre, description ou auteur..."
+              placeholder="Rechercher un article..."
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
-              style={{
-                border: "none",
-                outline: "none",
-                flex: 1,
-                padding: "8px 12px",
-                fontSize: "1rem"
-              }}
             />
+            <button type="submit">
+              <FaSearch className="heroProduit-search" />
+            </button>
             {recherche && (
               <FaSync
+                className="heroProduit-reset"
                 onClick={reinitialiserRecherche}
-                style={{
-                  marginRight: "8px",
-                  color: "#28a458",
-                  cursor: "pointer",
-                  fontSize: "1.2rem"
-                }}
-                title="Réinitialiser la recherche"
+                title="Réinitialiser"
               />
             )}
-          </div>
+          </form>
         </div>
       </div>
 
-      {/* Plus de menu de catégories */}
-
-      {/* Grille d'articles */}
-      <div className="articles-grid">
+      {/* GRILLE D'ARTICLES – MÊME STYLE QUE LES PRODUITS */}
+      <div className="produits-grid">
         {articlesAffiches.length > 0 ? (
           articlesAffiches.map(article => {
             const date = article.datePublication
@@ -143,8 +105,10 @@ const ActualiteSection = () => {
               : "Date inconnue";
 
             return (
-              <div key={article.numArticle} className="article-card">
-                <div className="image-container">
+              <div key={article.numArticle} className="produit-card article-card">
+
+                {/* Image */}
+                <div className="produit-image">
                   <img
                     src={article.image ? `${IMAGE_BASE_URL}${article.image}` : "/placeholder.png"}
                     alt={article.titre}
@@ -152,37 +116,48 @@ const ActualiteSection = () => {
                   />
                 </div>
 
-                <div className="article-info">
-                  <h3>{article.titre}</h3>
-                  <p className="article-info-extrait">
-                    {article.description || "Aucune description disponible."}
+                {/* Corps */}
+                <div className="produit-body">
+                  <h3 className="produit-title">{article.titre}</h3>
+
+                  <div className="produit-categorie article-meta">
+                    <span><FaUser /> {article.auteur || "Anonyme"}</span>
+                    <span><FaCalendarAlt /> {date}</span>
+                  </div>
+
+                  <p className="article-extrait">
+                    {article.description?.substring(0, 130) || "Aucune description disponible."}
+                    {article.description?.length > 130 && "..."}
                   </p>
-                  <span className="article-meta">
-                    Par <FaUser style={{ marginRight: "4px" }} /> {article.auteur || "Anonyme"} - 
-                    <FaCalendarAlt style={{ marginLeft: "8px", marginRight: "4px" }} /> {date}
-                  </span>
-                  <Link to={`/actualite/${article.numArticle}`} className="lire-btn">
-                    Lire la suite →
-                  </Link>
+
+                  <div className="panier-actions">
+                    <Link to={`/actualite/${article.numArticle}`} className="btn-add-cart lire-btn">
+                      Lire la suite
+                    </Link>
+                  </div>
                 </div>
               </div>
             );
           })
         ) : (
-          <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "80px 20px", color: "#666", fontSize: "1.1rem" }}>
-            {recherche ? "Aucun article ne correspond à votre recherche." : "Aucune actualité pour le moment."}
-          </p>
+          <div className="no-products">
+            <p>
+              {recherche ? "Aucun article ne correspond à votre recherche." : "Aucune actualité pour le moment."}
+            </p>
+          </div>
         )}
       </div>
 
       {/* Pagination */}
       {filteredArticles.length > articlesParPage && (
-        <PaginationProduits
-          totalProduits={filteredArticles.length}
-          produitsParPage={articlesParPage}
-          currentPage={page}
-          onPageChange={setPage}
-        />
+        <div className="pagination-container">
+          <PaginationProduits
+            totalProduits={filteredArticles.length}
+            produitsParPage={articlesParPage}
+            currentPage={page}
+            onPageChange={setPage}
+          />
+        </div>
       )}
     </section>
   );

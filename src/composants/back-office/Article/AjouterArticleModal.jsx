@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa";
 import { createArticle, updateArticle } from "../../../services/articleService";
 import { useToast } from "../../../contexts/ToastContext"; // Importer useToast
-
+import TiptapEditor from "./TiptapEditor"; // Adapte le chemin
 const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
   const today = new Date().toISOString().split("T")[0];
   const { showToast } = useToast(); // Utiliser le hook toast
@@ -226,16 +226,12 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
 
               <div className="form-group" style={{ gridColumn: '1 / 3' }}>
                 <label htmlFor="contenu" className="required">Contenu complet</label>
-                <textarea
-                  id="contenu"
-                  name="contenu"
-                  value={form.contenu}
-                  onChange={handleChange}
-                  className={`form-control textarea ${errors.contenu ? "error" : ""}`}
-                  rows="10"
-                  placeholder="Rédigez ici l'article complet..."
-                  required
-                />
+              
+<TiptapEditor
+  content={form.contenu}
+  onUpdate={(html) => setForm({ ...form, contenu: html })}
+/>
+{errors.contenu && <div className="error-message">{errors.contenu}</div>}
                 {errors.contenu && <div className="error-message">{errors.contenu}</div>}
               </div>
 

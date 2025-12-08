@@ -1,44 +1,200 @@
-
-:root {
-  --color-green-primary: #28a458;
-  --color-green-secondary: #5ebb82;
-  --color-text-dark: #161616;
-  --color-background-light: #f5f0e1;
-  --color-background-white: #ffffff;
-  --color-shadow: rgba(22, 163, 74, 0.2);
-  --font-main: "Poppins", sans-serif;
-  --font-size-base: 16px;
-}
-
+/* ====================== DÉTAIL ARTICLE – Design Moderne & Élégant ====================== */
 
 .actualite-detail {
- gap: 40px;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
+  font-family: 'Poppins', sans-serif;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.actualite-detail h1 {
-  color: var(--color-green-primary);
-  margin-bottom: 10px;
-  font-size: 26px;
+/* Bouton retour */
+.detail-back {
+  padding: 20px 0;
+  text-align: left;
 }
 
-.article-meta {
-  font-size: 14px;
-  color: gray;
-  margin-bottom: 20px;
+.btn-back-article {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #28a458;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s;
 }
 
-.article-image {
+.btn-back-article:hover {
+  color: #1e8449;
+  transform: translateX(-5px);
+}
+
+.btn-back-article.large {
+  font-size: 1.1rem;
+  padding: 14px 24px;
+  background: #28a458;
+  color: white;
+  border-radius: 50px;
+  margin-top: 40px;
+}
+
+.btn-back-article.large:hover {
+  background: #219653;
+}
+
+/* Image principale */
+.detail-image-container {
+  height: 450px;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 30px;
+}
+
+.detail-image {
   width: 100%;
-  border-radius: 12px;
-  margin-bottom: 25px;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
 }
 
-.article-contenu p {
+.detail-image:hover {
+  transform: scale(1.05);
+}
+
+/* Contenu */
+.detail-content {
+  padding: 0 30px 40px;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.detail-title {
+  font-size: 2.6rem;
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 1rem;
+  color: #888;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-extrait {
+  font-size: 1.25rem;
+  color: #555;
+  font-style: italic;
+  text-align: center;
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-left: 5px solid #28a458;
+  border-radius: 8px;
+}
+
+.detail-body {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #444;
+}
+
+.detail-paragraph {
+  margin-bottom: 20px;
   text-align: justify;
-  line-height: 1.7;
-  margin-bottom: 15px;
+}
+
+.detail-paragraph:first-letter {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #28a458;
+  float: left;
+  margin-right: 10px;
+  line-height: 1;
+}
+
+/* Loading & Erreur */
+.actualite-detail-loading,
+.actualite-detail-error {
+  text-align: center;
+  padding: 100px 20px;
+  font-size: 1.3rem;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #28a458;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .detail-title {
+    font-size: 2.3rem;
+  }
+  .detail-image-container {
+    height: 380px;
+  }
+}
+
+@media (max-width: 768px) {
+  .actualite-detail {
+    margin: 30px 15px;
+    border-radius: 16px;
+  }
+  .detail-title {
+    font-size: 2rem;
+  }
+  .detail-image-container {
+    height: 300px;
+  }
+  .detail-content {
+    padding: 0 20px 30px;
+  }
+  .detail-extrait {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-title {
+    font-size: 1.8rem;
+  }
+  .detail-image-container {
+    height: 240px;
+  }
+  .detail-header {
+    margin-bottom: 20px;
+  }
+  .detail-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
