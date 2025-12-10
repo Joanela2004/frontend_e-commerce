@@ -27,24 +27,19 @@ import { getCategories } from "../../../services/categorieService";
 import { fetchPromotions } from "../../../services/promotionService";
 import { useToast } from "../../../contexts/ToastContext";
 import { useNavigate } from "react-router-dom";
-
-// On garde tes styles back-office + le magnifique style des cartes du front
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
-import "../../../styles/back-office/produit.css"; // ← Overrides back-office
+import "../../../styles/back-office/produit.css"; 
 import "../../../styles/front-office/Accueil/produitSection.css"; // ← Cartes magnifiques
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-const calculatePromotionalPrice = (prix, valeur) => {
-  return Math.round(prix * (1 - valeur / 100));
-};
+
 
 const Produits = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-
   const [produits, setProduits] = useState([]);
   const [categories, setCategories] = useState([]);
   const [promotions, setPromotions] = useState([]);
@@ -53,7 +48,6 @@ const Produits = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  // Filtres
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filtreCategorie, setFiltreCategorie] = useState("tous");
   const [filtrePromotion, setFiltrePromotion] = useState("tous");
@@ -180,7 +174,9 @@ const Produits = () => {
   const confirmerRestauration = async () => {
     await restoreProduit(produitEnCours.id);
     chargerDonnees();
+    
     showToast("success", `Produit "${produitEnCours.nom}" restauré !`);
+    resetForm();
     setShowRestoreModal(false);
   };
 
@@ -474,18 +470,12 @@ const Produits = () => {
         ) : (
           <div className="no-products">
             <p>Aucun produit trouvé</p>
-            <button
-              className="btn-add-product"
-              onClick={() => setIsFormOpen(true)}
-            >
-              <FaPlus /> Ajouter un produit
-            </button>
+           
           </div>
         )}
       </div>
 
-      {/* === Formulaire Ajout/Modification === */}
-      {isFormOpen && (
+       {isFormOpen && (
         <div className="modal-overlay" onClick={resetForm}>
           <div
             className="modal-content"
@@ -501,6 +491,8 @@ const Produits = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
+              <div className="modal-body">
+             
               <div className="form-row">
                 <div className="form-group">
                   <label>
@@ -511,7 +503,12 @@ const Produits = () => {
                     name="image"
                     accept="image/*"
                     onChange={handleChange}
+
+                  className="form-control"
                   />
+                   <small style={{ color: '#6c757d', display: 'block', marginTop: '8px' }}>
+                      Formats acceptés: JPG, PNG, SVG. Taille max: 2MB
+                    </small>
                 </div>
                 <div className="form-group">
                   <label>
@@ -523,6 +520,8 @@ const Produits = () => {
                     value={form.nomProduit}
                     onChange={handleChange}
                     required
+
+                  className="form-control"
                   />
                 </div>
               </div>
@@ -537,6 +536,8 @@ const Produits = () => {
                     value={form.prix}
                     onChange={handleChange}
                     required
+
+                  className="form-control"
                   />
                 </div>
                 <div className="form-group">
@@ -550,6 +551,8 @@ const Produits = () => {
                     value={form.poids}
                     onChange={handleChange}
                     required
+
+                  className="form-control"
                   />
                 </div>
               </div>
@@ -561,6 +564,8 @@ const Produits = () => {
                     value={form.numCategorie}
                     onChange={handleChange}
                     required
+
+                  className="form-control"
                   >
                     <option value="">Choisir...</option>
                     {categories.map((c) => (
@@ -578,6 +583,8 @@ const Produits = () => {
                     name="numPromotion"
                     value={form.numPromotion}
                     onChange={handleChange}
+
+                  className="form-control"
                   >
                     <option value="">Aucune</option>
                     {promotions.map((p) => (
@@ -591,6 +598,7 @@ const Produits = () => {
               <div className="modal-actions">
                 <button
                   type="button"
+                  
                   className="btn btn-secondary"
                   onClick={resetForm}
                 >
@@ -599,6 +607,7 @@ const Produits = () => {
                 <button type="submit" className="btn btn-primary">
                   {editingId ? "Mettre à jour" : "Ajouter"}
                 </button>
+              </div>
               </div>
             </form>
           </div>
@@ -628,13 +637,13 @@ const Produits = () => {
               </p>
               <div className="modal-actions">
                 <button
-                  className="btn btn-secondary"
+                  className="edit"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Annuler
                 </button>
                 <button
-                  className="btn btn-danger"
+                  className="delete"
                   onClick={confirmerSuppression}
                 >
                   Supprimer

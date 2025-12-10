@@ -490,9 +490,7 @@ const ModesPaiement = () => {
                       />
                       <span style={{ fontWeight: '500' }}>Activer ce mode de paiement</span>
                     </label>
-                    <small style={{ color: '#6c757d', display: 'block' }}>
-                      Les modes inactifs ne seront pas proposés aux clients lors du paiement
-                    </small>
+                   
                   </div>
                 </div>
                 <div className="form-row">
@@ -511,9 +509,7 @@ const ModesPaiement = () => {
       <option value="orange_money">Orange Money</option>
       <option value="airtel_money">Airtel Money</option>
     </select>
-    <small style={{ color: '#6c757d', display: 'block', marginTop: '8px' }}>
-      Ce champ permet une gestion propre dans l'application client. Optionnel mais fortement recommandé.
-    </small>
+   
   </div>
 </div>
 

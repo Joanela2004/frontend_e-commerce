@@ -26,12 +26,9 @@ const Decoupes = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filtreCoefficientMin, setFiltreCoefficientMin] = useState("");
   const [filtreCoefficientMax, setFiltreCoefficientMax] = useState("");
-
-  // États pour les modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalData, setModalData] = useState({
+   const [modalData, setModalData] = useState({
     title: "",
     message: "",
     type: "",
@@ -113,10 +110,10 @@ const Decoupes = () => {
     try {
       if (editingId) {
         await updateDecoupe(editingId, form);
-        showModal("success", "Succès", "Découpe mise à jour avec succès !");
+        showToast("success", "Succès", "Découpe mise à jour avec succès !");
       } else {
         await createDecoupe(form);
-        showModal("success", "Succès", "Découpe ajoutée avec succès !");
+        showToast("success", "Succès", "Découpe ajoutée avec succès !");
       }
 
       resetForm();
@@ -136,6 +133,7 @@ const Decoupes = () => {
             try {
               await restoreDecoupe(err.response.data.decoupe_id);
               showToast("success", "Découpe restaurée avec succès !");
+              resetForm();
               chargerDonnees();
             } catch (restoreErr) {
               showToast("error", "Erreur lors de la restauration");
@@ -353,12 +351,14 @@ const Decoupes = () => {
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="btn btn-primary">
+                  <button type="submit" className="btn btn-primary">
                   {editingId ? "Mettre à jour" : "Ajouter la découpe"}
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                 <button type="button" className="btn btn-secondary" onClick={resetForm}>
                   Annuler
                 </button>
+               
+               
               </div>
             </form>
           </div>
@@ -429,15 +429,7 @@ const Decoupes = () => {
                         ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
                         : "Commencez par ajouter votre première découpe"}
                     </p>
-                    {!hasActiveFilters && (
-                      <button 
-                        className="btn btn-primary" 
-                        onClick={() => setIsFormOpen(true)}
-                        style={{ marginTop: "20px" }}
-                      >
-                        <FaPlus /> Ajouter une découpe
-                      </button>
-                    )}
+                  
                   </div>
                 </td>
               </tr>
@@ -469,14 +461,14 @@ const Decoupes = () => {
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
                  <button
-                  className="btn btn-secondary"
+                  className="edit"
                   onClick={closeAllModals}
                   style={{ padding: "10px 30px" }}
                 >
                   Annuler
                 </button>
                 <button
-                  className="btn btn-danger"
+                  className="delete"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -520,14 +512,15 @@ const Decoupes = () => {
                   Annuler
                 </button>
                 <button
-                  className="btn btn-success"
+                  className="btn btn-primary"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
                     }
+                    resetForm();
                     closeAllModals();
                   }}
-                  style={{ padding: "10px 30px" }}
+                 
                 >
                   Restaurer
                 </button>
@@ -538,42 +531,7 @@ const Decoupes = () => {
         </div>
       )}
 
-      {/* Modal de succès */}
-      {showSuccessModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "500px" }}>
-            <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaUtensils style={{ color: "#28a458" }} />
-                {modalData.title}
-              </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
-            </div>
-            
-            <div className="modal-body">
-              <p style={{ 
-                fontSize: "16px", 
-                lineHeight: "1.5", 
-                marginBottom: "20px",
-                textAlign: "center",
-                padding: "20px 0"
-              }}>
-                {modalData.message}
-              </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center" }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 40px" }}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+     
     </div>
   );
 };

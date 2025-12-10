@@ -98,16 +98,15 @@ const Categorie = () => {
     try {
       if (editingId) {
         await updateCategorie(editingId, form.nomCategorie);
-        showModal("success", "Succès", "Catégorie mise à jour avec succès !");
+        showToast("success", "Succès", "Catégorie mise à jour avec succès !");
       } else {
         await createCategorie(form.nomCategorie);
-        showModal("success", "Succès", "Catégorie ajoutée avec succès !");
+        showToast("success", "Succès", "Catégorie ajoutée avec succès !");
       }
       resetForm();
       chargerDonnees();
     } catch (err) {
-      // CAS SPÉCIAL : catégorie supprimée temporairement
-      if (err.response?.status === 409 && err.response?.data?.soft_deleted) {
+          if (err.response?.status === 409 && err.response?.data?.soft_deleted) {
         showModal(
           "restore",
           "Catégorie archivée trouvée",
@@ -118,6 +117,7 @@ const Categorie = () => {
             try {
               await restoreCategorie(err.response.data.categorie_id);
               showToast("success", "Catégorie restaurée avec succès !");
+              resetForm();
               chargerDonnees();
             } catch (restoreErr) {
               showToast("error", "Erreur lors de la restauration");
@@ -260,12 +260,13 @@ const Categorie = () => {
               </div>
 
               <div className="modal-actions">
+               <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                  Annuler
+                </button>
                 <button type="submit" className="btn btn-primary">
                   {editingId ? "Mettre à jour" : "Ajouter la catégorie"}
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                  Annuler
-                </button>
+                
               </div>
             </form>
           </div>
@@ -343,15 +344,7 @@ const Categorie = () => {
                         ? "Essayez avec d'autres termes de recherche."
                         : "Commencez par ajouter votre première catégorie"}
                     </p>
-                    {!hasActiveFilters && (
-                      <button 
-                        className="btn btn-primary" 
-                        onClick={() => setIsFormOpen(true)}
-                        style={{ marginTop: "20px" }}
-                      >
-                        <FaPlus /> Ajouter une catégorie
-                      </button>
-                    )}
+                  
                   </div>
                 </td>
               </tr>
@@ -383,14 +376,14 @@ const Categorie = () => {
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
                 <button
-                  className="btn btn-secondary"
+                  className="edit"
                   onClick={closeAllModals}
                   style={{ padding: "10px 30px" }}
                 >
                   Annuler
                 </button>
                 <button
-                  className="btn btn-danger"
+                  className=" delete"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -434,14 +427,13 @@ const Categorie = () => {
                   Annuler
                 </button>
                 <button
-                  className="btn btn-success"
+                  className="btn btn-primary"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
                     }
                     closeAllModals();
                   }}
-                  style={{ padding: "10px 30px" }}
                 >
                   Restaurer
                 </button>
@@ -452,42 +444,7 @@ const Categorie = () => {
         </div>
       )}
 
-      {/* Modal de succès */}
-      {showSuccessModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "500px" }}>
-            <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaList style={{ color: "#28a458" }} />
-                {modalData.title}
-              </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
-            </div>
-            
-            <div className="modal-body">
-              <p style={{ 
-                fontSize: "16px", 
-                lineHeight: "1.5", 
-                marginBottom: "20px",
-                textAlign: "center",
-                padding: "20px 0"
-              }}>
-                {modalData.message}
-              </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center" }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 40px" }}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

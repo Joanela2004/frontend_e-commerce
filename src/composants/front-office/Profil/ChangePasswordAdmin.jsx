@@ -136,11 +136,7 @@ const ChangePasswordAdmin = ({ onSuccess }) => {
         </div>
  <p style={{ display:"flex", marginTop: "10px"}}><span className='etoile-obligatoire'>* </span> : champ obligatoire</p>
 
-        {message && (
-          <p className={`message ${message.includes('succès') ? 'success' : 'error'}`}>
-            {message}
-          </p>
-        )}
+      
 
       </form>
     </div>

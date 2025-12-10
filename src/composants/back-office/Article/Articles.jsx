@@ -240,9 +240,7 @@ const Articles = () => {
         ) : (
           <div className="no-products">
             <p>Aucun article trouvé</p>
-            <button className="ajout" onClick={() => setIsModalOpen(true)}>
-              <FaPlus /> Ajouter un article
-            </button>
+            
           </div>
         )}
       </div>
@@ -268,9 +266,10 @@ const Articles = () => {
             <div className="modal-body">
               <p>Supprimer l'article :<br /><strong>"{articleToDelete.titre}"</strong> ?</p>
               <div className="modal-actions">
-                <button className="btn btn-danger" onClick={confirmerSuppression}>Supprimer</button>
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Annuler</button>
-              </div>
+                <button className="edit" onClick={() => setShowDeleteModal(false)}>Annuler</button>
+             
+                <button className="delete" onClick={confirmerSuppression}>Supprimer</button>
+                 </div>
             </div>
           </div>
         </div>

@@ -24,12 +24,9 @@
 }
 
 .produits-grid {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  max-width: 1400px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+ 
   margin: 0 auto;
   padding: 10px 80px;
 }
@@ -66,20 +63,19 @@
 
 /* Image */
 .produit-image {
-  height: 220px;
-  overflow: hidden;
+ display: flex;
+ 
+ align-items: center;
+ justify-content: center;
 }
 
 .produit-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
-}
+ }
 
-.produit-card:hover .produit-image img {
-  transform: scale(1.1);
-}
+
 
 /* Corps de la carte */
 .produit-body {
@@ -88,8 +84,8 @@
 
 .produit-title {
   font-size: 1.25rem;
-  margin: 0 0 10px 0;
-  color: #27ae60;
+  margin: 10px 0 10px 0;
+  color:#3d3b3b ;
   font-weight: 600;
 }
 

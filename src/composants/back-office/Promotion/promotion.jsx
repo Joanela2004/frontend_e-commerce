@@ -165,16 +165,7 @@ const Promotions = () => {
     expiree: promotions.filter((p) => p.statutPromotion === "Expirée").length,
   };
 
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Chargement des promotions...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="page-container">
@@ -421,10 +412,10 @@ const Promotions = () => {
                 Êtes-vous sûr de vouloir supprimer la promotion <strong>{promotionASupprimer?.nomPromotion}</strong> (code : <strong>{promotionASupprimer?.codePromo}</strong>) ?
               </p>
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px", marginTop: "20px" }}>
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
+                <button className="edit" onClick={() => setShowDeleteModal(false)}>
                   Annuler
                 </button>
-                <button className="btn btn-danger" onClick={confirmerSuppression}>
+                <button className="delete" onClick={confirmerSuppression}>
                   Supprimer
                 </button>
               </div>

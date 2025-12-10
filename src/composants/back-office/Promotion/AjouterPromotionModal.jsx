@@ -123,7 +123,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   required={typeMode === "code"}
                   disabled={typeMode === "automatique"}
-                  placeholder={typeMode === "automatique" ? "Laisser vide" : "BLACKFRIDAY2025"}
+                 
                   maxLength="20"
                   className="form-control"
                   style={{
@@ -146,7 +146,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
                   required
-                  placeholder="Soldes d'été 2025"
+                  
                   className="form-control"
                 />
               </div>

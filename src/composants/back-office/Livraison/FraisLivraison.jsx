@@ -588,15 +588,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
                   ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
                   : "Commencez par ajouter votre première tranche"}
               </p>
-              {!hasActiveFilters && (
-                <button 
-                  className="btn btn-primary" 
-                  onClick={() => setIsFormOpen(true)}
-                  style={{ marginTop: "20px", display: 'flex', alignItems: 'center', gap: '5px' }}
-                >
-                  <FaPlus /> Ajouter une tranche
-                </button>
-              )}
+             
             </div>
           </div>
         )}
@@ -725,13 +717,14 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
               </div>
 
               <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={closeAllModals} style={{ padding: '12px 30px' }}>
+                  Annuler
+                </button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '12px 30px' }}
                   disabled={form.poidsMin && form.poidsMax && checkIfTrancheExists(parseFloat(form.poidsMin), parseFloat(form.poidsMax), editingId)}>
                   {editingId ? "Mettre à jour la tranche" : "Ajouter la tranche"}
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={closeAllModals} style={{ padding: '12px 30px' }}>
-                  Annuler
-                </button>
+                
               </div>
             </form>
           </div>
@@ -848,6 +841,13 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                 <button
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
                   className="btn btn-danger"
                   onClick={async () => {
@@ -860,13 +860,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
                 >
                   Confirmer la régénération
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>
@@ -895,8 +889,15 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                 <button
+                  className="edit"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
                 <button
-                  className="btn btn-danger"
+                  className="delete"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -907,13 +908,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
                 >
                   Supprimer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>
@@ -938,25 +933,27 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
-                <button
-                  className="btn btn-success"
-                  onClick={async () => {
-                    if (modalData.onConfirm) {
-                      await modalData.onConfirm();
-                    }
-                    closeAllModals();
-                  }}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Restaurer
-                </button>
-                <button
+                 <button
                   className="btn btn-secondary"
                   onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
                 >
                   Annuler
                 </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    if (modalData.onConfirm) {
+                      await modalData.onConfirm();
+
+                    }
+                    resetForm();
+                    closeAllModals();
+                  }}
+                 
+                >
+                  Restaurer
+                </button>
+               
               </div>
             </div>
           </div>

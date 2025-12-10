@@ -1,6 +1,4 @@
-/* ===========================
-   MODAL OVERLAY
-   =========================== */
+
 
 .modal-overlay {
   position: fixed;
@@ -27,9 +25,6 @@
   display: flex;
 }
 
-/* ===========================
-   CONTENU DE LA MODAL
-   =========================== */
 
 .modal,
 .modal-content {
@@ -47,9 +42,6 @@
 }
 
 
-.btn-danger{
-  border-radius: 20px;
-}
 .modal-header {
   padding: 20px;
   border-bottom: 1px solid var(--color-border);
@@ -78,9 +70,7 @@
     transition: color 0.2s;
 }
 
-.modal-close:hover {
-    color: var(--color-danger);
-}
+
 
 
 .modal-body {
@@ -92,7 +82,7 @@
 /* Conteneur pour aligner les boutons d'action (RÉVISÉ) */
 .modal-actions {
     display: flex;
-    justify-content: flex-end; 
+    justify-content: center; 
     gap: 15px; 
     padding: 20px;
     border-top: 1px solid var(--color-border); /* Ajout d'une ligne de séparation */
@@ -110,9 +100,6 @@
     /* Padding pour aligner avec le contenu de la modale */
     padding: 0 20px; 
 }
-
-/* Pour le formulaire ModalLivraison, on retire le padding vertical par défaut 
-   du modal-body et on laisse form-row gérer les paddings horizontaux */
 .modal-form .modal-body {
     padding: 20px 0 0 0;
 }
@@ -187,11 +174,6 @@ select.form-control {
   background-position: right 12px center;
 }
 
-/* ... (Champs de fichier et messages d'erreur inchangés) ... */
-
-/* ===================================================================
-   STYLES POUR LA MODALE DE CONFIRMATION PERSONNALISÉE (DARK MODE)
-   =================================================================== */
 
 .modal-content.custom-confirm-modal {
     max-width: 400px !important;
@@ -251,11 +233,6 @@ select.form-control {
     background-color: var(--color-primary, #28a458);
     border-color: var(--color-primary, #28a458);
 }
-
-
-/* ===================================================================
-   MEDIA QUERIES (RÉVISÉ)
-   =================================================================== */
 
 @media (max-width: 768px) {
     /* Modales générales */

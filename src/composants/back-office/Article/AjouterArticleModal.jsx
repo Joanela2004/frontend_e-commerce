@@ -279,45 +279,22 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
                     id="image"
                     name="image"
                     accept="image/*"
+
+                  className="form-control"
                     onChange={handleChange}
                     required={!articleAEditer}
                   />
                   <div className="file-input-label">
                    
-                    <div>
-                      <small>JPG, PNG, GIF, WebP • max 5 Mo</small>
-                    </div>
+                    <small style={{ color: '#6c757d', display: 'block', marginTop: '8px' }}>
+                      Formats acceptés: JPG, PNG, SVG. Taille max: 2MB
+                    </small>
                    
                   </div>
                 </div>
                 {errors.image && <div className="error-message">{errors.image}</div>}
                 
-                {(imagePreview || (articleAEditer && articleAEditer.image)) && (
-                  <div className="file-info">
-                    {imagePreview ? (
-                      <div className="file-preview" style={{ margin: '0 auto' }}>
-                        <img
-                          src={imagePreview}
-                          alt="Aperçu"
-                          style={{ width: "100%", display: "block" }}
-                        />
-                      </div>
-                    ) : (
-                      <p>Image actuelle conservée : <strong>{articleAEditer.image.split('/').pop()}</strong></p>
-                    )}
-                    
-                    {form.image && (
-                      <p style={{ marginTop: "8px", color: "var(--color-text)" }}>
-                        Nouveau fichier : <strong>{form.image.name}</strong>
-                      </p>
-                    )}
-                    {!form.image && articleAEditer && articleAEditer.image && (
-                      <p style={{ marginTop: "8px", color: "var(--color-primary)" }}>
-                        Aucun nouveau fichier sélectionné.
-                      </p>
-                    )}
-                  </div>
-                )}
+               
               </div>
             </div>
           </div>
