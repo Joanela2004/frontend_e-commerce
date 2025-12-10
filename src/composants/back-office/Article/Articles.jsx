@@ -111,8 +111,7 @@ const Articles = () => {
   return (
     <div className="page-container">
 
-      {/* Header + Stats + Bouton Ajouter */}
-      <div className="page-header">
+        <div className="page-header">
         <div>
           <h1>Gestion des Articles</h1>
           <div className="stats-container">

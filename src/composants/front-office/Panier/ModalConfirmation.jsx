@@ -33,7 +33,7 @@ const ModalConfirmation = ({ show, onClose, onConfirm }) => {
                         Annuler
                     </button>
                     <button 
-                        className="bouton bouton-primaire fond-vert" 
+                        className="btn bouton bouton-primaire " 
                         onClick={onConfirm}
                       
                     >

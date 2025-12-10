@@ -16,7 +16,7 @@ const Success = () => {
       particleCount: 200,
       spread: 80,
       origin: { y: 0.55 },
-      colors: ['#10b981', '#059669', '#34d399', '#6ee7b7', '#ffffff'],
+      colors: ['#28a458', '#059669', '#34d399', '#6ee7b7', '#ffffff'],
     });
   }, []);
 
@@ -25,7 +25,7 @@ const Success = () => {
       <div className="modal-content" style={{ maxWidth: '480px', width: '90%' }}>
         
         {/* Header vert succès */}
-        <div className="modal-header" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+        <div className="modal-header" style={{ background: 'linear-gradient(135deg, #28a458, #28a458)' }}>
           <FaCheckCircle className="modal-icon" style={{ color: '#fff', fontSize: '3.5rem' }} />
           <h2 style={{ color: '#fff', margin: 0 }}>Paiement réussi !</h2>
           <div style={{ height: '24px' }}></div> {/* espace pour le X (pas de fermeture ici) */}
@@ -41,20 +41,7 @@ const Success = () => {
             Vous serez notifié(e) dès l’expédition.
           </p>
 
-          {sessionId && (
-            <div style={{
-              background: '#f0fdf4',
-              border: '2px dashed #10b981',
-              borderRadius: '12px',
-              padding: '1rem',
-              margin: '1.5rem 0',
-              fontFamily: 'monospace',
-              fontSize: '1.1rem',
-              color: '#065f46',
-            }}>
-              Référence : <strong>{sessionId.slice(-10).toUpperCase()}</strong>
-            </div>
-          )}
+         
         </div>
 
         {/* Footer avec un seul bouton bien visible */}

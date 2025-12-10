@@ -1,17 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
 import {
-  FaTrash,
-  FaLock,
-  FaTruck,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaChevronRight,
-  FaTag,
-  FaExclamationCircle,
-  FaArrowLeft,
+  FaTrash, FaLock, FaTruck, FaMapMarkerAlt, FaCalendarAlt,
+  FaChevronRight, FaTag, FaExclamationCircle, FaArrowLeft
 } from "react-icons/fa";
+import { createMvolaPayment } from "../../../services/MvolaService";
 import { createStripeSession } from "../../../services/StripeService";
-import { validerCodePromo,appliquerPromotionAutomatique } from "../../../services/promotionService";
+import {updateCommandeModePaiement} from "../../../services/paiementService";
+import { validerCodePromo, appliquerPromotionAutomatique } from "../../../services/promotionService";
 import ModalAvertissement from "./ModalAvertissement";
 import { fetchModesActifs } from "../../../services/paiementService";
 import PaginationProduits from "../Accueil/PaginationProduits";
@@ -25,49 +20,25 @@ import { useNavigate } from "react-router-dom";
 import ModalConnexion from "../ModalConnexion";
 import { fetchDecoupes } from "../../../services/DecoupeService";
 import ModalConfirmation from "./ModalConfirmation";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import ModalConfirmationCash from "./ModalConfirmationCash";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
 import { parseISO, format } from "date-fns";
 import "../../../styles/calendrier.css";
+import { useToast } from "../../../contexts/ToastContext"; 
+
 registerLocale("fr", fr);
 
-const ConfirmationCommande = ({ montantTotal, numCommande }) => {
-  return (
-    <div className="order-confirmation-container">
-      <h1 className="confirmation-header">Commande confirmée !</h1>
-      <p>Votre commande a été enregistrée avec succès</p>
-      <div className="confirmation-details-box">
-        <p className="order-number-title">N° de commande :</p>
-        <p className="order-number-value">{numCommande}</p>
 
-        <div className="details-commande-info">
-          <p className="details-commande-title">Détails de la commande :</p>
-          <p className="montant-total-confirmation">
-            Montant total : <span>{montantTotal} Ar</span>
-          </p>
-        </div>
-      </div>
-      <p className="email-sent-note">Un email de confirmation vous a été envoyé</p>
-      <button
-        className="retour-boutique-btn"
-        onClick={() => (window.location.href = "/boutique")}
-      >
-        Retour à la boutique
-      </button>
-    </div>
-  );
-};
 
 const CheckoutFlowHeader = ({ currentStep }) => {
   const displaySteps = [
-    { id: 1, name: "Panier", icon: "1" }, // Étape 1 Produits (dans l'affichage c'est le Panier)
-    { id: 2, name: "Commande", icon: "2" }, // Étape 2 Détails (Livraison)
-    { id: 3, name: "Paiement", icon: "3" }, // Étape 3 Paiement (Choix du mode)
-   
+    { id: 1, name: "Panier", icon: "1" },
+    { id: 2, name: "Commande", icon: "2" },
+    { id: 3, name: "Paiement", icon: "3" },
   ];
+
   return (
     <div className="checkout-flow-header">
       <div className="flow-steps">
@@ -81,9 +52,7 @@ const CheckoutFlowHeader = ({ currentStep }) => {
               <div className="step-number">{step.id < currentStep ? "✓" : step.icon}</div>
               <span className="step-name">{step.name}</span>
             </div>
-            {step.id < displaySteps.length && (
-              <div className="step-separator"></div>
-            )}
+            {step.id < displaySteps.length && <div className="step-separator"></div>}
           </React.Fragment>
         ))}
       </div>
@@ -100,7 +69,10 @@ const PanierSection = () => {
     totalWeight,
     subtotal,
   } = useContext(CartContext);
+
+  const { showToast } = useToast(); 
   const navigate = useNavigate();
+
   const [decoupesList, setDecoupesList] = useState([]);
   const [payerLivraisonChecked, setPayerLivraisonChecked] = useState(true);
   const [errorModalData, setErrorModalData] = useState(null);
@@ -110,7 +82,7 @@ const PanierSection = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = cartItems.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(cartItems.length / itemsPerPage);
+  const [showCashConfirmation, setShowCashConfirmation] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [dateLivraison, setDateLivraison] = useState("");
   const [codePromo, setCodePromo] = useState("");
@@ -122,55 +94,36 @@ const PanierSection = () => {
   const [lieuxList, setLieuxList] = useState([]);
   const [selectedLieuNum, setSelectedLieuNum] = useState("");
   const [modesPaiementList, setModesPaiementList] = useState([]);
-  const [error, setError] = useState(null);
+  const [commandeConfirmee, setCommandeConfirmee] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1);
+
   const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
   const [erreurLieu, setErreurLieu] = useState(null);
-  const [erreurPaiement, setErreurPaiement] = useState(null);
   const [erreurDate, setErreurDate] = useState(null);
-  // Ancien état `showDetails` remplacé par `currentStep`
-  // const [showDetails, setShowDetails] = useState(false);
-  const [commandeConfirmee, setCommandeConfirmee] = useState(null);
-  // NOUVEL ÉTAT POUR LE FLUX
-  const [currentStep, setCurrentStep] = useState(1); // 1: Panier, 2: Détails (Livraison/Promo), 3: Paiement, 4: Confirmation
 
   const getPrixApresDecoupe = (produit, option = produit.cuttingOption) => {
-    // Utiliser le prix per Kg de l'article pour le calcul
     const prixDeBase = Number(produit.prixPerKg || produit.prix);
     const decoupeSelected = option;
     if (decoupeSelected) {
-      const decoupe = decoupesList.find(
-        (d) => d.nomDecoupe === decoupeSelected
-      );
+      const decoupe = decoupesList.find((d) => d.nomDecoupe === decoupeSelected);
       if (decoupe && decoupe.coefficient) {
-        const coefficient = Number(decoupe.coefficient);
-        return prixDeBase * coefficient;
+        return prixDeBase * Number(decoupe.coefficient);
       }
     }
     return prixDeBase;
   };
 
-  const handleRedirectToLogin = () => {
-    setShowLoginModal(false);
-    navigate("/profil");
-  };
+  const handleContinueShopping = () => navigate('/produits');
 
-  // Nouvelle fonction de navigation vers la page précédente
-  const handleContinueShopping = () => {
-    navigate(-1);
-  };
-
-  // Fonction pour passer à l'étape 2 (Détails Commande)
   const handlePasserCommande = () => {
     if (cartItems.length === 0) {
-      toast.error("Votre panier est vide.");
+      showToast("error", "Votre panier est vide.");
       return;
     }
-    setCurrentStep(2); // Passe à l'étape 2
+    setCurrentStep(2);
     window.scrollTo(0, 0);
   };
 
- 
-  // Fonction pour revenir à l'étape précédente
   const handleGoBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -180,20 +133,20 @@ const PanierSection = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      setError(null);
       try {
-        const fraisData = await fetchFrais();
+        const [fraisData, decoupeData, lieuxData, modesData] = await Promise.all([
+          fetchFrais(),
+          fetchDecoupes(),
+          fetchLieux(),
+          fetchModesActifs(),
+        ]);
         setFraisList(fraisData);
-        const decoupeData = await fetchDecoupes();
         setDecoupesList(decoupeData);
-        const lieuxData = await fetchLieux();
         setLieuxList(lieuxData);
-        const modesData = await fetchModesActifs();
         const modesActifs = modesData.filter((mode) => mode.actif === true);
         setModesPaiementList(modesActifs);
-       
       } catch (err) {
-        console.error("Erreur fetch données :", err);
+        showToast("error", "Erreur lors du chargement des données.");
       }
     };
     loadData();
@@ -204,344 +157,261 @@ const PanierSection = () => {
     (f) => totalPoids >= Number(f.poidsMin) && totalPoids <= Number(f.poidsMax)
   );
   const fraisParPoids = fraisSelonPoids ? Number(fraisSelonPoids.frais) : 0;
-  const lieuSelectionne = lieuxList.find(
-    (l) => (l.numLieu || l.id) == selectedLieuNum
-  );
+  const lieuSelectionne = lieuxList.find((l) => (l.numLieu || l.id) == selectedLieuNum);
   const fraisParLieu = lieuSelectionne ? Number(lieuSelectionne.fraisLieu || 0) : 0;
   const fraisLivraisonTotal = fraisParPoids + fraisParLieu;
   const sousTotal = subtotal;
   const montantBrut = sousTotal + (payerLivraisonChecked ? fraisLivraisonTotal : 0);
   const montantAPayer = montantBrut - remise;
 
+  // Promotion automatique
   useEffect(() => {
-  const appliquerPromoAuto = async () => {
-    if (subtotal === 0) return;
+    const appliquerPromoAuto = async () => {
+      if (subtotal === 0) return;
+      try {
+        const promoAuto = await appliquerPromotionAutomatique(subtotal);
+        if (promoAuto && promoAuto.reduction > 0) {
+          setRemise(promoAuto.reduction);
+          showToast("success", `Promotion automatique appliquée : ${promoAuto.reduction} Ar de réduction !`);
+        }
+      } catch (err) {
+        console.error("Erreur promo auto", err);
+      }
+    };
+    appliquerPromoAuto();
+  }, [subtotal]);
 
-    const promoAuto = await appliquerPromotionAutomatique(subtotal);
-    if (promoAuto && promoAuto.reduction > 0) {
-      setRemise(promoAuto.reduction);
-     
-    }
-  };
-
-  appliquerPromoAuto();
-}, [subtotal]);
   const handleApplyCodePromo = async () => {
-  const code = codePromo.trim().toUpperCase();
-  if (!code) {
-    toast.warn("Veuillez entrer un code promo.");
-    setRemise(0);
-    return;
-  }
+    const code = codePromo.trim().toUpperCase();
+    if (!code) {
+      showToast("warning", "Veuillez entrer un code promo.");
+      setRemise(0);
+      return;
+    }
 
-  const userData = JSON.parse(localStorage.getItem("userData")); // <-- AJOUT
-  const utilisateur = userData;
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (!userData?.numUtilisateur) {
+      showToast("error", "Vous devez être connecté pour utiliser un code promo.");
+      setRemise(0);
+      return;
+    }
 
-  if (!utilisateur || !utilisateur.numUtilisateur) {
-    toast.error("Utilisateur non connecté.");
-    setRemise(0);
-    return;
-  }
-
-  const numUtilisateur = utilisateur.numUtilisateur;
-
-
-try {
-const result = await validerCodePromo(code, numUtilisateur);
-
-
-if (result.message === "Code promo valide") {
-  setRemise(Number(result.valeur));
-  toast.success(
-    `Code "${code}" appliqué ! ${Number(result.valeur).toFixed(2)} Ar de réduction.`
-  );
-} else {
-  setRemise(0);
-  toast.error(result.message || "Code promo non valide ou non applicable pour vous.");
-}
-
-
-} catch (err) {
-console.error("Erreur lors de la validation du code promo:", err);
-setRemise(0);
-toast.error("Impossible de valider le code promo. Réessayez plus tard.");
-}
-};
-
-
-const handleCreateCommande = async () => {
-  if (cartItems.length === 0 || !selectedLieuNum || !dateLivraison) return;
-
-  const token = localStorage.getItem("userToken");
-  if (!token) {
-    setShowLoginModal(true);
-    return;
-  }
-
- 
-  const payload = {
-  numLieu: selectedLieuNum,
-    lieuNom: lieuxList.find(l => (l.numLieu || l.id) == selectedLieuNum)?.nomLieu || "Non spécifié",
-    dateLivraisonSouhaitee: dateLivraison,
-    payerLivraison: payerLivraisonChecked,
-    statut: "en attente",
-    sousTotal: Number(subtotal.toFixed(2)),
-    fraisLivraison: payerLivraisonChecked ? Number(fraisLivraisonTotal.toFixed(2)) : "0.00",
-    montantTotal: Number(montantAPayer.toFixed(2)),
-    codePromo: codePromo || null,
-    panier: cartItems.map(item => ({
-      numProduit: item.numProduit,
-      poids: Number(item.poids),
-      prix: Number(item.prixApresDecoupe || getPrixApresDecoupe(item)),
-      decoupe: item.nomCategorie?.toLowerCase().includes("viande") ? (item.cuttingOption || "entier") : null,
-      sousTotal: Number(item.prixApresDecoupe || getPrixApresDecoupe(item) * (item.poids).toFixed(2)),
-    })),
-  };
-
-  try {
-
-    setIsCreating(true);
-    const res = await createCommande(payload);
-
-    const reference = res.commande?.referenceCommande || "CMD-XXXXXX";
-    const montantTotal = res.commande?.montantTotal;
-
-    toast.success(`Commande envoyée ! N°${reference}`, {
-      position: "top-center",
-   
-    });
-
-    setCommandeConfirmee({
-      referenceCommande: reference,
-      montantTotal: montantTotal,       
-         });
-
-    clearCart();
-    setCurrentStep(3);
-
-  } catch (err) {
-    const msg = err?.response?.data?.message || err?.message || "Erreur lors de l'envoi";
-    toast.error("Erreur : " + msg);
-  } finally {
-    setIsCreating(false);
-    setShowConfirmationModal(false);
-  }
-};
-
-
-const handleChoisirPaiement = async (mode) => {
-  if (mode.nomModePaiement.toLowerCase().includes("espèces") || mode.nomModePaiement.toLowerCase().includes("cash")) {
-    toast.success("Paiement en espèces sélectionné ! Nous vous livrons bientôt.");
-    setCurrentStep(4); 
-  } else {
     try {
-      const sessionData = await createStripeSession({referenceCommande: commandeConfirmee.referenceCommande,numModePaiement: mode.numModePaiement,
-      montantTotal: commandeConfirmee.montantTotal});
-      if (sessionData?.url) {
-        window.location.href = sessionData.url;
+      const result = await validerCodePromo(code, userData.numUtilisateur);
+      if (result.message === "Code promo valide") {
+        setRemise(Number(result.valeur));
+        showToast("success", `Code "${code}" appliqué ! ${result.valeur} Ar de réduction.`);
+      } else {
+        setRemise(0);
+        showToast("error", result.message || "Code promo non valide.");
       }
     } catch (err) {
-      toast.error("Erreur lors du lancement du paiement");
+      setRemise(0);
+      showToast("error", "Erreur lors de la validation du code promo.");
     }
+  };
+
+  const handleCreateCommande = async () => {
+    if (!selectedLieuNum || !dateLivraison) return;
+
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    const payload = {
+      numLieu: selectedLieuNum,
+      lieuNom: lieuxList.find(l => (l.numLieu || l.id) == selectedLieuNum)?.nomLieu || "Non spécifié",
+      dateLivraisonSouhaitee: dateLivraison,
+      payerLivraison: payerLivraisonChecked,
+      statut: "en attente",
+      sousTotal: Number(subtotal.toFixed(2)),
+      fraisLivraison: payerLivraisonChecked ? Number(fraisLivraisonTotal.toFixed(2)) : "0.00",
+      montantTotal: Number(montantAPayer.toFixed(2)),
+      codePromo: codePromo || null,
+      panier: cartItems.map(item => ({
+        numProduit: item.numProduit,
+        poids: Number(item.poids),
+        prix: Number(item.prixApresDecoupe || getPrixApresDecoupe(item)),
+        decoupe: item.nomCategorie?.toLowerCase().includes("viande") ? (item.cuttingOption || "entier") : null,
+        sousTotal: Number((item.prixApresDecoupe || getPrixApresDecoupe(item)) * item.poids).toFixed(2),
+      })),
+    };
+    if (selectedModePaiement) {
+  payload.numModePaiement = selectedModePaiement;
+    }
+
+    try {
+      setIsCreating(true);
+      const res = await createCommande(payload);
+      const reference = res.commande?.referenceCommande || "CMD-XXXXXX";
+      const montantTotal = res.commande?.montantTotal;
+
+     showToast("success", `Commande envoyée ! N°${reference}`);
+      setCommandeConfirmee({ referenceCommande: reference, montantTotal });
+      clearCart();
+      setCurrentStep(3);
+    } catch (err) {
+      const msg = err?.response?.data?.message || "Erreur lors de l'envoi de la commande";
+      showToast("error", msg);
+    } finally {
+      setIsCreating(false);
+      setShowConfirmationModal(false);
+    }
+  };
+
+const handleChoisirPaiement = async (mode) => {
+  const type = (mode.typePaiement || mode.nomModePaiement || "").toLowerCase().trim();
+
+  try {
+    // ÉTAPE OBLIGATOIRE : on met à jour le mode de paiement dans la commande
+    // Cela évite le "N/A" dans le back-office pour Cash et MVola
+    await updateCommandeModePaiement(
+      commandeConfirmee.referenceCommande,
+      mode.numModePaiement
+    );
+
+    // 1. PAIEMENT EN ESPÈCES / CASH
+    if (type.includes("cash") || type.includes("espèces")) {
+      setSelectedModePaiement(mode.numModePaiement);
+      setShowCashConfirmation(true); // Affiche le modal de confirmation
+      return;
+    }
+
+    // 2. PAIEMENT PAR MVOLA
+    if (type.includes("mvola")) {
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+      if (!userData?.numeroTelephone) {
+        showToast("error", "Numéro de téléphone manquant pour MVola.");
+        return;
+      }
+
+      await createMvolaPayment({
+        amount: commandeConfirmee.montantTotal,
+        customerNumber: userData.numeroTelephone,
+        referenceCommande: commandeConfirmee.referenceCommande,
+      });
+
+      showToast("warning", "Demande MVola envoyée ! Validez le paiement sur votre téléphone.");
+      return;
+    }
+
+    // 3. PAIEMENT PAR CARTE (Stripe)
+    const sessionData = await createStripeSession({
+      referenceCommande: commandeConfirmee.referenceCommande,
+      numModePaiement: mode.numModePaiement,
+      montantTotal: commandeConfirmee.montantTotal,
+    });
+
+    if (sessionData?.url) {
+      window.location.href = sessionData.url;
+    } else {
+      showToast("error", "Impossible d'initier le paiement carte.");
+    }
+  } catch (error) {
+    console.error("Erreur lors du choix du paiement :", error);
+    showToast("error", "Une erreur est survenue lors du traitement du paiement.");
   }
 };
- 
-  const handleQuantityChange = (itemId, increment) => {
-    const item = cartItems.find((i) => i.id === itemId);
-    if (!item) return;
-    const poidsDisponible = Number(
-      item.poidsMax || item.stockDisponible || Infinity
-    );
-    const currentPoids = Number(item.poids);
-    const nextPoids = currentPoids + increment;
-    if (nextPoids <= 0) {
-      handleDelete(itemId);
-      return;
-    }
-    if (increment > 0 && nextPoids > poidsDisponible) {
-      setErrorModalData({
-        nom: item.nom,
-        maxPoids: poidsDisponible,
-      });
-      setShowErrorModal(true);
-      return;
-    }
-    updateQuantity(itemId, nextPoids);
-  };
-
-  const handleCuttingOptionChange = (itemId, newOption) => {
-    const item = cartItems.find((i) => i.id === itemId);
-    if (!item) return;
-    const newPrixUnit = getPrixApresDecoupe(item, newOption);
-    updateQuantity(itemId, Number(item.poids || 1), newOption, newPrixUnit);
-  };
+const handleConfirmCash = () => {
+  showToast("success", "Commande confirmée ! Vous paierez en espèces à la livraison.");
+  setShowCashConfirmation(false);
+   navigate("/client/mesCommandes");
+};
 
   const handleDelete = (itemId) => {
+    const item = cartItems.find(i => i.id === itemId);
     removeFromCart(itemId);
-    if (currentItems.length === 1 && totalPages > 1) {
-      setCurrentPage(Math.max(1, currentPage - 1));
+    showToast("success", `${item?.nom} retiré du panier`);
+    if (currentItems.length === 1 && currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
     }
   };
 
- 
-  if (currentStep === 4 && commandeConfirmee) {
-    return <ConfirmationCommande {...commandeConfirmee} />;
-  }
 
   return (
     <section className="panier-section-wrapper">
-      <ToastContainer />
       <CheckoutFlowHeader currentStep={currentStep} />
-
       <div className="panier-section">
-        {error && (
-          <div className="alert-error" role="alert">
-            <FaExclamationCircle /> {error}
-          </div>
-        )}
 
-        {/* ⭐️ ÉTAPE 1: AFFICHAGE DE LA LISTE DES PRODUITS (Panier) */}
+        {/* ÉTAPE 1 : PANIER */}
         {currentStep === 1 && (
           <div className="panier-produits">
             <div className="panier-header">
               <div className="panier-icon-container">
-                <img src={panierImage} alt="panier.png" />
-                <h3>
-                  Mon Panier ({cartItems.length} article
-                  {cartItems.length > 1 ? "s" : ""})
-                </h3>
+                <img src={panierImage} alt="panier" />
+                <h3>Mon Panier ({cartItems.length} article{cartItems.length > 1 ? "s" : ""})</h3>
               </div>
             </div>
+
             <div className="panier-item-container">
               {cartItems.length > 0 ? (
                 currentItems.map((produit) => (
                   <div className="item-card" key={produit.id}>
                     <div className="item-card-image-info">
-                      <img
-                        src={produit.image}
-                        alt={produit.nom}
-                        className="panier-img"
-                      />
+                      <img src={produit.image} alt={produit.nom} className="panier-img" />
                       <div className="produit-info-text">
                         <p className="produit-nom">{produit.nom}</p>
                         <p className="prix-per-kg">
-                          {Number(produit.prixPerKg || produit.prix)
-                            .toFixed(2)
-                            .replace(".", ",")}
-                          Ar / kg
+                          {Number(produit.prixPerKg || produit.prix).toFixed(2).replace(".", ",")} Ar / kg
                         </p>
                       </div>
                     </div>
+
                     <div className="produit-controls-row">
-                      {produit.nomCategorie?.toLowerCase().includes("viande") &&
-                        decoupesList.length > 0 && (
-                          <div className="cutting-option-group">
-                            <label htmlFor={`cutting-${produit.id}`}>
-                              Découpe :
-                            </label>
-                            <select
-                              id={`cutting-${produit.id}`}
-                              value={
-                                produit.cuttingOption ||
-                                (decoupesList.find((d) =>
-                                  d.nomDecoupe.toLowerCase().includes("entier")
-                                )?.nomDecoupe) ||
-                                decoupesList[0]?.nomDecoupe
-                              }
-                              onChange={(e) =>
-                                handleCuttingOptionChange(
-                                  produit.id,
-                                  e.target.value
-                                )
-                              }
-                            >
-                              {decoupesList.map((d) => (
-                                <option key={d.numDecoupe} value={d.nomDecoupe}>
-                                  {d.nomDecoupe}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-                      {/* REMPLACE TOUTE LA PARTIE "quantite-control-group" PAR CECI */}
+                      {produit.nomCategorie?.toLowerCase().includes("viande") && decoupesList.length > 0 && (
+                        <div className="cutting-option-group">
+                          <label>Découpe :</label>
+                          <select
+                            value={produit.cuttingOption || decoupesList[0]?.nomDecoupe}
+                            onChange={(e) => {
+                              const newPrix = getPrixApresDecoupe(produit, e.target.value);
+                              updateQuantity(produit.id, produit.poids, e.target.value, newPrix);
+                            }}
+                          >
+                            {decoupesList.map((d) => (
+                              <option key={d.numDecoupe} value={d.nomDecoupe}>{d.nomDecoupe}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
-<div className="quantite-control-group editable">
-  <button
-    onClick={() => {
-      const newPoids = Math.max(0.25, Number(produit.poids) - 0.25);
-      updateQuantity(produit.id, newPoids);
-    }}
-    className="quantity-btn"
-    disabled={Number(produit.poids) <= 0.25}
-  >
-    −
-  </button>
-  <input
-    type="number"
-    min="0.25"
-    max={produit.poidsDisponible || 999}
-    step="0.25"
-    value={Number(produit.poids).toFixed(2)}
-    onChange={(e) => {
-      let value = parseFloat(e.target.value) || 0;
-      if (value < 0.25) value = 0.25;
-      if (value > (produit.poidsDisponible || 999)) {
-        setErrorModalData({
-          nom: produit.nom,
-          maxPoids: produit.poidsDisponible || 999,
-        });
-        setShowErrorModal(true);
-        value = produit.poidsDisponible || 999;
-      }
-      updateQuantity(produit.id, value);
-    }}
-    className="quantity-input-editable"
-    style={{
-      width: "90px",
-      textAlign: "center",
-      border: "2px solid #28a745",
-      borderRadius: "12px",
-      padding: "5px 8px",
-      fontWeight: "bold",
-      color: "#28a745",
-      background: "white",
-      marginLeft:"10px"
-    }}
-  />
-
-  <span style={{ fontWeight: "bold", fontSize: "1.1rem", color: "#28a745" }}></span>
-
-  <button
-    onClick={() => {
-      const newPoids = Number(produit.poids) + 0.25;
-      if (newPoids > (produit.poidsDisponible || 999)) {
-        setErrorModalData({
-          nom: produit.nom,
-          maxPoids: produit.poidsDisponible || 999,
-        });
-        setShowErrorModal(true);
-        return;
-      }
-      updateQuantity(produit.id, newPoids);
-    }}
-    className="quantity-btn" 
-  >
-    +
-  </button>
-</div>
+                      <div className="quantite-control-group editable">
+                        <button onClick={() => updateQuantity(produit.id, Math.max(0.25, Number(produit.poids) - 0.25))} className="quantity-btn" disabled={Number(produit.poids) <= 0.25}>−</button>
+                        <input
+                          type="number"
+                          min="0.25"
+                          step="0.25"
+                          value={Number(produit.poids).toFixed(2)}
+                          onChange={(e) => {
+                            let value = parseFloat(e.target.value) || 0.25;
+                            if (value > (produit.poidsDisponible || 999)) {
+                              showToast("warning", `Stock maximum atteint pour ${produit.nom}`);
+                              value = produit.poidsDisponible || 999;
+                            }
+                            updateQuantity(produit.id, value);
+                          }}
+                          className="quantity-input-editable"
+                          style={{ width: "90px", textAlign: "center", border: "2px solid #28a745", borderRadius: "12px", padding: "5px", fontWeight: "bold", color: "#28a745" }}
+                        />
+                        <button onClick={() => {
+                          const next = Number(produit.poids) + 0.25;
+                          if (next > (produit.poidsDisponible || 999)) {
+                            showToast("warning", `Stock maximum atteint pour ${produit.nom}`);
+                            return;
+                          }
+                          updateQuantity(produit.id, next);
+                        }} className="quantity-btn">+</button>
+                      </div>
                     </div>
+
                     <div className="produit-final-row">
                       <p className="total-item-prix">
-                        {(getPrixApresDecoupe(produit) * Number(produit.poids))
-                          .toFixed(2)
-                          .replace(".", ",")}
-                        Ar
+                        {(getPrixApresDecoupe(produit) * Number(produit.poids)).toFixed(2).replace(".", ",")} Ar
                       </p>
-                      <button
-                        className="delete-btn"
-                        style={{ color: "red" }}
-                        onClick={() => handleDelete(produit.id)}
-                      >
+                      <button className="delete-btn" onClick={() => handleDelete(produit.id)}>
                         <FaTrash />
                       </button>
                     </div>
@@ -549,13 +419,11 @@ const handleChoisirPaiement = async (mode) => {
                 ))
               ) : (
                 <div className="empty-cart-message">
-                  <p>
-                    Votre panier est vide. Ajoutez des produits pour commencer
-                    votre commande !
-                  </p>
+                  <p>Votre panier est vide.</p>
                 </div>
               )}
             </div>
+
             {cartItems.length > itemsPerPage && (
               <PaginationProduits
                 totalProduits={cartItems.length}
@@ -565,18 +433,12 @@ const handleChoisirPaiement = async (mode) => {
               />
             )}
 
-                    <div className="bouton-paiement">
-              <button
-                className="passer-commande-btn-retour"
-                onClick={handleContinueShopping}
-              >
+            <div className="bouton-paiement">
+              <button className="passer-commande-btn-retour" onClick={handleContinueShopping}>
                 <FaArrowLeft /> Continuer les achats
               </button>
               {cartItems.length > 0 && (
-                <button
-                  className="passer-commande-btn"
-                  onClick={handlePasserCommande}
-                >
+                <button className="passer-commande-btn" onClick={handlePasserCommande}>
                   Voir récapitulatif <FaChevronRight />
                 </button>
               )}
@@ -786,42 +648,49 @@ const handleChoisirPaiement = async (mode) => {
       </p>
     </div>
 
-    {/* Modes de paiement */}
-    <div className="modes-paiement-grid">
-      {modesPaiementList.map((mode) => (
-        <div
-          key={mode.numModePaiement }
-          className={`mode-paiement-card ${selectedModePaiement === (mode.numModePaiement ) ? "selected" : ""}`}
-          onClick={() => {
-            setSelectedModePaiement(mode.numModePaiement);
-            handleChoisirPaiement(mode); 
-          }}
-        >
-          <div className="mode-logo-container">
-            {mode.image ? (
-              <img 
-                src={`${IMAGE_BASE_URL}${mode.image.startsWith("/") ? mode.image.substring(1) : mode.image}`} 
-                alt={mode.nomModePaiement} 
-              />
-            ) : (
-              <div className="mode-paiement-logo-placeholder">
-                <FaLock size={28} />
-              </div>
-            )}
-          </div>
-          <span className="mode-name">{mode.nomModePaiement}</span>
-          {selectedModePaiement === (mode.numModePaiement || mode.id) && (
-            <span className="selected-badge">Sélectionné</span>
+    <div className="modes-paiement-list">
+  {modesPaiementList.map((mode) => {
+    const isSelected = selectedModePaiement === mode.numModePaiement;
+
+    return (
+      <div
+        key={mode.numModePaiement}
+        className={`mode-option ${isSelected ? "selected" : ""}`}
+        onClick={() => {
+          setSelectedModePaiement(mode.numModePaiement);
+          handleChoisirPaiement(mode);
+        }}
+      >
+        <div className="mode-logo-container">
+          {mode.image ? (
+            <img
+              src={`${IMAGE_BASE_URL}${mode.image.startsWith("/") ? mode.image.substring(1) : mode.image}`}
+              alt={mode.nomModePaiement}
+              className="mode-image"
+            />
+          ) : (
+            <div className="mode-paiement-logo-placeholder">
+              <FaLock size={28} />
+            </div>
           )}
         </div>
-      ))}
-    </div>
 
-    {/* LES DEUX BOUTONS QUE TU VEUX */}
+         <div className="mode-info">
+                  <p className="mode-name" style={{display:"flex",alignItems:"flex-start"}}>{mode.nomModePaiement}</p>
+                 
+                </div>
+        {isSelected && <span className="selected-badge">Sélectionné</span>}
+      </div>
+    );
+  })}
+</div>
+
+
+
     <div className="final-actions">
       <button 
         className="btn-continuer-achats" 
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/produits")}
       >
         Découvrir plus de produits
       </button>
@@ -859,6 +728,16 @@ const handleChoisirPaiement = async (mode) => {
           isCreating={isCreating}
         />
       )}
+      {showCashConfirmation && (
+  <ModalConfirmationCash
+    show={showCashConfirmation}
+    onClose={() => {
+      setShowCashConfirmation(false);
+      setSelectedModePaiement(null);
+    }}
+    onConfirm={handleConfirmCash}
+  />
+)}
     </section>
   );
 };

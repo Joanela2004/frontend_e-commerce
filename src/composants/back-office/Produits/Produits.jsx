@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaSearch, FaPlus, FaSync, FaEdit, FaTrash, FaBox, FaTag,
-  FaWeightHanging, FaImage, FaFilter, FaList, FaUtensils,
-  FaExclamationTriangle, FaMoneyBillWave
+  FaSearch,
+  FaPlus,
+  FaSync,
+  FaEdit,
+  FaTrash,
+  FaBox,
+  FaTag,
+  FaWeightHanging,
+  FaImage,
+  FaFilter,
+  FaList,
+  FaUtensils,
+  FaExclamationTriangle,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 
 import {
-  createProduit, updateProduit, fetchProduits,
-  deleteProduit, restoreProduit
+  createProduit,
+  updateProduit,
+  fetchProduits,
+  deleteProduit,
+  restoreProduit,
 } from "../../../services/produitService";
 import { getCategories } from "../../../services/categorieService";
 import { fetchPromotions } from "../../../services/promotionService";
@@ -18,7 +32,7 @@ import { useNavigate } from "react-router-dom";
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
-import "../../../styles/back-office/produit.css";        // ← Overrides back-office
+import "../../../styles/back-office/produit.css"; // ← Overrides back-office
 import "../../../styles/front-office/Accueil/produitSection.css"; // ← Cartes magnifiques
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
@@ -53,7 +67,12 @@ const Produits = () => {
   const [produitEnCours, setProduitEnCours] = useState(null);
 
   const [form, setForm] = useState({
-    nomProduit: "", prix: "", poids: "", numCategorie: "", numPromotion: "", image: null
+    nomProduit: "",
+    prix: "",
+    poids: "",
+    numCategorie: "",
+    numPromotion: "",
+    image: null,
   });
 
   useEffect(() => {
@@ -64,10 +83,12 @@ const Produits = () => {
     setLoading(true);
     try {
       const [prods, cats, promos] = await Promise.all([
-        fetchProduits(), getCategories(), fetchPromotions()
+        fetchProduits(),
+        getCategories(),
+        fetchPromotions(),
       ]);
       setProduits(prods);
-      setCategories(cats.filter(c => !c.deleted_at));
+      setCategories(cats.filter((c) => !c.deleted_at));
       setPromotions(promos);
     } catch {
       showToast("error", "Erreur lors du chargement");
@@ -86,7 +107,14 @@ const Produits = () => {
   };
 
   const resetForm = () => {
-    setForm({ nomProduit: "", prix: "", poids: "", numCategorie: "", numPromotion: "", image: null });
+    setForm({
+      nomProduit: "",
+      prix: "",
+      poids: "",
+      numCategorie: "",
+      numPromotion: "",
+      image: null,
+    });
     setEditingId(null);
     setIsFormOpen(false);
   };
@@ -113,7 +141,10 @@ const Produits = () => {
       chargerDonnees();
     } catch (err) {
       if (err.response?.status === 409 && err.response?.data?.soft_deleted) {
-        setProduitEnCours({ id: err.response.data.produit_id, nom: err.response.data.produit_nom });
+        setProduitEnCours({
+          id: err.response.data.produit_id,
+          nom: err.response.data.produit_nom,
+        });
         setShowRestoreModal(true);
         return;
       }
@@ -128,7 +159,7 @@ const Produits = () => {
       poids: p.poids,
       numCategorie: p.numCategorie,
       numPromotion: p.numPromotion || "",
-      image: null
+      image: null,
     });
     setEditingId(p.numProduit);
     setIsFormOpen(true);
@@ -154,20 +185,34 @@ const Produits = () => {
   };
 
   // Filtrage
-  const filteredProduits = produits.filter(p => {
-    const matchSearch = p.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        p.categorie?.nomCategorie.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchCat = filtreCategorie === "tous" || p.numCategorie === parseInt(filtreCategorie);
-    const matchPromo = filtrePromotion === "tous" ||
-                       (filtrePromotion === "avec" && p.numPromotion) ||
-                       (filtrePromotion === "sans" && !p.numPromotion);
+  const filteredProduits = produits.filter((p) => {
+    const matchSearch =
+      p.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.categorie?.nomCategorie
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+    const matchCat =
+      filtreCategorie === "tous" ||
+      p.numCategorie === parseInt(filtreCategorie);
+    const matchPromo =
+      filtrePromotion === "tous" ||
+      (filtrePromotion === "avec" && p.numPromotion) ||
+      (filtrePromotion === "sans" && !p.numPromotion);
     const matchMin = !filtrePrixMin || p.prix >= parseFloat(filtrePrixMin);
     const matchMax = !filtrePrixMax || p.prix <= parseFloat(filtrePrixMax);
-    const matchStatut = filtreStatut === "tous" ||
-                        (filtreStatut === "actif" && p.statut === "actif") ||
-                        (filtreStatut === "inactif" && p.statut === "inactif");
+    const matchStatut =
+      filtreStatut === "tous" ||
+      (filtreStatut === "actif" && p.statut === "actif") ||
+      (filtreStatut === "inactif" && p.statut === "inactif");
 
-    return matchSearch && matchCat && matchPromo && matchMin && matchMax && matchStatut;
+    return (
+      matchSearch &&
+      matchCat &&
+      matchPromo &&
+      matchMin &&
+      matchMax &&
+      matchStatut
+    );
   });
 
   const reinitialiserFiltres = () => {
@@ -182,9 +227,9 @@ const Produits = () => {
 
   const stats = {
     total: produits.length,
-    actifs: produits.filter(p => p.statut === "actif").length,
-    enPromo: produits.filter(p => p.promotion).length,
-    filtered: filteredProduits.length
+    actifs: produits.filter((p) => p.statut === "actif").length,
+    enPromo: produits.filter((p) => p.promotion).length,
+    filtered: filteredProduits.length,
   };
 
   if (loading) {
@@ -200,14 +245,17 @@ const Produits = () => {
 
   return (
     <div className="page-container">
-
       {/* Header + Stats */}
       <div className="page-header">
         <div>
           <h1>Gestion des Produits</h1>
           <div className="stats-container">
-            <span className="stat-item">{stats.filtered} trouvé{stats.filtered > 1 ? "s" : ""}</span>
-            <span className="stat-item success">{stats.actifs} actif{stats.actifs > 1 ? "s" : ""}</span>
+            <span className="stat-item">
+              {stats.filtered} trouvé{stats.filtered > 1 ? "s" : ""}
+            </span>
+            <span className="stat-item success">
+              {stats.actifs} actif{stats.actifs > 1 ? "s" : ""}
+            </span>
             <span className="stat-item warning">{stats.enPromo} en promo</span>
             <span className="stat-item info">{stats.total} total</span>
           </div>
@@ -219,15 +267,29 @@ const Produits = () => {
 
       {/* Navigation Tabs */}
       <div className="navigation-tabs">
-        <button className="tab-active"><FaBox /> Produits</button>
-        <button className="tab-inactive" onClick={() => navigate("/admin/categories")}><FaList /> Catégories</button>
-        <button className="tab-inactive" onClick={() => navigate("/admin/decoupes")}><FaUtensils /> Découpes</button>
+        <button className="tab-active">
+          <FaBox /> Produits
+        </button>
+        <button
+          className="tab-inactive"
+          onClick={() => navigate("/admin/categories")}
+        >
+          <FaList /> Catégories
+        </button>
+        <button
+          className="tab-inactive"
+          onClick={() => navigate("/admin/decoupes")}
+        >
+          <FaUtensils /> Découpes
+        </button>
       </div>
 
       {/* Barre de recherche + filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}  />
+          <FaSearch
+            style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}
+          />
           <input
             type="text"
             placeholder="Rechercher par nom ou catégorie..."
@@ -237,11 +299,21 @@ const Produits = () => {
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+            style={{
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              background: "white",
+              color: "#28a458",
+              paddingRight: "10px",
+            }}
           >
             <FaFilter />
           </button>
-          <FaSync style={{ marginLeft: "8px", cursor: "pointer", color: "#28a458" }}  onClick={reinitialiserFiltres} />
+          <FaSync
+            style={{ marginLeft: "8px", cursor: "pointer", color: "#28a458" }}
+            onClick={reinitialiserFiltres}
+          />
         </div>
       </div>
 
@@ -251,16 +323,24 @@ const Produits = () => {
           <div className="filters-row">
             <div className="filter-group">
               <label>Catégorie</label>
-              <select value={filtreCategorie} onChange={(e) => setFiltreCategorie(e.target.value)}>
+              <select
+                value={filtreCategorie}
+                onChange={(e) => setFiltreCategorie(e.target.value)}
+              >
                 <option value="tous">Toutes</option>
-                {categories.map(c => (
-                  <option key={c.numCategorie} value={c.numCategorie}>{c.nomCategorie}</option>
+                {categories.map((c) => (
+                  <option key={c.numCategorie} value={c.numCategorie}>
+                    {c.nomCategorie}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="filter-group">
               <label>Promotion</label>
-              <select value={filtrePromotion} onChange={(e) => setFiltrePromotion(e.target.value)}>
+              <select
+                value={filtrePromotion}
+                onChange={(e) => setFiltrePromotion(e.target.value)}
+              >
                 <option value="tous">Toutes</option>
                 <option value="avec">Avec promotion</option>
                 <option value="sans">Sans promotion</option>
@@ -268,7 +348,10 @@ const Produits = () => {
             </div>
             <div className="filter-group">
               <label>Statut</label>
-              <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+              <select
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+              >
                 <option value="tous">Tous</option>
                 <option value="actif">Actif</option>
                 <option value="inactif">Inactif</option>
@@ -276,26 +359,42 @@ const Produits = () => {
             </div>
             <div className="filter-group">
               <label>Prix min (Ar)</label>
-              <input type="number" value={filtrePrixMin} onChange={(e) => setFiltrePrixMin(e.target.value)} />
+              <input
+                type="number"
+                value={filtrePrixMin}
+                onChange={(e) => setFiltrePrixMin(e.target.value)}
+              />
             </div>
             <div className="filter-group">
               <label>Prix max (Ar)</label>
-              <input type="number" value={filtrePrixMax} onChange={(e) => setFiltrePrixMax(e.target.value)} />
+              <input
+                type="number"
+                value={filtrePrixMax}
+                onChange={(e) => setFiltrePrixMax(e.target.value)}
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* === GRILLE DES PRODUITS (style front + compact back) === */}
       <div className="produits-grid back-office-grid">
         {filteredProduits.length > 0 ? (
           filteredProduits.map((produit) => {
-            const hasPromo = produit.promotion && produit.promotion.valeur;
-            const prixPromo = hasPromo ? calculatePromotionalPrice(produit.prix, produit.promotion.valeur) : null;
+            const hasPromo =
+              produit.promotion && produit.promotion.statut === "active";
+            const prixPromo = hasPromo
+              ? produit.promotion.typePromotion === "Pourcentage"
+                ? Math.round(
+                    produit.prix * (1 - produit.promotion.valeur / 100)
+                  )
+                : produit.prix - produit.promotion.valeur
+              : null;
 
             return (
-              <div key={produit.numProduit} className="produit-card back-office-card">
-
+              <div
+                key={produit.numProduit}
+                className="produit-card back-office-card"
+              >
                 {/* Badge promo */}
                 {hasPromo && (
                   <span className="badge-promo">
@@ -306,9 +405,13 @@ const Produits = () => {
                 {/* Image */}
                 <div className="produit-image">
                   <img
-                    src={produit.image ? `${IMAGE_BASE_URL}${produit.image}` : "/placeholder.png"}
+                    src={
+                      produit.image
+                        ? `${IMAGE_BASE_URL}${produit.image}`
+                        : "/placeholder.png"
+                    }
                     alt={produit.nomProduit}
-                    onError={(e) => e.target.src = "/placeholder.png"}
+                    onError={(e) => (e.target.src = "/placeholder.png")}
                   />
                 </div>
 
@@ -325,11 +428,17 @@ const Produits = () => {
                     <div>
                       {hasPromo ? (
                         <>
-                          <span className="ancien-prix">{Number(produit.prix).toLocaleString()} Ar</span>
-                          <span className="nouveau-prix">{prixPromo.toLocaleString()} Ar</span>
+                          <span className="ancien-prix">
+                            {Number(produit.prix).toLocaleString()} Ar
+                          </span>
+                          <span className="nouveau-prix">
+                            {prixPromo.toLocaleString()} Ar
+                          </span>
                         </>
                       ) : (
-                        <span className="prix-normal">{Number(produit.prix).toLocaleString()} Ar</span>
+                        <span className="prix-normal">
+                          {Number(produit.prix).toLocaleString()} Ar
+                        </span>
                       )}
                     </div>
                     <div className="poids-disponible">
@@ -338,15 +447,26 @@ const Produits = () => {
                   </div>
 
                   <div className="card-footer">
-                  <div className="table-actions">
-                    <button className="edit" onClick={() => handleEdit(produit)}>
-                      <FaEdit /> Modifier
-                    </button>
-                    <button className="delete" onClick={() => openDeleteModal(produit.numProduit, produit.nomProduit)}>
-                      <FaTrash /> Supprimer
-                    </button>
+                    <div className="table-actions">
+                      <button
+                        className="edit"
+                        onClick={() => handleEdit(produit)}
+                      >
+                        <FaEdit /> Modifier
+                      </button>
+                      <button
+                        className="delete"
+                        onClick={() =>
+                          openDeleteModal(
+                            produit.numProduit,
+                            produit.nomProduit
+                          )
+                        }
+                      >
+                        <FaTrash /> Supprimer
+                      </button>
+                    </div>
                   </div>
-                </div>
                 </div>
               </div>
             );
@@ -354,7 +474,10 @@ const Produits = () => {
         ) : (
           <div className="no-products">
             <p>Aucun produit trouvé</p>
-            <button className="btn-add-product" onClick={() => setIsFormOpen(true)}>
+            <button
+              className="btn-add-product"
+              onClick={() => setIsFormOpen(true)}
+            >
               <FaPlus /> Ajouter un produit
             </button>
           </div>
@@ -364,47 +487,100 @@ const Produits = () => {
       {/* === Formulaire Ajout/Modification === */}
       {isFormOpen && (
         <div className="modal-overlay" onClick={resetForm}>
-          <div className="modal-content" style={{ maxWidth: "800px" }} onClick={e => e.stopPropagation()}>
+          <div
+            className="modal-content"
+            style={{ maxWidth: "800px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>{editingId ? "Modifier le produit" : "Ajouter un produit"}</h2>
-              <button className="modal-close" onClick={resetForm}>×</button>
+              <h2>
+                {editingId ? "Modifier le produit" : "Ajouter un produit"}
+              </h2>
+              <button className="modal-close" onClick={resetForm}>
+                ×
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label><FaImage /> Image</label>
-                  <input type="file" name="image" accept="image/*" onChange={handleChange} />
+                  <label>
+                    <FaImage /> Image
+                  </label>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleChange}
+                  />
                 </div>
                 <div className="form-group">
-                  <label><FaBox /> Nom</label>
-                  <input type="text" name="nomProduit" value={form.nomProduit} onChange={handleChange} required />
+                  <label>
+                    <FaBox /> Nom
+                  </label>
+                  <input
+                    type="text"
+                    name="nomProduit"
+                    value={form.nomProduit}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label><FaMoneyBillWave /> Prix (Ar)</label>
-                  <input type="number" name="prix" value={form.prix} onChange={handleChange} required />
+                  <label>
+                    <FaMoneyBillWave /> Prix (Ar)
+                  </label>
+                  <input
+                    type="number"
+                    name="prix"
+                    value={form.prix}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 <div className="form-group">
-                  <label><FaWeightHanging /> Poids (kg)</label>
-                  <input type="number" step="0.01" name="poids" value={form.poids} onChange={handleChange} required />
+                  <label>
+                    <FaWeightHanging /> Poids (kg)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="poids"
+                    value={form.poids}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
                   <label>Catégorie</label>
-                  <select name="numCategorie" value={form.numCategorie} onChange={handleChange} required>
+                  <select
+                    name="numCategorie"
+                    value={form.numCategorie}
+                    onChange={handleChange}
+                    required
+                  >
                     <option value="">Choisir...</option>
-                    {categories.map(c => (
-                      <option key={c.numCategorie} value={c.numCategorie}>{c.nomCategorie}</option>
+                    {categories.map((c) => (
+                      <option key={c.numCategorie} value={c.numCategorie}>
+                        {c.nomCategorie}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label><FaTag /> Promotion</label>
-                  <select name="numPromotion" value={form.numPromotion} onChange={handleChange}>
+                  <label>
+                    <FaTag /> Promotion
+                  </label>
+                  <select
+                    name="numPromotion"
+                    value={form.numPromotion}
+                    onChange={handleChange}
+                  >
                     <option value="">Aucune</option>
-                    {promotions.map(p => (
+                    {promotions.map((p) => (
                       <option key={p.numPromotion} value={p.numPromotion}>
                         {p.nomPromotion} ({p.valeur}%)
                       </option>
@@ -413,7 +589,13 @@ const Produits = () => {
                 </div>
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={resetForm}>Annuler</button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={resetForm}
+                >
+                  Annuler
+                </button>
                 <button type="submit" className="btn btn-primary">
                   {editingId ? "Mettre à jour" : "Ajouter"}
                 </button>
@@ -428,14 +610,35 @@ const Produits = () => {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2><FaExclamationTriangle style={{ color: "#dc3545" }} /> Confirmer la suppression</h2>
-              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+              <h2>
+                <FaExclamationTriangle style={{ color: "#dc3545" }} /> Confirmer
+                la suppression
+              </h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
-              <p>Voulez-vous vraiment supprimer le produit <strong>{produitEnCours?.nom}</strong> ?</p>
+              <p>
+                Voulez-vous vraiment supprimer le produit{" "}
+                <strong>{produitEnCours?.nom}</strong> ?
+              </p>
               <div className="modal-actions">
-                <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Annuler</button>
-                <button className="btn btn-danger" onClick={confirmerSuppression}>Supprimer</button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  className="btn btn-danger"
+                  onClick={confirmerSuppression}
+                >
+                  Supprimer
+                </button>
               </div>
             </div>
           </div>
@@ -447,14 +650,36 @@ const Produits = () => {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2><FaExclamationTriangle style={{ color: "#ffc107" }} /> Produit archivé</h2>
-              <button className="modal-close" onClick={() => setShowRestoreModal(false)}>×</button>
+              <h2>
+                <FaExclamationTriangle style={{ color: "#ffc107" }} /> Produit
+                archivé
+              </h2>
+              <button
+                className="modal-close"
+                onClick={() => setShowRestoreModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
-              <p>Le produit "<strong>{produitEnCours?.nom}</strong>" est archivé.<br />Voulez-vous le restaurer ?</p>
+              <p>
+                Le produit "<strong>{produitEnCours?.nom}</strong>" est archivé.
+                <br />
+                Voulez-vous le restaurer ?
+              </p>
               <div className="modal-actions">
-                <button className="btn btn-secondary" onClick={() => setShowRestoreModal(false)}>Annuler</button>
-                <button className="btn btn-success" onClick={confirmerRestauration}>Restaurer</button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowRestoreModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  className="btn btn-success"
+                  onClick={confirmerRestauration}
+                >
+                  Restaurer
+                </button>
               </div>
             </div>
           </div>

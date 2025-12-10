@@ -93,3 +93,15 @@ export const logoutUser = async () => {
  
   }
 };
+export const envoyerCodeReset = (data) => {
+  return api.post(`/mot-de-passe-oublie`, data);
+};
+
+export const verifierCodeEtReset = ({ email, code, password, password_confirmation }) => {
+  return api.post('/reinitialiser-mot-de-passe', {
+    email,
+    code,
+    password,
+    password_confirmation
+  });
+};

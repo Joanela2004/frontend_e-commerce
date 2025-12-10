@@ -11,6 +11,7 @@ import {
   FaUsers,
   FaGift,
   FaTimes,
+  FaSync,
   FaPercentage,
   FaCalendarAlt,
   FaShoppingCart,
@@ -138,8 +139,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
         );
         setSelectedPromo(prev => ({ ...prev, dejaEnvoye: true }));
 
-        // FERMER LA MODALE APRÈS SUCCÈS
-        setTimeout(() => {
+             setTimeout(() => {
           setShowModal(false);
         }, 800);
       } else {
@@ -156,16 +156,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
   const formatDate = (d) =>
     new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Chargement des top clients...</p>
-        </div>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="page-container">
@@ -182,7 +173,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
      
       <div className="search-container" style={{ marginBottom: '20px' }}>
           <div className="search-bar">
-              <FaSearch className="search-icon" />
+              <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} className="search-icon" />
               <input
                   type="text"
                   placeholder="Rechercher par nom ou email..."
@@ -190,10 +181,9 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
                   onChange={(e) => setSearchTerm(e.target.value)}
               />
               {searchTerm && (
-                  <button className="btn-clear" onClick={() => setSearchTerm("")}>
-                      ✕ Effacer
-                  </button>
+                   <FaSync className="reset-icon" onClick={() => setSearchTerm("")} />
               )}
+             
           </div>
       </div>
 

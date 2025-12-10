@@ -46,13 +46,7 @@
     }
 }
 
-.statut-livre {
-   width: 100%;
-}
 
-.statut-en-cours {
-    background-color: var(--color-marron);
-}
 
 
 
@@ -168,6 +162,58 @@
     flex-grow: 1;
     -ms-overflow-style: none;
     scrollbar-width: none; 
+}
+
+/* Statistiques */
+.stats-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+.stat-item.attente {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.stat-item.validee {
+  background: #d4edda;
+  color: #155724;
+}
+
+.stat-item.expediee {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.stat-item.livree {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.stat-item.annulee {
+  background: #f8d7da;
+  color: #721c24;
+}
+.stat-item.paye{
+  background: #99cbec;
+  color: #25669c79;
+}
+
+.stat-item.new-orders {
+  background: #28a458;
+  color: #e4eaeb;
+  font-weight: 600;
 }
 
 .element-produit {
@@ -287,243 +333,362 @@
     border: 2px solid var(--color-marron); 
     box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4); /* Rendre l'ombre un peu plus présente */
 }
-/* === PAIEMENT MODAL - NOUVELLE VERSION SANS MARRON (2025) === */
+
 
 .paiement-modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  display: flex;
-  justify-content: flex-end;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Fond sombre semi-transparent */
+    display: flex;
+    justify-content: center; /* Centrage horizontal */
+    align-items: center; /* Centrage vertical */
+    z-index: 1000; /* Assurez-vous qu'il est au-dessus de tout */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
 .paiement-modal-overlay.open {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 
 .paiement-modal-content {
-  width: 100%;
-  max-width: 460px;
-  background: var(--color-background-white);
-  height: 100%;
-  overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff; /* Fond blanc du contenu */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 450px; /* Largeur maximale pour un modal de paiement */
+    width: 90%;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden; /* Pour contenir le header gradient */
 }
 
 .paiement-modal-overlay.open .paiement-modal-content {
-  transform: translateX(0);
+    transform: scale(1);
 }
 
-/* === HEADER PREMIUM === */
+
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--color-text-dark); /* Couleur claire pour être visible sur le header */
+    transition: color 0.2s;
+    line-height: 1; /* Pour un bon alignement du 'x' */
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: var(--color-text-dark);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+
+
 .modal-header-gradient {
-  background: linear-gradient(135deg, 
-    var(--color-green-primary, #2e7d32), 
-    #1b5e20 50%, 
-    #4caf50 100%
-  );
-  padding: 70px 30px 40px;
-  color: white;
-  text-align: center;
-  position: relative;
-  border-bottom-left-radius: 50px;
-  border-bottom-right-radius: 50px;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
-}
-
-.modal-header-gradient::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent 50%);
-  pointer-events: none;
+   color: var(--color-text-dark);
+    padding: 30px 20px;
+    text-align: center;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    position: relative;
+    
 }
 
 .header-icon {
-  width: 70px;
-  height: 70px;
-  margin: 0 auto 20px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+    color: #6ee7b7; 
 }
 
 .modal-title {
-  font-size: 2.1em;
-  font-weight: 800;
-  margin: 0 0 8px 0;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 700;
 }
 
 .modal-subtitle {
-  font-size: 1.15em;
-  opacity: 0.95;
-  font-weight: 500;
+    margin: 5px 0 0;
+    font-size: 0.9em;
+    font-weight: 300;
+    opacity: 0.8;
 }
 
-/* === BODY === */
+
 .modal-body {
-  padding: 35px 30px;
-  flex-grow: 1;
+    padding: 20px;
+    padding-top: 25px;
 }
 
 .body-message {
-  text-align: center;
-  font-size: 1.1em;
-  color: #444;
-  margin-bottom: 35px;
-  line-height: 1.5;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #4b5563;
+    font-size: 1em;
 }
 
-/* === MODES DE PAIEMENT === */
+
 .modes-paiement-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
-
+/* Style des options de paiement */
 .mode-option {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 18px;
-  border-radius: 16px;
-  background: #f8fff8;
-  border: 2px solid transparent;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background-color: white;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
 }
 
 .mode-option:hover {
-  background: #f0fdf4;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.15);
+  border-color: #c7d2fe;
+  background-color: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
+/* Style pour l'option sélectionnée */
+.mode-option.option-selected-modal {
+  border-color: #28a458;
+  background-color: #f0f9ff;
+   position: relative;
+}
+
+/* Indicateur visuel de sélection (cercle à gauche) */
+.mode-option.option-selected-modal::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+    border-radius: 2px;
+}
+
+
 
 .mode-option.option-selected-modal {
-  border-color: var(--color-green-primary, #2e7d32);
-  background: white;
-  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.22);
-  transform: translateY(-2px);
+  animation: pulse-border 1.5s ease-in-out;
 }
 
-.mode-logo-container {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
- 
+/* Icône de validation (checkmark) */
+.mode-option.option-selected-modal::after {
+  content: '✓';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background-color: #28a458;
+  color: white;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 14px;
+  font-weight: bold;
 }
 
+/* Conteneur du logo */
+.mode-logo-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mode-option.option-selected-modal .mode-logo-container {
+  border-color: #28a458;
+  background-color: #f5f3ff;
+  transform: scale(1.05);
+}
+
+/* Image du mode de paiement */
 .mode-image {
-  max-width: 100%;
-  max-height: 100%;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
+.mode-option.option-selected-modal .mode-image {
+  transform: scale(1.1);
+}
+
+/* Info du mode */
 .mode-info {
   flex: 1;
 }
 
+
+
+.mode-option.option-selected-modal .mode-name {
+  color: #28a458;
+}
+
+
+
+/* Responsive design */
+@media (max-width: 900px) {
+  .mode-option {
+    padding: 12px;
+  }
+  
+  .mode-logo-container {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+  }
+  
+  .mode-image {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .mode-option.option-selected-modal::after {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+}
+.mode-logo-container {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; 
+}
+
+.mode-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 4px; 
+}
+
+.mode-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
 .mode-name {
-  font-weight: 700;
-  font-size: 1.15em;
-  color: #1a1a1a;
-  margin: 0 0 4px 0;
+    margin: 0;
+    font-weight: 600;
+    color:  #28a458;
+    font-size: 1em;
 }
 
 .mode-description {
-  font-size: 0.9em;
-  color: #666;
-  margin: 0;
+    margin: 0;
+    font-size: 0.85em;
+    color: #6b7280;
 }
 
-/* === BOUTON PAYER === */
+
+
 .bouton-payer-modal {
-  width: 100%;
-  padding: 20px;
-  background: linear-gradient(135deg, var(--color-green-primary, #2e7d32), #388e3c);
-  color: white;
-  font-size: 1.3em;
-  font-weight: 700;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow:hover {
-    background: linear-gradient(135deg, #388e3c, #4caf50);
-    transform: translateY(-4px);
-    box-shadow: 0 15px 30px rgba(76, 175, 80, 0.35);
-  }
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background-color:  #28a458; 
+    color: white;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    display: block; 
 }
 
-.bouton-payer-modal:hover {
-  background: linear-gradient(135deg, #388e3c, #4caf50);
-  transform: translateY(-4px);
-  box-shadow: 0 15px 30px rgba(76, 175, 80, 0.35);
-}
-
-.bouton-payer-modal:active {
-  transform: translateY(-1px);
+.bouton-payer-modal:hover:not(:disabled) {
+    background-color:  #28a458; 
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
 }
 
 .bouton-payer-modal:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    color: #e5e7eb;
 }
 
-/* === FERMETURE === */
-.close-btn {
-  position: absolute;
-  top: 25px;
-  left: 25px;
-  background: rgba(255,255,255,0.25);
+
+
+@media (max-width: 600px) {
+    .paiement-modal-content {
+        width: 100%;
+        max-width: 100%;
+        margin: 10px;
+        border-radius: 0;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+}
+
+.react-datepicker-popper {
+  z-index: 1000 !important;
+}
+
+.filtres-commandes-conteneur,
+.filtre-item,
+.filtre-commandes {
+  overflow: visible !important;
+  position: relative;
+}
+
+.react-datepicker {
+  font-family: var(--font-main, "Poppins", sans-serif);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: var(--radius, 8px);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0,0,0,0.1));
+}
+
+.react-datepicker__header {
+  background-color: var(--color-primary, #28a458);
   color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 1.4em;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s;
-  z-index: 10;
+  border-bottom: none;
 }
 
-.close-btn:hover {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.1);
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: white;
 }
 
-/* === CHARGEMENT === */
-.paiement-modal-content.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3em;
-  color: #555;
-  height: 100%;
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range {
+  background-color: var(--color-primary, #28a458);
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--color-primary-dark, #1e7a44);
+  color: white;
 }

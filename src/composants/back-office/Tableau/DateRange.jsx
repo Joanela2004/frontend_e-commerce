@@ -71,8 +71,8 @@ export default function DateRange({ onChange }) {
         </h3>
       </div>
       
-      <div className="date-range-body">
-        <div className="date-picker-group">
+      <div className="date-range-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div className="date-picker-group" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div className="date-label">
             <label htmlFor="start-date">Date de début</label>
           </div>
@@ -90,20 +90,12 @@ export default function DateRange({ onChange }) {
               id="start-date"
             />
           </div>
-          <input
-            type="text"
-            value={formatDate(start)}
-            onChange={(e) => handleManualInput('start', e.target.value)}
-            placeholder="jj/mm/aaaa"
-            className="date-manual-input"
-          />
+        
         </div>
 
-        <div className="date-separator">
-          <FaArrowRight />
-        </div>
+       
 
-        <div className="date-picker-group">
+        <div className="date-picker-group" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div className="date-label">
             <label htmlFor="end-date">Date de fin</label>
           </div>
@@ -122,13 +114,7 @@ export default function DateRange({ onChange }) {
               id="end-date"
             />
           </div>
-          <input
-            type="text"
-            value={formatDate(end)}
-            onChange={(e) => handleManualInput('end', e.target.value)}
-            placeholder="jj/mm/aaaa"
-            className="date-manual-input"
-          />
+        
         </div>
       </div>
       

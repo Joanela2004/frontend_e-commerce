@@ -75,7 +75,8 @@ export const appliquerPromotionAutomatique = async (montantPanier) => {
     const res = await api.post(
       "/promotions/auto",
       { montantPanier },
-      getConfig()
+      { headers: { "Content-Type": "application/json" } }
+     
     );
     return res.data; 
   } catch (err) {

@@ -103,9 +103,7 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
     if (!articleAEditer && !form.image) newErrors.image = "Une image d'article est requise.";
     
     setErrors(newErrors);
-    
-    // Afficher un toast si validation échoue
-    if (Object.keys(newErrors).length > 0) {
+           if (Object.keys(newErrors).length > 0) {
       showToast("error", "Veuillez corriger les erreurs dans le formulaire");
     }
     
@@ -171,7 +169,7 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal modal-lg">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{padding:"10px 20px"}}>
           <div className="modal-header">
             <h2>
               {articleAEditer ? "Modifier l'article" : "Nouvel article"}
@@ -285,11 +283,11 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
                     required={!articleAEditer}
                   />
                   <div className="file-input-label">
-                    <FaImage />
+                   
                     <div>
-                      <strong>Cliquez ou glissez</strong> une image ici
+                      <small>JPG, PNG, GIF, WebP • max 5 Mo</small>
                     </div>
-                    <small>JPG, PNG, GIF, WebP • max 5 Mo</small>
+                   
                   </div>
                 </div>
                 {errors.image && <div className="error-message">{errors.image}</div>}

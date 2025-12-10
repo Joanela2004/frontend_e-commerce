@@ -31,9 +31,10 @@
     gap: 20px;
 }
 .about-text h3{
-     color: var(--color-green-primary);
- font-size: 1.5em;
+color: var(--color-green-primary);
  padding: 10px 20px;
+  font-size: 2.5rem;
+  color: #28A458;
  
 }
 .about-text p{

@@ -8,22 +8,21 @@ export default function HeroSection() {
   const [promoActive, setPromoActive] = useState(null);
   const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-  useEffect(() => {
-    const checkPromoAuto = async () => {
-      try {
-      
-        const result = await appliquerPromotionAutomatique(10000); // montant fictif
-        if (result && result.promotion) {
-          setPromoActive(result.promotion);
-        }
-      } catch (err) {
-      } finally {
-        setLoading(false);
+ useEffect(() => {
+  const checkPromoAuto = async () => {
+    try {
+      const result = await appliquerPromotionAutomatique(10000); // montant fictif OK
+      if (result && result.promotion && result.promotion.statut === "active") {
+        setPromoActive(result.promotion);
       }
-    };
-
-    checkPromoAuto();
-  }, []);
+    } catch (err) {
+      console.error("Erreur promo auto :", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  checkPromoAuto();
+}, []);
   const handleVoirProduits = () => {
     navigate("/produit");
   };

@@ -1,92 +1,72 @@
-// src/pages/front-office/Profil.js
+
 import React, { useState } from "react";
 import Header from "../../composants/Header";
 import Footer from "../../composants/FooterSection";
-import SeConnecter from "../../composants/front-office/Profil/SeConnecter";
-import Authentifier from "../../composants/front-office/Profil/Authentifier";
-import ModifierProfil from "../../composants/front-office/Profil/ModifierProfil";
 import CarteProfil from "../../composants/front-office/Profil/CarteProfil";
+import ModifierProfil from "../../composants/front-office/Profil/ModifierProfil";
+import Authentifier from "../../composants/front-office/Profil/Authentifier";
+import SeConnecter from "../../composants/front-office/Profil/SeConnecter";
 import { logoutUser } from "../../services/AuthService";
 import { useNavigate } from "react-router-dom";
+
 import "../../styles/front-office/global.css";
 import "../../styles/front-office/Profil/profil.css";
 
 const Profil = () => {
-  const [showModal, setShowModal] = useState(false);
- const token = localStorage.getItem("userToken");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const token = localStorage.getItem("userToken");
   const isAuthenticated = !!token;
   const navigate = useNavigate();
 
-  const handleEditProfile = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
   const handleLogout = async () => {
-   await logoutUser();
-localStorage.removeItem("userToken");
-localStorage.removeItem("userData");
-navigate("/", { replace: true });
+    await logoutUser();
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userData");
+    navigate("/", { replace: true });
     window.location.reload();
   };
 
+  const openEditModal = () => setShowEditModal(true);
+  const closeEditModal = () => setShowEditModal(false);
+
   return (
-    <div>
-      <Header />
-      
-      <div className="profil-container">
-        {isAuthenticated ? (
-          <>
-            {/* Carte profil au-dessus des deux formulaires */}
-            <div className="profil-carte-wrapper">
-              <CarteProfil 
-                onEditClick={handleEditProfile}
-                onLogout={handleLogout}
-              />
-            </div>
+    <>
+      <Header/>
 
-            {/* Les deux formulaires restent visibles mais peuvent être désactivés visuellement */}
-            <div className={`profil-forms-container ${isAuthenticated ? 'forms-disabled' : ''}`}>
-              <div className="profil-box">
-                <Authentifier />
-              </div>
+      <main className="profil-page">
+        <div className="profil-container">
 
-              <div className="profil-box">
-                <SeConnecter />
-              </div>
-            </div>
-
-            {/* Modal pour modifier le profil */}
-            {showModal && (
-              <div className="modal-overlay" onClick={handleCloseModal}>
+          {isAuthenticated ? (
+            <div className="profil-connected">
+              <CarteProfil onEditClick={openEditModal} onLogout={handleLogout} />
+              {showEditModal && (
+                <div className="modal-overlay" onClick={closeEditModal}>
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                  <button className="modal-close-btn" onClick={handleCloseModal}>
-                    ×
-                  </button>
-                  <ModifierProfil onClose={handleCloseModal} />
+                   
+                    <ModifierProfil onClose={closeEditModal} />
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+           
+            <div className="profil-guest">
+                        <div className="forms-grid">
+                <div className="form-card">
+                  <Authentifier />
+                </div>
+
+                <div className="form-card">
+                  <SeConnecter />
                 </div>
               </div>
-            )}
-          </>
-        ) : (
-          // Affichage normal quand non connecté
-          <>
-            <div className="profil-box">
-              <Authentifier />
             </div>
-
-            <div className="profil-box">
-              <SeConnecter />
-            </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
 
       <Footer />
-    </div>
+    </>
   );
 };
 

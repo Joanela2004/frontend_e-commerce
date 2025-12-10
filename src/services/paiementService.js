@@ -46,7 +46,9 @@ export const updatePaiement = async (id, data) => {
   const res = await api.put(`/paiements/${id}`, data, getConfig(true));
   return res.data;
 };
-
+export const updateCommandeModePaiement = async (reference, numMode) => {
+  return await api.patch(`/commandes/${reference}/mode-paiement`, { numModePaiement: numMode }, getConfig());
+};
 export const deletePaiement = async (id) => {
   const res = await api.delete(`/paiements/${id}`, getConfig(false));
   return res.data;

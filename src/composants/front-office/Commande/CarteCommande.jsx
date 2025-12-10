@@ -1,61 +1,91 @@
 // src/components/front-office/Commande/CarteCommande.jsx
-
 import React, { useRef } from "react";
-import { useNavigate } from "react-router-dom"; 
-// Importez si nécessaire, mais l'action sera gérée par le composant parent.
-// import { Clock, CreditCard, Truck } from 'lucide-react'; 
+import { useNavigate } from "react-router-dom";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-// Ajout de 'onSelectOrder' et 'isSelected' comme props
-const CarteCommande = ({ order, onSelectOrder, isSelected }) => { 
+const formatDateOnly = (dateString) => {
+  if (!dateString) return "Date inconnue";
+  const date = new Date(dateString);
+  return `Le ${date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })}`;
+};
+
+const CarteCommande = ({ order, onSelectOrder }) => {
   const productsGridRef = useRef(null);
-  const navigate = useNavigate(); 
-  
-  const scroll = (direction, e) => { // Prendre l'événement pour l'arrêter
-    e.stopPropagation(); // Empêche la sélection de la carte
+  const navigate = useNavigate();
+
+  const scroll = (direction, e) => {
+    e.stopPropagation();
     if (productsGridRef.current) {
-      const scrollAmount = 250; 
-      if (direction === 'gauche') {
-        productsGridRef.current.scrollLeft -= scrollAmount;
-      } else {
-        productsGridRef.current.scrollLeft += scrollAmount;
-      }
+      const scrollAmount = 280;
+      productsGridRef.current.scrollLeft += direction === "gauche" ? -scrollAmount : scrollAmount;
     }
   };
 
+  // Détection si la commande est encore en attente de paiement
+  const estEnAttente = ["en attente", "attente"].some(s =>
+    (order.statut || "").toLowerCase().includes(s)
+  );
+
+  // Détection du mode de paiement actuel (pour le texte du bouton)
+  const modeActuel = (order?.modePaiement?.nomModePaiement || "").toLowerCase();
+  const estPaiementALivraison = modeActuel.includes("espèces") || modeActuel.includes("cash");
+
   const handleAction = (e) => {
-    e.stopPropagation(); // Empêche la sélection de la carte
-    const isPending = order.statut.toLowerCase().includes("attente");
-    
-    if (isPending) {
-      // Si en attente, on ouvre le panneau de paiement (la logique est dans le parent)
-      onSelectOrder(order); 
+    e.stopPropagation();
+    if (estEnAttente) {
+      onSelectOrder(order); // Ouvre le modal de paiement
     } else {
-      // Sinon, on navigue vers le suivi de livraison
-      navigate(`/client/mesCommandes/${order.numCommande}/livraison`, { 
-        state: { commande: order } 
+      navigate(`/client/mesCommandes/${order.numCommande}/livraison`, {
+        state: { commande: order },
       });
     }
   };
 
-  const showNavigation = order.detail_commandes.length > 4;
-  const isPending = order.statut.toLowerCase().includes("attente");
+  const showNavigation = order.detail_commandes?.length > 4;
+
+  // Mapping exact du statut → classe CSS (identique à ton dashboard)
+  const getStatutClass = (statut) => {
+    const s = statut.toLowerCase();
+    if (s.includes("attente")) return "attente";
+    if (s.includes("payée") || s.includes("paye")) return "paye";
+    if (s.includes("validée") || s.includes("validee")) return "validee";
+    if (s.includes("expédiée") || s.includes("expediee")) return "expediee";
+    if (s.includes("livrée") || s.includes("livree")) return "livree";
+    if (s.includes("annulée") || s.includes("annulee")) return "annulee";
+    return ""; // fallback
+  };
 
   return (
-    // La carte devient cliquable pour la sélection
-    <div 
-      className={`carte-commande ${order.statut.replace(/\s/g, '-')} ${isSelected ? 'carte-commande-selected' : ''}`}
-      onClick={() => onSelectOrder(order)} // Sélectionne la commande
+    <div
+      className={`carte-commande ${order.statut.replace(/\s+/g, "-").toLowerCase()}`}
+      style={{ cursor: estEnAttente ? "pointer" : "default" }}
+      onClick={() => estEnAttente && onSelectOrder(order)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && estEnAttente && onSelectOrder(order)}
     >
+      {/* En-tête */}
       <div className="en-tete-carte">
         <div className="info-commande">
-          <p><strong>Commande numéro :</strong> <span className="id-commande">{order.referenceCommande}</span></p>
-          <p className="date-commande">{order.dateCommande}</p>
+          <p>
+            <strong>Commande n°</strong>{" "}
+            <span className="id-commande">{order.referenceCommande}</span>
+          </p>
+          <p className="date-commande">{formatDateOnly(order.dateCommande)}</p>
         </div>
+
         <div className="statut-total-commande">
-          <span className="total-commande">{Number(order.montantTotal).toLocaleString()} Ar</span>
-          <span className={`badge-statut ${order.statut.replace(/\s/g, '-')}`}>
+          <span className="total-commande">
+            {Number(order.montantTotal).toLocaleString("fr-FR")} Ar
+          </span>
+
+          {/* BADGE STATUT IDENTIQUE À TON DASHBOARD */}
+          <span className={`stat-item ${getStatutClass(order.statut)}`}>
             {order.statut}
           </span>
         </div>
@@ -63,10 +93,15 @@ const CarteCommande = ({ order, onSelectOrder, isSelected }) => {
 
       <hr className="separateur-carte" />
 
+      {/* Carrousel produits */}
       <div className="conteneur-carrousel-produits">
         {showNavigation && (
-          <button className="bouton-carrousel gauche" onClick={(e) => scroll('gauche', e)} aria-label="Précédent">
-            &lt;
+          <button
+            className="bouton-carrousel gauche"
+            onClick={(e) => scroll("gauche", e)}
+            aria-label="Précédent"
+          >
+            ←
           </button>
         )}
 
@@ -75,29 +110,58 @@ const CarteCommande = ({ order, onSelectOrder, isSelected }) => {
             <div key={index} className="element-produit">
               <div className="conteneur-image-produit">
                 <img
-                  src={item.produit?.image ? `${IMAGE_BASE_URL}/${item.produit.image}` : "/placeholder.png"}
+                  src={
+                    item.produit?.image
+                      ? `${IMAGE_BASE_URL}/${item.produit.image.startsWith("/")
+                          ? item.produit.image.slice(1)
+                          : item.produit.image}`
+                      : "/placeholder.png"
+                  }
                   alt={item.produit?.nomProduit || "Produit"}
                   className="image-produit"
+                  onError={(e) => (e.target.src = "/placeholder.png")}
                 />
               </div>
-              <p className="nom-produit">{item.produit?.nomProduit}</p>
+              <p className="nom-produit">{item.produit?.nomProduit || "Produit inconnu"}</p>
               <p className="prix-produit">
-                {Number(item.prixUnitaire).toLocaleString()} Ar × {item.poids} kg
+                {Number(item.prixUnitaire).toLocaleString("fr-FR")} Ar × {item.poids} kg
               </p>
             </div>
           ))}
         </div>
 
         {showNavigation && (
-          <button className="bouton-carrousel droite" onClick={(e) => scroll('droite', e)} aria-label="Suivant">
-            &gt;
+          <button
+            className="bouton-carrousel droite"
+            onClick={(e) => scroll("droite", e)}
+            aria-label="Suivant"
+          >
+            →
           </button>
         )}
       </div>
 
+      {/* Bouton d'action */}
       <div className="pied-carte">
-        <button className="bouton-suivre-commande" onClick={handleAction}>
-          {isPending ? 'Finaliser Paiement' : 'Suivre Livraison'}
+        <button
+          onClick={handleAction}
+          className="bouton-suivre-commande"
+          style={{
+            background: estEnAttente
+              ? "#8b5e3c"
+              : "#28a458",
+            fontWeight: "600",
+          }}
+        >
+          {estEnAttente ? (
+            estPaiementALivraison ? (
+              "Changer le mode de paiement"
+            ) : (
+              "Finaliser le paiement"
+            )
+          ) : (
+            "Suivre la livraison"
+          )}
         </button>
       </div>
     </div>

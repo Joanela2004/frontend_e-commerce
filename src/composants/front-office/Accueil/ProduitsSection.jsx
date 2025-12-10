@@ -98,8 +98,12 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
       <div className="produits-grid">
         {produitsAffiches.length > 0 ? (
           produitsAffiches.map((produit) => {
-            const hasPromo = produit.promotion && produit.promotion.valeur;
-            const prixPromo = hasPromo ? calculatePromotionalPrice(produit.prix, produit.promotion) : null;
+            const hasPromo = produit.promotion && produit.promotion.statut === "active";
+           const prixPromo = hasPromo
+    ? produit.promotion.typePromotion === "Pourcentage"
+      ? Math.round(produit.prix * (1 - produit.promotion.valeur / 100))
+      : Math.max(0, produit.prix - produit.promotion.valeur) // évite prix négatif
+    : null;
             const inCart = cartItems.some((item) => item.nom === produit.nomProduit);
             const cartItem = cartItems.find((item) => item.nom === produit.nomProduit);
 

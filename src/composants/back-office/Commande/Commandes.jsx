@@ -44,10 +44,7 @@ const Commandes = () => {
   const [filtreDateMax, setFiltreDateMax] = useState("");
   const [filtrePrixMin, setFiltrePrixMin] = useState("");
   const [filtrePrixMax, setFiltrePrixMax] = useState("");
-  
-  // États pour les modals
-  // NOTE : J'ai conservé showExpedierModal, showValidateModal, showCancelModal, showPayModal
-  // bien que showExpedierModal ne soit plus utilisée pour l'expédition "directe".
+ 
   const [showExpedierModal, setShowExpedierModal] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -309,7 +306,6 @@ const handleMarquerCommeVue = async (commandeId) => {
     showToast("info", "Filtres réinitialisés");
   };
 
-  // Vérifier si des filtres sont actifs
   const hasActiveFilters =
     searchTerm ||
     filtreStatut !== "tous" ||
@@ -318,7 +314,6 @@ const handleMarquerCommeVue = async (commandeId) => {
     filtrePrixMin ||
     filtrePrixMax;
 
-  // Statistiques
   const commandesEnAttente = commandes.filter(c => c.statut === "en attente").length;
   
   const commandesPaye = commandes.filter(c => c.statut === "payée").length;
@@ -376,7 +371,6 @@ const handleMarquerCommeVue = async (commandeId) => {
         </div>
       </div>
       
-      {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
           <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />

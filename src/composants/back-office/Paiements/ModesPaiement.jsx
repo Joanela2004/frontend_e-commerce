@@ -23,7 +23,7 @@ import {
   fetchModes,
   createMode,
   updateMode,
-  deleteMode,
+
 } from "../../../services/paiementService";
 import { useToast } from "../../../contexts/ToastContext";
 
@@ -32,7 +32,8 @@ const ModesPaiement = () => {
   const [form, setForm] = useState({ 
     nomModePaiement: "", 
     actif: true, 
-    image: null 
+    image: null,
+    typePaiement: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,6 +109,7 @@ const ModesPaiement = () => {
     if (mode) {
       setForm({
         nomModePaiement: mode.nomModePaiement,
+        typePaiement: mode.typePaiement || "",
         actif: mode.actif === 1 || mode.actif === true,
         image: null,
       });
@@ -134,6 +136,9 @@ const ModesPaiement = () => {
 
     const formData = new FormData();
     formData.append("nomModePaiement", form.nomModePaiement);
+    if (form.typePaiement) {
+  formData.append("typePaiement", form.typePaiement);
+}
     formData.append("actif", form.actif ? "1" : "0");
     if (form.image) formData.append("image", form.image);
 
@@ -490,6 +495,27 @@ const ModesPaiement = () => {
                     </small>
                   </div>
                 </div>
+                <div className="form-row">
+  <div className="form-group">
+    <label>Type de paiement (interne)</label>
+    <select
+      value={form.typePaiement}
+      onChange={(e) => setForm({ ...form, typePaiement: e.target.value })}
+      className="form-control"
+      style={{ padding: '12px' }}
+    >
+      <option value=""> Sélectionner un type —</option>
+      <option value="cash">Espèces (cash)</option>
+      <option value="mvola">MVola</option>
+      <option value="stripe">Carte bancaire / Stripe</option>
+      <option value="orange_money">Orange Money</option>
+      <option value="airtel_money">Airtel Money</option>
+    </select>
+    <small style={{ color: '#6c757d', display: 'block', marginTop: '8px' }}>
+      Ce champ permet une gestion propre dans l'application client. Optionnel mais fortement recommandé.
+    </small>
+  </div>
+</div>
 
                 <div className="modal-actions" style={{ marginTop: '20px', justifyContent: 'flex-end' }}>
                   <button 

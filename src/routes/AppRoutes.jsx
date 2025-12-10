@@ -11,7 +11,8 @@ import SuiviCommande from "../pages/front-office/SuiviCommande";
 import SuiviLivraison from "../pages/front-office/SuiviLivraison";
 import Profil from "../pages/front-office/Profil";
 import ChangePasswordAdmin from "../composants/front-office/Profil/ChangePasswordAdmin";
-
+import MotDePasseOublie from"../composants/front-office/Profil/MotDePasseOublie";
+import VerifierCodeReset  from "../pages/front-office/VerifierCodeReset";
 // Pages de paiement
 import Success from "../pages/front-office/Success";
 import Cancel from "../pages/front-office/Cancel";
@@ -45,7 +46,8 @@ export default function AppRoutes() {
         <Route path="/actualite" element={<Actualite />} />
         <Route path="/actualite/:id" element={<ActualiteDetails />} />
         <Route path="/profil" element={<Profil />} />
-
+     <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+     <Route path="/verifier-code-reset" element={<VerifierCodeReset />} />
         {/* Pages de paiement Stripe */}
         <Route path="/success" element={<Success />} />
         <Route path="/cancel" element={<Cancel />} />
@@ -92,7 +94,7 @@ export default function AppRoutes() {
 const ClientRoutes = () => {
   return (
     <Routes>
-      <Route path="mesCommandes" element={<SuiviCommande />} />
+           <Route path="mesCommandes" element={<SuiviCommande />} />
       <Route path="mesCommandes/:id/livraison" element={<SuiviLivraison />} />
     </Routes>
   );

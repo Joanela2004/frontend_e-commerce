@@ -53,11 +53,7 @@
   overflow: hidden;
 }
 
-.stock-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-  border-color: #28a458;
-}
+
 
 .stock-card.critical {
   border-left: 4px solid #ef4444;

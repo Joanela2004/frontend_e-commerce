@@ -33,7 +33,6 @@ export default function Dashboard() {
     loadStockAlerts();
   }, []);
 
-  // Filtrer les alertes de stock
   const filteredStockAlerts = stockAlerts.filter(alert => 
     alert.nomProduit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     alert.categorie?.toLowerCase().includes(searchTerm.toLowerCase())

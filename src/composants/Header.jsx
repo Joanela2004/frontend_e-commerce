@@ -191,7 +191,7 @@ navigate("/", { replace: true });
 
           {isClient && (
             <li>
-              <button onClick={handleLogout} className="btn">
+              <button onClick={handleLogout} className="btn" style={{fontSize:"1rem", margin:"10px 10px"}}>
                 Se déconnecter
               </button>
             </li>

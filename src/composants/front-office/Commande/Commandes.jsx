@@ -1,15 +1,13 @@
 // src/components/front-office/Commande/HistoriqueCommandes.jsx
-
 import React, { useEffect, useState } from "react";
-import "../../../styles/front-office/Commande/Commandes.css"; 
-import "../../../styles/front-office/global.css";
-import { useNavigate } from "react-router-dom";
-import FiltresCommandes from "./FiltresCommandes"; 
+import FiltresCommandes from "./FiltresCommandes";
 import { fetchMesCommandes } from "../../../services/commandeService";
-import CarteCommande from "./CarteCommande"; // Assurez-vous d'importer la version modifiée
-import PaiementModal from "./PaiementModal"; // Import du nouveau modal
+import CarteCommande from "./CarteCommande";
+import PaiementModal from "./PaiementModal";
 import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+import "../../../styles/front-office/Commande/Commandes.css";
+import "../../../styles/front-office/global.css";
 
 const HistoriqueCommandes = () => {
   const [commandes, setCommandes] = useState([]);
@@ -17,13 +15,17 @@ const HistoriqueCommandes = () => {
   const [filtreDate, setFiltreDate] = useState("");
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
-  
+  const [loading, setLoading] = useState(true);
+
   const fetchData = async () => {
     try {
-      const data = await fetchMesCommandes(); 
-      setCommandes(data);
+      setLoading(true);
+      const data = await fetchMesCommandes();
+      setCommandes(data || []);
     } catch (error) {
-      console.error("Erreur lors du chargement des commandes :", error);
+      console.error("Erreur chargement commandes :", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,63 +33,86 @@ const HistoriqueCommandes = () => {
     fetchData();
   }, []);
 
+  // Ouvre le modal de paiement UNIQUEMENT si la commande est encore "en attente"
   const handleSelectOrder = (order) => {
-    setSelectedOrderForPayment(order);
-    const isPending = order.statut.toLowerCase().includes("attente");
-    if (isPending) {
-        setShowPaiementModal(true);
-    } else {
-                setShowPaiementModal(false); 
+    const estEnAttente = ["en attente", "attente"].some(s =>
+      (order.statut || "").toLowerCase().includes(s)
+    );
+
+    if (estEnAttente) {
+      setSelectedOrderForPayment(order);
+      setShowPaiementModal(true);
     }
-  };
+    };
 
   const handleCloseModal = (refresh = false) => {
-      setShowPaiementModal(false);
-      setSelectedOrderForPayment(null);
-      if (refresh) {
-          fetchData(); 
-      }
-  }
+    setShowPaiementModal(false);
+    setSelectedOrderForPayment(null);
+    if (refresh) fetchData();
+  };
 
   const commandesFiltrees = commandes.filter((order) => {
-    const matchStatut = filtreStatut === "Tous" ? true : order.statut === filtreStatut;
-    const matchDate = filtreDate ? order.dateCommande.startsWith(filtreDate) : true;
+    const statutNormalise = (order.statut || "").toLowerCase().trim();
+    const filtreNormalise = filtreStatut === "Tous" ? "" : filtreStatut.toLowerCase().trim();
+    const matchStatut = filtreStatut === "Tous" || statutNormalise === filtreNormalise;
+    const matchDate = !filtreDate || order.dateCommande.startsWith(filtreDate);
     return matchStatut && matchDate;
   });
 
+  const statutsDisponibles = ["Tous", "en attente", "payée", "validée", "expédiée", "livrée", "annulée"];
+
+  if (loading) {
+    return (
+      <div className="historique-commandes">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement de vos commandes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="historique-commandes">
-      <ToastContainer />
+      <ToastContainer position="top-right" />
+
       <div className="filtre-commandes">
-        <FiltresCommandes 
+        <FiltresCommandes
           filtreStatut={filtreStatut}
           setFiltreStatut={setFiltreStatut}
           filtreDate={filtreDate}
           setFiltreDate={setFiltreDate}
-          statutsDisponibles={["Tous", "expédiée", "livrée", "validée", "en attente"]}
+          statutsDisponibles={statutsDisponibles}
         />
       </div>
 
       <div className="list-commandes-section">
-        <div className="grille-commandes">
-          {commandesFiltrees.map((order) => (
-            <CarteCommande 
-                key={order.numCommande} 
-                order={order} 
+        {commandesFiltrees.length === 0 ? (
+          <div className="empty-state">
+            <h3>Aucune commande trouvée</h3>
+            <p>
+              {filtreStatut !== "Tous" || filtreDate
+                ? "Aucun résultat avec les filtres actuels."
+                : "Vous n'avez pas encore passé de commande."}
+            </p>
+          </div>
+        ) : (
+          <div className="grille-commandes">
+            {commandesFiltrees.map((order) => (
+              <CarteCommande
+                key={order.numCommande}
+                order={order}
                 onSelectOrder={handleSelectOrder}
-                // Si vous voulez un effet visuel sur la carte sélectionnée dans la liste :
-                isSelected={selectedOrderForPayment && selectedOrderForPayment.numCommande === order.numCommande}
-            />
-          ))}
-          {commandesFiltrees.length === 0 && <p>Aucune commande trouvée.</p>}
-        </div>
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Modal de paiement qui s'affiche à droite */}
       {showPaiementModal && selectedOrderForPayment && (
-        <PaiementModal 
-            order={selectedOrderForPayment} 
-            onClose={handleCloseModal}
+        <PaiementModal
+          order={selectedOrderForPayment}
+          onClose={handleCloseModal}
         />
       )}
     </div>

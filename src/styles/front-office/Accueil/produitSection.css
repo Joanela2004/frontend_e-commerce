@@ -13,7 +13,7 @@
 
 .produits-header h3 {
   font-size: 2.5rem;
-  color: #2c3e50;
+  color: #27ae60;
   margin-bottom: 20px;
 }
 
@@ -26,15 +26,14 @@
 .produits-grid {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
   gap: 30px;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 10px 40px;
+  padding: 10px 80px;
 }
 
-/* Carte produit */
 .produit-card {
   background: white;
   border-radius: 16px;
@@ -43,7 +42,7 @@
   transition: all 0.3s ease;
   position: relative;
   width: 250px;
-  height: 450px;
+  height: 100%;
 }
 
 .produit-card:hover {
@@ -90,7 +89,7 @@
 .produit-title {
   font-size: 1.25rem;
   margin: 0 0 10px 0;
-  color: #2c3e50;
+  color: #27ae60;
   font-weight: 600;
 }
 
@@ -112,14 +111,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  height: 30px;
+  margin-bottom: 40px;
+  height: 50px;
 }
 
 .ancien-prix {
   display: block;
   text-decoration: line-through;
   color: #95a5a6;
+  
   font-size: 0.95rem;
 }
 
@@ -175,7 +175,6 @@
   filter: brightness(0) invert(1);
 }
 
-/* Contrôle quantité */
 .quantity-control {
   display: flex;
   align-items: center;
@@ -215,7 +214,6 @@
   text-align: center;
 }
 
-/* Aucun produit */
 .no-products {
   grid-column: 1 / -1;
   text-align: center;
@@ -224,7 +222,6 @@
   font-size: 1.3rem;
 }
 
-/* Pagination */
 .pagination-container {
   margin-top: 60px;
   display: flex;
@@ -233,20 +230,38 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  
   .produits-header h3 {
     font-size: 2rem;
   }
  .produit-image{
   height: 50%;
  }
+
  .produit-body {
   padding: 10px;
+}
+
+.produit-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  width: 250px;
+}
+.produits-grid {
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 10px 20px;
 }
 
 .produit-title {
   font-size: 1rem;
   margin: 0 0 5px 0;
-  color: #2c3e50;
+  color: #219653;
   font-weight: 600;
 }
 
@@ -263,7 +278,6 @@
   font-size: 0.8rem;
 }
 
-/* Prix + poids */
 .produit-prix-poids {
   display: flex;
   justify-content: space-between;
@@ -302,6 +316,10 @@
   margin-right: 6px;
   font-size: 0.8rem;
 }
+
+.btn-add-cart,.quantity-control{
+  height: 20px;
+}
 .quantity-control {
   display: flex;
   align-items: center;
@@ -313,6 +331,21 @@
   font-size: 1.1rem;
 }
 
+
+.btn-add-cart {
+  margin-top: 20px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.3s;
+}
 .btn-moins,
 .btn-plus {
   background: none;

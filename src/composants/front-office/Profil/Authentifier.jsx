@@ -1,32 +1,40 @@
+// src/composants/front-office/Profil/Authentifier.js
 import React, { useState, useEffect } from 'react';
-import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../../services/AuthService';
 import "../../../styles/front-office/Profil/profil.css";
+import { useToast } from "../../../contexts/ToastContext";
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const Authentifier = () => {
+
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
+
   const [nomUtilisateur, setNomUtilisateur] = useState('');
   const [email, setEmail] = useState('');
   const [contact, setContact] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [confirmerMotDePasse, setConfirmerMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
-  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
-  const [afficherConfirmation, setAfficherConfirmation] = useState(false);
+  const [notification, setNotification] = useState('');
+  const { showToast } = useToast();
+
   const [validationMotDePasse, setValidationMotDePasse] = useState({
     longueur: false,
     majuscule: false,
     chiffre: false
   });
-  const [notification, setNotification] = useState('');
+
   const navigate = useNavigate();
 
+  // Redirection si connecté
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
-    if (token) navigate('/profil'); 
+    if (localStorage.getItem('userToken')) {
+      navigate('/profil');
+    }
   }, [navigate]);
 
-  // Validation du mot de passe en temps réel
+  // Vérification du mot de passe
   useEffect(() => {
     setValidationMotDePasse({
       longueur: motDePasse.length >= 6,
@@ -36,191 +44,150 @@ const Authentifier = () => {
   }, [motDePasse]);
 
   const handleContactChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); // Supprimer les non-chiffres
-    if (value.length <= 10) {
-      setContact(value);
+    const value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 10) setContact(value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErreur('');
+    setNotification('');
+
+    if (!Object.values(validationMotDePasse).every(v => v)) {
+      setErreur('Le mot de passe doit contenir au moins 6 caractères, une majuscule et un chiffre.');
+      return;
+    }
+    if (motDePasse !== confirmerMotDePasse) {
+      setErreur('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    if (contact.length !== 10) {
+      setErreur('Le numéro de téléphone doit contenir exactement 10 chiffres.');
+      return;
+    }
+
+    try {
+      await registerUser({
+        nomUtilisateur,
+        email,
+        contact,
+        motDePasse,
+        motDePasse_confirmation: confirmerMotDePasse
+      });
+
+      showToast('success', 'Inscription réussie ! Vérifiez votre boîte mail pour activer votre compte.');
+      setNomUtilisateur('');
+      setEmail('');
+      setContact('');
+      setMotDePasse('');
+      setConfirmerMotDePasse('');
+    } catch (err) {
+      setErreur(err.response?.data?.message || "Erreur lors de l'inscription");
     }
   };
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setErreur('');
-  setNotification('');
 
-  // Validation mot de passe
-  if (!validationMotDePasse.longueur || !validationMotDePasse.majuscule || !validationMotDePasse.chiffre) {
-    setErreur('Le mot de passe ne respecte pas les règles de sécurité.');
-    return;
-  }
-
-  if (motDePasse !== confirmerMotDePasse) {
-    setErreur('Les mots de passe ne correspondent pas !');
-    return;
-  }
-
-  if (contact.length !== 10) {
-    setErreur('Le numéro de téléphone doit contenir exactement 10 chiffres.');
-    return;
-  }
-
-  try {
-    const userData = {
-      nomUtilisateur,
-      email,
-      contact,
-      motDePasse,
-      motDePasse_confirmation: confirmerMotDePasse
-    };
-
-    const response = await registerUser(userData);
-
-    // Ne pas stocker le token tant que l'email n'est pas vérifié
-    // sessionStorage.setItem('userToken', response.access_token);
-    // sessionStorage.setItem('userData', JSON.stringify(response.user));
-
-    setNotification('Inscription réussie ! Veuillez confirmer votre email avant de vous connecter.');
-    
-    // Optionnel : reset des champs
-    setNomUtilisateur('');
-    setEmail('');
-    setContact('');
-    setMotDePasse('');
-    setConfirmerMotDePasse('');
-
-  } catch (err) {
-    if (err.response?.data?.message?.includes("non vérifié")) {
-      setNotification("Inscription réussie ! Veuillez vérifier votre email !");
-    } else if (err.response?.data?.message) {
-      setErreur(err.response.data.message);
-    } else {
-      setErreur("Erreur lors de l'inscription.");
-    }
-    console.error(err);
-  }
-};
-  const toutesLesValidationsPassent = validationMotDePasse.longueur && 
-                                       validationMotDePasse.majuscule && 
-                                       validationMotDePasse.chiffre;
+  const toutEstValide = Object.values(validationMotDePasse).every(v => v);
 
   return (
     <div className="conteneur-formulaire">
       <form onSubmit={handleSubmit}>
-        <div className='titre'>
-          <h1>Vous n'avez pas de compte ?</h1>
-          <p>Pour commander, nous avons besoin de vos informations de livraison</p>
+        <div className="titre">
+          <h1>Créer un compte</h1>
+          <p>Pour passer commande, nous avons besoin de vos informations</p>
         </div>
 
-        <div className='groupe'>
-          {/* Nom */}
+        <div className="groupe">
+
           <div className="groupe-formulaire">
-            <div className="champ-avec-icone">
-              <FiUser className="icone-champ" />
-              <input 
-                type="text" 
-                placeholder="Votre nom" 
-                value={nomUtilisateur} 
-                onChange={(e) => setNomUtilisateur(e.target.value)} 
-                required 
-              />
-            </div>
+            <label>Nom <span className="etoile-obligatoire">*</span></label>
+            <input
+              type="text"
+              value={nomUtilisateur}
+              onChange={(e) => setNomUtilisateur(e.target.value)}
+              required
+            />
           </div>
 
-          {/* Email */}
           <div className="groupe-formulaire">
-            <div className="champ-avec-icone">
-              <FiMail className="icone-champ" />
-              <input 
-                type="email" 
-                placeholder="votre@courriel.com" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-              />
-            </div>
+            <label>Adresse e-mail <span className="etoile-obligatoire">*</span></label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
-          {/* Contact */}
           <div className="groupe-formulaire">
-            <div className="champ-avec-icone">
-              <FiPhone className="icone-champ" />
-              <input 
-                type="tel" 
-                placeholder="034000000" 
-                value={contact} 
-                onChange={handleContactChange} 
-                required 
-                maxLength={10}
-                pattern="[0-9]{10}"
-                title="Le numéro doit contenir exactement 8 chiffres"
-              />
-            </div>
+            <label>Téléphone </label>
+            <input
+              type="tel"
+              value={contact}
+              onChange={handleContactChange}
+              
+              maxLength={10}
+            />
           </div>
 
-          {/* Mot de passe */}
           <div className="groupe-formulaire">
-           
-                  <div className="champ-avec-icone">
-              <FiLock className="icone-champ" />
-              <input 
+            <label>Mot de passe <span className="etoile-obligatoire">*</span></label>
+            <div className="champ-mot-de-passe" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+              <input
                 type={afficherMotDePasse ? "text" : "password"}
-                value={motDePasse} 
-                onChange={(e) => setMotDePasse(e.target.value)} 
-                required 
-                minLength={6} 
+                value={motDePasse}
+                onChange={(e) => setMotDePasse(e.target.value)}
+                required
+                minLength={6}
               />
-              <div 
-                className="icone-oeil" 
+              <span
+                className="icone-oeil"
+                style={{ marginLeft: "5px" }}
                 onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
               >
-                {afficherMotDePasse ? <FiEyeOff /> : <FiEye />}
-              </div>
+                {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
+              </span>
             </div>
-                     {motDePasse && (
-              <div className={`validation-mot-de-passe ${toutesLesValidationsPassent ? 'valide' : ''}`}>
-                <p className={validationMotDePasse.longueur ? 'valide' : ''}>
-                  Au moins 6 caractères
-                </p>
-                <p className={validationMotDePasse.majuscule ? 'valide' : ''}>
-                  Au moins une lettre majuscule
-                </p>
-                <p className={validationMotDePasse.chiffre ? 'valide' : ''}>
-                  Au moins un chiffre
-                </p>
+
+            {motDePasse && (
+              <div className={`validation-mot-de-passe ${toutEstValide ? 'valide' : ''}`}>
+                <p className={validationMotDePasse.longueur ? 'valide' : ''}>Au moins 6 caractères</p>
+                <p className={validationMotDePasse.majuscule ? 'valide' : ''}>Une lettre majuscule</p>
+                <p className={validationMotDePasse.chiffre ? 'valide' : ''}>Un chiffre</p>
               </div>
             )}
           </div>
 
-          {/* Confirmer mot de passe */}
           <div className="groupe-formulaire">
-            
-            <div className="champ-avec-icone">
-              <FiLock className="icone-champ" />
-              <input 
-                type={afficherConfirmation ? "text" : "password"}
-                value={confirmerMotDePasse} 
-                onChange={(e) => setConfirmerMotDePasse(e.target.value)} 
-                required 
+            <label>Confirmer le mot de passe <span className="etoile-obligatoire">*</span></label>
+            <div className="champ-mot-de-passe" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+              <input
+                type={afficherMotDePasse ? "text" : "password"}
+                value={confirmerMotDePasse}
+                onChange={(e) => setConfirmerMotDePasse(e.target.value)}
+                required
+                minLength={6}
               />
-              <div 
-                className="icone-oeil" 
-                onClick={() => setAfficherConfirmation(!afficherConfirmation)}
+              <span
+                className="icone-oeil"
+                style={{ marginLeft: "5px" }}
+                onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
               >
-                {afficherConfirmation ? <FiEyeOff /> : <FiEye />}
-              </div>
+                {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
+              </span>
             </div>
           </div>
 
-          {erreur && (
-            <div className="message-erreur">
-              {erreur}
-            </div>
-          )}
-        </div>
-   
+          {erreur && <div className="message-erreur">{erreur}</div>}
+          {notification && <div className="message-succes">{notification}</div>}
 
+        </div>
+
+        
         <button type="submit" className="bouton bouton-primaire fond-vert">
           CRÉER MON COMPTE
         </button>
-        
+        <p style={{ display:"flex", marginTop: "10px"}}><span className='etoile-obligatoire'>* </span> : champ obligatoire</p>
+
       </form>
     </div>
   );

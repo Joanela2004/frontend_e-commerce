@@ -1,17 +1,24 @@
 import React from 'react';
-
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { fr } from "date-fns/locale";
 const FiltresCommandes = ({ filtreStatut, setFiltreStatut, filtreDate, setFiltreDate, statutsDisponibles }) => {
   return (
     <div className="filtres-commandes-conteneur">
       <div className="filtre-item">
         <p>Rechercher par date</p>
-        <input
-          type="date"
-          placeholder="mm/dd/yyyy"
-          value={filtreDate}
-          onChange={(e) => setFiltreDate(e.target.value)}
-          className="input-date"
-        />
+      <DatePicker
+  selected={filtreDate ? new Date(filtreDate) : null}
+  onChange={(date) => setFiltreDate(date ? date.toISOString().slice(0, 10) : "")}
+  dateFormat="dd/MM/yyyy"
+  locale={fr}
+  placeholderText="jj/mm/aaaa"
+  className="form-control"
+  isClearable
+  showYearDropdown
+  scrollableYearDropdown
+  yearDropdownItemNumber={15}
+/>
       </div>
 
       <div className="filtre-item">
