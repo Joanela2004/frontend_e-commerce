@@ -41,7 +41,7 @@ const ActualiteDetail = () => {
     return (
       <div className="actualite-detail-error">
         <p>{error || "Article non trouvé."}</p>
-        <Link to="/actualites" className="btn-back">
+        <Link to="/actualite" className="btn-back">
           Retour aux actualités
         </Link>
       </div>

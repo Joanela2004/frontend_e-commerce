@@ -1,7 +1,7 @@
 // src/components/front-office/Commande/PaiementModal.jsx
 import React, { useState, useEffect } from "react";
 import { Package } from 'lucide-react';
-import { fetchModesActifs } from "../../../services/paiementService";
+import { fetchModesActifs, updateCommandeModePaiement } from "../../../services/paiementService"; // Import de la fonction de mise à jour
 import { createStripeSession } from "../../../services/StripeService";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,10 +9,12 @@ import ModalConfirmationCash from "../../../composants/front-office/Panier/Modal
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-const PaiementModal = ({ order, onClose }) => {
+const PaiementModal = ({ order, onClose, refreshCommandes }) => { // Ajout de refreshCommandes en prop
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modesPaiementList, setModesPaiementList] = useState([]);
   const [showCashConfirmation, setShowCashConfirmation] = useState(false); 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
     const loadModes = async () => {
       try {
@@ -40,26 +42,29 @@ const PaiementModal = ({ order, onClose }) => {
 
     const nomLower = (mode.nomModePaiement || "").toLowerCase();
 
-     const isCash =
-      nomLower.includes("espèces") ||
-      nomLower.includes("cash") ||
-      nomLower.includes("livraison"); // ← Capture "Paiement à la livraison"
+    const isCash = nomLower.includes("espèces") ||
+                   nomLower.includes("cash") ||
+                   nomLower.includes("livraison");
 
-    if (isCash) {
-      setShowCashConfirmation(true); // ← Ouvre le modal de confirmation
-      return;
-    }
+    const isStripe = nomLower.includes("carte") ||
+                     nomLower.includes("stripe") ||
+                     nomLower.includes("visa") ||
+                     nomLower.includes("mastercard") ||
+                     nomLower.includes("bancaire");
 
-    // 2. Paiement par carte (Stripe)
-    const isStripe =
-      nomLower.includes("carte") ||
-      nomLower.includes("stripe") ||
-      nomLower.includes("visa") ||
-      nomLower.includes("mastercard") ||
-      nomLower.includes("bancaire");
+    try {
+      setIsProcessing(true);
 
-    if (isStripe) {
-      try {
+      // 1. Mettre à jour le mode de paiement de la commande
+      await updateCommandeModePaiement(order.referenceCommande, paymentMethod);
+
+      // 2. Traiter en fonction du type de paiement
+      if (isCash) {
+        setShowCashConfirmation(true);
+        return;
+      }
+
+      if (isStripe) {
         const { url } = await createStripeSession({
           referenceCommande: order.referenceCommande,
           numModePaiement: mode.numModePaiement,
@@ -70,25 +75,33 @@ const PaiementModal = ({ order, onClose }) => {
         } else {
           toast.error("Erreur lors de la création de la session de paiement.");
         }
-      } catch (err) {
-        toast.error("Impossible de lancer le paiement sécurisé.");
+        return;
       }
-      return;
-    }
 
-    // 3. Autres modes (ex: MVola) → non gérés dans cette modal simplifiée
-    toast.warn("Ce mode de paiement n'est pas disponible dans cette interface. Utilisez le panier complet.");
+      // 3. Autres modes (ex: MVola) - à adapter selon votre implémentation
+      toast.warn("Ce mode de paiement n'est pas disponible dans cette interface.");
+
+    } catch (err) {
+      console.error("Erreur lors du traitement du paiement:", err);
+      toast.error("Erreur lors du traitement du paiement.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleConfirmCash = () => {
     toast.success("Paiement à la livraison confirmé ! Vous paierez lors de la réception.");
     setShowCashConfirmation(false);
+    // Rafraîchir la liste des commandes
+    if (refreshCommandes) {
+      refreshCommandes();
+    }
     onClose(true); // Ferme tout et confirme le choix
   };
 
   const handleCancelCash = () => {
     setShowCashConfirmation(false);
-    setPaymentMethod(null); // Optionnel : désélectionne pour forcer un nouveau choix
+    setPaymentMethod(null);
   };
 
   const total = Number(order.montantTotal).toFixed(2).replace(".", ",");
@@ -97,9 +110,15 @@ const PaiementModal = ({ order, onClose }) => {
   return (
     <>
       {/* Modal principal de sélection du paiement */}
-      <div className="paiement-modal-overlay open" onClick={() => onClose(false)}>
-        <div className="paiement-modal-content" onClick={e => e.stopPropagation()}>
-          <button className="close-btn" onClick={() => onClose(false)}>×</button>
+      <div className="paiement-modal-overlay open" onClick={() => !isProcessing && onClose(false)}>
+        <div className="paiement-modal-content" >
+          <button 
+            className="close-btn" 
+            onClick={() => !isProcessing && onClose(false)}
+            disabled={isProcessing}
+          >
+            ×
+          </button>
           <div className="modal-header-gradient">
             <h3 className="modal-title">Paiement de la commande</h3>
             <p className="modal-subtitle">N° {reference}</p>
@@ -112,8 +131,9 @@ const PaiementModal = ({ order, onClose }) => {
               {modesPaiementList.map((mode) => (
                 <div
                   key={mode.numModePaiement}
-                  onClick={() => setPaymentMethod(mode.numModePaiement)}
+                  onClick={() => !isProcessing && setPaymentMethod(mode.numModePaiement)}
                   className={`mode-option ${paymentMethod === mode.numModePaiement ? 'option-selected-modal' : ''}`}
+                  style={isProcessing ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
                 >
                   <div className="mode-logo-container">
                     {mode.image ? (
@@ -136,9 +156,11 @@ const PaiementModal = ({ order, onClose }) => {
             <button
               onClick={handlePayment}
               className="bouton-payer-modal"
-              disabled={!paymentMethod}
+              disabled={!paymentMethod || isProcessing}
+              style={isProcessing ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
             >
-              {paymentMethod && modesPaiementList.find(m => m.numModePaiement === paymentMethod)?.nomModePaiement.toLowerCase().includes("livraison")
+              {isProcessing ? "Traitement en cours..." : 
+               paymentMethod && modesPaiementList.find(m => m.numModePaiement === paymentMethod)?.nomModePaiement.toLowerCase().includes("livraison")
                 ? "Confirmer paiement à la livraison"
                 : `Payer ${total} Ar maintenant`}
             </button>

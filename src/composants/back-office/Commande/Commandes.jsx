@@ -12,19 +12,22 @@ import {
   FaCalendarAlt,
   FaMoneyBillWave,
   FaCheckCircle,
-  FaBoxes
+  FaBoxes,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useNouvelleCommande } from '../../../contexts/Actualisation';
-import { fetchCommandes, updateCommandeAdmin } from "../../../services/commandeService";
+import { useNouvelleCommande } from "../../../contexts/Actualisation";
+import {
+  fetchCommandes,
+  updateCommandeAdmin,
+} from "../../../services/commandeService";
 import { updateLivraison } from "../../../services/livraisonService";
 import { useToast } from "../../../contexts/ToastContext";
-import ModalLivraison from './ModalLivraison';
+import ModalLivraison from "./ModalLivraison";
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
-
+import { fetchPaiementByCommande } from "../../../services/paiementService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
@@ -37,30 +40,28 @@ const Commandes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
+  const [CommandeAExpedier,setCommandeAExpedier]=useState(null);
   // États pour les filtres
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [filtreDateMin, setFiltreDateMin] = useState("");
   const [filtreDateMax, setFiltreDateMax] = useState("");
   const [filtrePrixMin, setFiltrePrixMin] = useState("");
   const [filtrePrixMax, setFiltrePrixMax] = useState("");
- 
+
   const [showExpedierModal, setShowExpedierModal] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+  const [paiement,setPaiement]=useState([]);
   const [modalData, setModalData] = useState({
     title: "",
     message: "",
     type: "",
     commandeId: null,
     commandeInfo: "",
-    onConfirm: null
+    onConfirm: null,
   });
-  
-  const [commandeAExpedier, setCommandeAExpedier] = useState(null);
+
   const [isLivraisonModalOpen, setIsLivraisonModalOpen] = useState(false);
   const [currentDeliveryData, setCurrentDeliveryData] = useState({});
   const [currentCmd, setCurrentCmd] = useState(null);
@@ -68,12 +69,22 @@ const Commandes = () => {
   useEffect(() => {
     chargerDonnees();
   }, []);
-
+const loadPaiement = async (commande) => {
+  try {
+    const paiementData = await fetchPaiementByCommande(commande.referenceCommande);
+    setPaiement(prev => ({ ...prev, [commande.numCommande]: paiementData }));
+  } catch (err) {
+    setPaiement(prev => ({ ...prev, [commande.numCommande]: null }));
+  }
+};
   const chargerDonnees = async () => {
     setLoading(true);
     try {
       const data = await fetchCommandes();
+
       setCommandes(data);
+
+    data.forEach((cmd) => loadPaiement(cmd));
     } catch (error) {
       console.error("Erreur chargement des commandes:", error);
       showToast("error", "Erreur lors du chargement des commandes");
@@ -82,19 +93,25 @@ const Commandes = () => {
     }
   };
 
-  // Fonction pour afficher une modal (simplifiée)
-  const showModal = (type, title, message, commandeId = null, commandeInfo = "", onConfirm = null) => {
+
+  const showModal = (
+    type,
+    title,
+    message,
+    commandeId = null,
+    commandeInfo = "",
+    onConfirm = null
+  ) => {
     setModalData({
       type,
       title,
       message,
       commandeId,
       commandeInfo,
-      onConfirm
+      onConfirm,
     });
-    
-    // NOTE: showExpedierModal n'est plus utilisée pour l'expédition directe, mais la conservons si jamais vous la réutilisez
-    if (type === "expedier") {
+
+      if (type === "expedier") {
       setShowExpedierModal(true);
     } else if (type === "validate") {
       setShowValidateModal(true);
@@ -102,9 +119,7 @@ const Commandes = () => {
       setShowCancelModal(true);
     } else if (type === "pay") {
       setShowPayModal(true);
-    } else if (type === "success") {
-      setShowSuccessModal(true);
-    }
+    } 
   };
 
   // Fermer toutes les modals
@@ -113,49 +128,61 @@ const Commandes = () => {
     setShowValidateModal(false);
     setShowCancelModal(false);
     setShowPayModal(false);
-    setShowSuccessModal(false);
     setModalData({
       title: "",
       message: "",
       type: "",
       commandeId: null,
       commandeInfo: "",
-      onConfirm: null
+      onConfirm: null,
     });
     setCommandeAExpedier(null);
   };
 
-const handleMarquerCommeVue = async (commandeId) => {
-  try {
-    setCommandes(prev => prev.map(cmd =>
-      cmd.numCommande === commandeId ? { ...cmd, estConsulte: 1 } : cmd
-    ));
-    
-    await markAsConsulted(commandeId);
-    showToast("info", `Consultation de la commande #${commandeId}`); 
+  const handleMarquerCommeVue = async (commandeId) => {
+    try {
+      setCommandes((prev) =>
+        prev.map((cmd) =>
+          cmd.numCommande === commandeId ? { ...cmd, estConsulte: 1 } : cmd
+        )
+      );
 
-    navigate(`/admin/commandes/${commandeId}`); 
+      await markAsConsulted(commandeId);
+      showToast("info", `Consultation de la commande #${commandeId}`);
 
-  } catch (err) {
-    setCommandes(prev => prev.map(cmd =>
-      cmd.numCommande === commandeId ? { ...cmd, estConsulte: 0 } : cmd
-    ));
-  }
-};
+      navigate(`/admin/commandes/${commandeId}`);
+    } catch (err) {
+      setCommandes((prev) =>
+        prev.map((cmd) =>
+          cmd.numCommande === commandeId ? { ...cmd, estConsulte: 0 } : cmd
+        )
+      );
+    }
+  };
 
   const handleValidateClick = (commande) => {
     showModal(
       "validate",
       "Valider la commande",
-      `Êtes-vous sûr de vouloir valider la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      `Êtes-vous sûr de vouloir valider la commande #${
+        commande.referenceCommande || commande.numCommande
+      } ?`,
       commande.numCommande,
-      `Commande # ${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
+      `Commande # ${commande.referenceCommande || commande.numCommande} - ${
+        commande.utilisateur?.nomUtilisateur || "Client"
+      }`,
       async () => {
         try {
-          await updateCommandeAdmin(commande.numCommande, { statut: 'validée' });
-          setCommandes(prev => prev.map(cmd =>
-            cmd.numCommande === commande.numCommande ? { ...cmd, statut: 'validée' } : cmd
-          ));
+          await updateCommandeAdmin(commande.numCommande, {
+            statut: "validée",
+          });
+          setCommandes((prev) =>
+            prev.map((cmd) =>
+              cmd.numCommande === commande.numCommande
+                ? { ...cmd, statut: "validée" }
+                : cmd
+            )
+          );
           showToast("success", "Commande validée avec succès !");
         } catch (error) {
           console.error("Erreur mise à jour statut", error);
@@ -169,15 +196,25 @@ const handleMarquerCommeVue = async (commandeId) => {
     showModal(
       "cancel",
       "Annuler la commande",
-      `Êtes-vous sûr de vouloir annuler la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      `Êtes-vous sûr de vouloir annuler la commande #${
+        commande.referenceCommande || commande.numCommande
+      } ?`,
       commande.numCommande,
-      `Commande #${commande.referenceCommande || commande.numCommande} - ${commande.utilisateur?.nomUtilisateur || "Client"}`,
+      `Commande #${commande.referenceCommande || commande.numCommande} - ${
+        commande.utilisateur?.nomUtilisateur || "Client"
+      }`,
       async () => {
         try {
-          await updateCommandeAdmin(commande.numCommande, { statut: 'annulée' });
-          setCommandes(prev => prev.map(cmd =>
-            cmd.numCommande === commande.numCommande ? { ...cmd, statut: 'annulée' } : cmd
-          ));
+          await updateCommandeAdmin(commande.numCommande, {
+            statut: "annulée",
+          });
+          setCommandes((prev) =>
+            prev.map((cmd) =>
+              cmd.numCommande === commande.numCommande
+                ? { ...cmd, statut: "annulée" }
+                : cmd
+            )
+          );
           showToast("success", "Commande annulée avec succès !");
         } catch (error) {
           console.error("Erreur mise à jour statut", error);
@@ -193,10 +230,10 @@ const handleMarquerCommeVue = async (commandeId) => {
     setCurrentCmd(cmd);
     setCurrentDeliveryData({
       numCommande: cmd.numCommande,
-      referenceColis:  livraison.referenceColis || '',
-      lieuLivraison: livraison.lieuLivraison || '',
-      transporteur: livraison.transporteur || '',
-      contactTransporteur: livraison.contactTransporteur || '',
+      referenceColis: livraison.referenceColis || "",
+      lieuLivraison: livraison.lieuLivraison || "",
+      transporteur: livraison.transporteur || "",
+      contactTransporteur: livraison.contactTransporteur || "",
     });
     setIsLivraisonModalOpen(true);
   };
@@ -221,52 +258,68 @@ const handleMarquerCommeVue = async (commandeId) => {
         lieuLivraison: data.lieuLivraison,
       };
       await updateLivraison(livraison.numLivraison, updatedLivraison);
-      
-      const newStatutCommande = "expédiée";
-      await updateCommandeAdmin(currentCmd.numCommande, { statut: newStatutCommande });
 
-      setCommandes(prev => prev.map(cmd =>
-        cmd.numCommande === currentCmd.numCommande
-          ? {
-              ...cmd,
-              statut: newStatutCommande,
-              livraisons: [{
-                ...livraison,
-                ...updatedLivraison,
-              }]
-            }
-          : cmd
-      ));
+      const newStatutCommande = "expédiée";
+      await updateCommandeAdmin(currentCmd.numCommande, {
+        statut: newStatutCommande,
+      });
+
+      setCommandes((prev) =>
+        prev.map((cmd) =>
+          cmd.numCommande === currentCmd.numCommande
+            ? {
+                ...cmd,
+                statut: newStatutCommande,
+                livraisons: [
+                  {
+                    ...livraison,
+                    ...updatedLivraison,
+                  },
+                ],
+              }
+            : cmd
+        )
+      );
 
       setIsLivraisonModalOpen(false);
       setCurrentCmd(null);
       showToast("success", "Commande expédiée avec succès !");
     } catch (err) {
       console.error("Erreur livraison", err);
-      showToast("error", "Erreur lors de la mise à jour de la livraison/commande");
+      showToast(
+        "error",
+        "Erreur lors de la mise à jour de la livraison/commande"
+      );
     }
   };
 
- 
   const handlePayLivraisonClick = (commande) => {
     showModal(
       "pay",
       "Payer les frais de livraison",
-      `Confirmez-vous le paiement des frais de livraison pour la commande #${commande.referenceCommande || commande.numCommande} ?`,
+      `Confirmez-vous le paiement des frais de livraison pour la commande #${
+        commande.referenceCommande || commande.numCommande
+      } ?`,
       commande.numCommande,
-      `Commande #${commande.referenceCommande || commande.numCommande} - Montant: ${commande.montantTotal || 0} Ar`,
+      `Commande #${
+        commande.referenceCommande || commande.numCommande
+      } - Montant: ${commande.montantTotal || 0} Ar`,
       async () => {
-        const nouveauTotal = parseFloat(commande.montantTotal || 0) + parseFloat(commande.fraisLivraison || 0);
+        const nouveauTotal =
+          parseFloat(commande.montantTotal || 0) +
+          parseFloat(commande.fraisLivraison || 0);
         try {
           await updateCommandeAdmin(commande.numCommande, {
             payerLivraison: 1,
-            montantTotal: nouveauTotal
+            montantTotal: nouveauTotal,
           });
-          setCommandes(prev => prev.map(cmd =>
-            cmd.numCommande === commande.numCommande
-              ? { ...cmd, payerLivraison: 1, montantTotal: nouveauTotal }
-              : cmd
-          ));
+          setCommandes((prev) =>
+            prev.map((cmd) =>
+              cmd.numCommande === commande.numCommande
+                ? { ...cmd, payerLivraison: 1, montantTotal: nouveauTotal }
+                : cmd
+            )
+          );
           showToast("success", "Frais de livraison payés avec succès !");
         } catch (err) {
           console.error("Erreur paiement livraison", err);
@@ -277,22 +330,46 @@ const handleMarquerCommeVue = async (commandeId) => {
   };
 
   // Filtrer les commandes
-  const filteredCommandes = commandes.filter(commande => {
+  const filteredCommandes = commandes.filter((commande) => {
     const searchMatch =
-      (commande.referenceCommande?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (commande.utilisateur?.nomUtilisateur?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (commande.dateCommande?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (commande.mode_paiement?.nomModePaiement?.toLowerCase() || "").includes(searchTerm.toLowerCase());
-    
-    const statutMatch = filtreStatut === "tous" || commande.statut === filtreStatut;
-    
-    const dateMinMatch = !filtreDateMin || new Date(commande.dateCommande) >= new Date(filtreDateMin);
-    const dateMaxMatch = !filtreDateMax || new Date(commande.dateCommande) <= new Date(filtreDateMax);
-    
-    const prixMinMatch = !filtrePrixMin || (commande.montantTotal || 0) >= parseFloat(filtrePrixMin);
-    const prixMaxMatch = !filtrePrixMax || (commande.montantTotal || 0) <= parseFloat(filtrePrixMax);
-    
-    return searchMatch && statutMatch && dateMinMatch && dateMaxMatch && prixMinMatch && prixMaxMatch;
+      (commande.referenceCommande?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (commande.utilisateur?.nomUtilisateur?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (commande.dateCommande?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (commande.mode_paiement?.nomModePaiement?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      );
+
+    const statutMatch =
+      filtreStatut === "tous" || commande.statut === filtreStatut;
+
+    const dateMinMatch =
+      !filtreDateMin ||
+      new Date(commande.dateCommande) >= new Date(filtreDateMin);
+    const dateMaxMatch =
+      !filtreDateMax ||
+      new Date(commande.dateCommande) <= new Date(filtreDateMax);
+
+    const prixMinMatch =
+      !filtrePrixMin ||
+      (commande.montantTotal || 0) >= parseFloat(filtrePrixMin);
+    const prixMaxMatch =
+      !filtrePrixMax ||
+      (commande.montantTotal || 0) <= parseFloat(filtrePrixMax);
+
+    return (
+      searchMatch &&
+      statutMatch &&
+      dateMinMatch &&
+      dateMaxMatch &&
+      prixMinMatch &&
+      prixMaxMatch
+    );
   });
 
   // Réinitialiser tous les filtres
@@ -314,24 +391,23 @@ const handleMarquerCommeVue = async (commandeId) => {
     filtrePrixMin ||
     filtrePrixMax;
 
-  const commandesEnAttente = commandes.filter(c => c.statut === "en attente").length;
-  
-  const commandesPaye = commandes.filter(c => c.statut === "payée").length;
-  const commandesValidees = commandes.filter(c => c.statut === "validée").length;
-  const commandesExpediees = commandes.filter(c => c.statut === "expédiée").length;
-  const commandesLivrees = commandes.filter(c => c.statut === "livrée").length;
-  const commandesAnnulees = commandes.filter(c => c.statut === "annulée").length;
+  const commandesEnAttente = commandes.filter(
+    (c) => c.statut === "en attente"
+  ).length;
 
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Chargement des commandes...</p>
-        </div>
-      </div>
-    );
-  }
+  const commandesPaye = commandes.filter((c) => c.statut === "payée").length;
+  const commandesValidees = commandes.filter(
+    (c) => c.statut === "validée"
+  ).length;
+  const commandesExpediees = commandes.filter(
+    (c) => c.statut === "expédiée"
+  ).length;
+  const commandesLivrees = commandes.filter(
+    (c) => c.statut === "livrée"
+  ).length;
+  const commandesAnnulees = commandes.filter(
+    (c) => c.statut === "annulée"
+  ).length;
 
   return (
     <div className="page-container">
@@ -341,39 +417,43 @@ const handleMarquerCommeVue = async (commandeId) => {
           {newOrdersCount > 0 && (
             <div className="stats-container">
               <span className="stat-item new-orders">
-                {newOrdersCount} nouvelle{newOrdersCount !== 1 ? 's' : ''} commande{newOrdersCount !== 1 ? 's' : ''} non consultée{newOrdersCount !== 1 ? 's' : ''}
+                {newOrdersCount} nouvelle{newOrdersCount !== 1 ? "s" : ""}{" "}
+                commande{newOrdersCount !== 1 ? "s" : ""} non consultée
+                {newOrdersCount !== 1 ? "s" : ""}
               </span>
             </div>
           )}
-          <div className="stats-container" style={{ marginTop: '10px' }}>
+          <div className="stats-container" style={{ marginTop: "10px" }}>
             <span className="stat-item">
-              {filteredCommandes.length} commande{filteredCommandes.length !== 1 ? 's' : ''} trouvée{filteredCommandes.length !== 1 ? 's' : ''}
+              {filteredCommandes.length} commande
+              {filteredCommandes.length !== 1 ? "s" : ""} trouvée
+              {filteredCommandes.length !== 1 ? "s" : ""}
             </span>
             <span className="stat-item attente">
               {commandesEnAttente} en attente
             </span>
-           <span className="stat-item paye">
-              {commandesPaye} Payée
-            </span>
+            <span className="stat-item paye">{commandesPaye} Payée</span>
             <span className="stat-item validee">
-              {commandesValidees} validée{commandesValidees !== 1 ? 's' : ''}
+              {commandesValidees} validée{commandesValidees !== 1 ? "s" : ""}
             </span>
             <span className="stat-item expediee">
-              {commandesExpediees} expédiée{commandesExpediees !== 1 ? 's' : ''}
+              {commandesExpediees} expédiée{commandesExpediees !== 1 ? "s" : ""}
             </span>
             <span className="stat-item livree">
-              {commandesLivrees} livrée {commandesLivrees !== 1 ? 's' : ''}
+              {commandesLivrees} livrée {commandesLivrees !== 1 ? "s" : ""}
             </span>
             <span className="stat-item annulee">
-              {commandesAnnulees} annulée{commandesAnnulees !== 1 ? 's' : ''}
+              {commandesAnnulees} annulée{commandesAnnulees !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
       </div>
-      
+
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
+          <FaSearch
+            style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}
+          />
           <input
             type="text"
             placeholder="Rechercher par référence, nom client ou mode de paiement..."
@@ -381,15 +461,27 @@ const handleMarquerCommeVue = async (commandeId) => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button
-            className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+            className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-           style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
+            style={{
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+              background: "white",
+              color: "#28a458",
+              paddingRight: "10px",
+            }}
           >
             <FaFilter />
           </button>
           <FaSync
             onClick={reinitialiserFiltres}
-            style={{ marginRight: '8px', border:"none", color:"#28a458", cursor: "pointer" }}
+            style={{
+              marginRight: "8px",
+              border: "none",
+              color: "#28a458",
+              cursor: "pointer",
+            }}
             title="Réinitialiser tous les filtres"
           />
         </div>
@@ -416,37 +508,47 @@ const handleMarquerCommeVue = async (commandeId) => {
                 <option value="annulée">Annulée</option>
               </select>
             </div>
-            
+
             <div className="filter-group">
-              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date min</label>
-        <DatePicker
-    selected={filtreDateMin ? new Date(filtreDateMin) : null}
-    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
-    dateFormat="dd/MM/yyyy"
-    locale={fr}
-    placeholderText="jj/mm/aaaa"
-    className="form-control"
-    isClearable
-    popperPlacement="bottom"
-  />
+              <label>
+                <FaCalendarAlt style={{ marginRight: "5px" }} /> Date min
+              </label>
+              <DatePicker
+                selected={filtreDateMin ? new Date(filtreDateMin) : null}
+                onChange={(date) =>
+                  setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")
+                }
+                dateFormat="dd/MM/yyyy"
+                locale={fr}
+                placeholderText="jj/mm/aaaa"
+                className="form-control"
+                isClearable
+                popperPlacement="bottom"
+              />
             </div>
-            
+
             <div className="filter-group">
-              <label><FaCalendarAlt style={{marginRight:"5px"}} /> Date max</label>
-            <DatePicker
-    selected={filtreDateMax ? new Date(filtreDateMax) : null}
-    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
-    dateFormat="dd/MM/yyyy"
-    locale={fr}
-    placeholderText="jj/mm/aaaa"
-    className="form-control"
-    isClearable
-    popperPlacement="bottom"
-  />
+              <label>
+                <FaCalendarAlt style={{ marginRight: "5px" }} /> Date max
+              </label>
+              <DatePicker
+                selected={filtreDateMax ? new Date(filtreDateMax) : null}
+                onChange={(date) =>
+                  setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")
+                }
+                dateFormat="dd/MM/yyyy"
+                locale={fr}
+                placeholderText="jj/mm/aaaa"
+                className="form-control"
+                isClearable
+                popperPlacement="bottom"
+              />
             </div>
-            
+
             <div className="filter-group">
-              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Prix min</label>
+              <label>
+                <FaMoneyBillWave style={{ marginRight: "5px" }} /> Prix min
+              </label>
               <input
                 type="number"
                 className="form-control"
@@ -457,9 +559,11 @@ const handleMarquerCommeVue = async (commandeId) => {
                 step="1000"
               />
             </div>
-            
+
             <div className="filter-group">
-              <label><FaMoneyBillWave style={{marginRight:"5px"}} /> Prix max</label>
+              <label>
+                <FaMoneyBillWave style={{ marginRight: "5px" }} /> Prix max
+              </label>
               <input
                 type="number"
                 className="form-control"
@@ -471,7 +575,7 @@ const handleMarquerCommeVue = async (commandeId) => {
               />
             </div>
           </div>
-          
+
           {/* Affichage des filtres actifs */}
           <div className="active-filters">
             {filtreStatut !== "tous" && (
@@ -515,7 +619,8 @@ const handleMarquerCommeVue = async (commandeId) => {
             <tr>
               <th>Référence</th>
               <th>Client</th>
-              <th>Date</th>
+              <th>Date Commande</th>
+              <th>Date souhaitée</th>
               <th>Montant</th>
               <th>Statut</th>
               <th>Paiement Frais</th>
@@ -527,33 +632,88 @@ const handleMarquerCommeVue = async (commandeId) => {
           <tbody>
             {filteredCommandes.length > 0 ? (
               filteredCommandes.map((commande) => (
-                <tr key={commande.numCommande} className={!commande.estConsulte ? 'new-order-row' : ''}>
+                <tr
+                  key={commande.numCommande}
+                  className={!commande.estConsulte ? "new-order-row" : ""}
+                >
                   <td>#{commande.referenceCommande || commande.numCommande}</td>
                   <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
                       <div>
-                        <div style={{ fontWeight: "bold" }}>{commande.utilisateur?.nomUtilisateur || "Inconnu"}</div>
-                        <div style={{ fontSize: "0.9em", color: "#666" }}>{commande.utilisateur?.email || ""}</div>
+                        <div style={{ fontWeight: "bold" }}>
+                          {commande.utilisateur?.nomUtilisateur || "Inconnu"}
+                        </div>
+                        <div style={{ fontSize: "0.9em", color: "#666" }}>
+                          {commande.utilisateur?.email || ""}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                     
-                      {commande.dateCommande ? new Date(commande.dateCommande).toLocaleDateString('fr-FR') : "_"}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      {commande.dateCommande
+                        ? new Date(commande.dateCommande).toLocaleDateString(
+                            "fr-FR"
+                          )
+                        : "_"}
                     </div>
                   </td>
                   <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <FaCalendarAlt style={{ color: "#28a458" }} />
+                      <div>
+                        <div style={{ fontWeight: "500" }}>
+                          {commande.dateLivraisonSouhaitee
+                            ? new Date(
+                                commande.dateLivraisonSouhaitee
+                              ).toLocaleDateString("fr-FR", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "Non définie"}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
                       <span style={{ fontWeight: "bold", color: "#8b5e3c" }}>
-                        {(commande.montantTotal || 0).toLocaleString('fr-FR')} Ar
+                        {(commande.montantTotal || 0).toLocaleString("fr-FR")}{" "}
+                        Ar
                       </span>
                     </div>
                   </td>
                   <td>
-                    <span className={`status ${commande.statut?.replace(/\s+/g, '-') || 'default'}`}>
+                    <span
+                      className={`status ${
+                        commande.statut?.replace(/\s+/g, "-") || "default"
+                      }`}
+                    >
                       {commande.statut || "Non défini"}
                     </span>
                   </td>
@@ -569,89 +729,107 @@ const handleMarquerCommeVue = async (commandeId) => {
                       <img
                         src={`${IMAGE_BASE_URL}${commande.mode_paiement.image}`}
                         alt="Mode de paiement"
-                        style={{ width: "40px", height: "40px", objectFit: "contain" }}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "contain",
+                        }}
                       />
                     ) : (
-                      <span>{commande.mode_paiement?.nomModePaiement || "_"}</span>
+                      <span>
+                        {commande.mode_paiement?.nomModePaiement || "_"}
+                      </span>
                     )}
                   </td>
                   <td>
-                   
-                     <Link
-                      className={`btn-consulter ${commande.estConsulte ? 'vu' : ''}`}
+                    <Link
+                      className={`btn-consulter ${
+                        commande.estConsulte ? "vu" : ""
+                      }`}
                       to={`/admin/commandes/${commande.numCommande}`}
-                      onClick={() => handleMarquerCommeVue(commande.numCommande)} // <-- APPEL DE LA FONCTION MISE À JOUR
-                      style={{ textDecoration: 'none', display: 'inline-block' }}
+                      onClick={() =>
+                        handleMarquerCommeVue(commande.numCommande)
+                      } // <-- APPEL DE LA FONCTION MISE À JOUR
+                      style={{
+                        textDecoration: "none",
+                        display: "inline-block",
+                      }}
                     >
                       {commande.estConsulte ? (
                         <>
-                          <FaCheckCircle style={{marginRight:"5px"}} /> Vu
+                          <FaCheckCircle style={{ marginRight: "5px" }} /> Vu
                         </>
                       ) : (
                         <>
-                          <FaEye style={{marginRight:"5px"}} /> Voir
+                          <FaEye style={{ marginRight: "5px" }} /> Voir
                         </>
                       )}
                     </Link>
                   </td>
-                  
-                  <td>
-                    <div className="table-actions" style={{ flexWrap: "wrap", gap: "8px" }}>
-                    
-                      
-                      {!commande.payerLivraison && commande.statut !== 'annulée' && (
-                        <button
-                          className="btn-pay"
-                          onClick={() => handlePayLivraisonClick(commande)}
-                        >
-                          Payer Frais
-                        </button>
-                      )}
 
-                      {commande.statut === 'en attente' || commande.statut === 'payée' && (
+                  <td>
+                    <div
+                      className="table-actions"
+                      style={{ flexWrap: "wrap", gap: "8px" }}
+                    >
+                      {!commande.payerLivraison &&
+                        commande.statut !== "annulée" && (
+                          <button
+                            className="btn-pay"
+                            onClick={() => handlePayLivraisonClick(commande)}
+                          >
+                            Payer Frais
+                          </button>
+                        )}
+                      {(commande.statut === "en attente" ||
+                        commande.statut === "payée") && (
                         <button
                           className="btn-validate"
                           onClick={() => handleValidateClick(commande)}
                         >
-                          <FaCheck style={{marginRight:"5px"}} /> Valider
-                        </button>
-                      )}
-                      
-                      {/* Bouton EXPÉDIER (Affiché si statut = 'validée') */}
-                      {commande.statut === 'validée' && (
-                        <button
-                          className="btn-expedier"
-                          onClick={() => handleDeliveryClick(commande)}
-                        >
-                          <FaTruck style={{marginRight:"5px"}} /> Expédier
+                          <FaCheck style={{ marginRight: "5px" }} /> Valider
                         </button>
                       )}
 
-                         {(commande.statut == 'en attente') && (
-                        <button
-                          className="btn-cancel"
-                          onClick={() => handleCancelClick(commande)}
-                        >
-                          Annuler
-                        </button>
+                    {(commande.statut === "validée" &&
+  paiement[commande.numCommande]?.statut !== "effectué") && (
+    <>
+      <button className="btn-expedier" onClick={() => handleDeliveryClick(commande)}>
+        <FaTruck style={{ marginRight: "5px" }} /> Expédier
+      </button>
+
+      <button className="btn-cancel" onClick={() => handleCancelClick(commande)}>
+        Annuler
+      </button>
+    </>
+)}
+
+ { paiement[commande.numCommande]?.statut === "effectué" && (
+                        
+                          <button
+                            className="btn-expedier"
+                            onClick={() => handleDeliveryClick(commande)}
+                          >
+                            <FaTruck style={{ marginRight: "5px" }} /> Expédier
+                          </button>
+
+                         
+                        
                       )}
-                      
-                      {/* Bouton Statut 'Expédiée' (Désactivé) */}
-                      {commande.statut === 'expédiée' && (
+                      {commande.statut === "expédiée" && (
                         <button className="btn-expediee" disabled>
-                          <FaTruck style={{marginRight:"5px"}} /> Expédiée
+                          <FaTruck style={{ marginRight: "5px" }} /> Expédiée
                         </button>
                       )}
-                      
+
                       {/* Bouton Statut 'Livrée' (Désactivé) */}
-                      {commande.statut === 'livrée' && (
+                      {commande.statut === "livrée" && (
                         <button className="btn-livree" disabled>
-                          <FaBox style={{marginRight:"5px"}} /> Livrée
+                          <FaBox style={{ marginRight: "5px" }} /> Livrée
                         </button>
                       )}
                     </div>
                   </td>
-                 
                 </tr>
               ))
             ) : (
@@ -689,20 +867,32 @@ const handleMarquerCommeVue = async (commandeId) => {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <h2
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
                 <FaCheck style={{ color: "#28a458" }} />
                 {modalData.title}
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={closeAllModals}>
+                ×
+              </button>
             </div>
-            
+
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+              <p
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "1.5",
+                  marginBottom: "20px",
+                }}
+              >
                 {modalData.message}
               </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
-                
+
+              <div
+                className="modal-actions"
+                style={{ justifyContent: "center", gap: "15px" }}
+              >
                 <button
                   className="btn btn-secondary"
                   onClick={closeAllModals}
@@ -720,7 +910,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                   }}
                   style={{ padding: "10px 30px" }}
                 >
-                  <FaCheck style={{marginRight:"8px"}} /> Valider
+                  <FaCheck style={{ marginRight: "8px" }} /> Valider
                 </button>
               </div>
             </div>
@@ -733,19 +923,31 @@ const handleMarquerCommeVue = async (commandeId) => {
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                           {modalData.title}
+              <h2
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                {modalData.title}
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={closeAllModals}>
+                ×
+              </button>
             </div>
-            
+
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+              <p
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "1.5",
+                  marginBottom: "20px",
+                }}
+              >
                 {modalData.message}
               </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
-               
+
+              <div
+                className="modal-actions"
+                style={{ justifyContent: "center", gap: "15px" }}
+              >
                 <button
                   className="btn btn-secondary"
                   onClick={closeAllModals}
@@ -753,7 +955,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                 >
                   Retour
                 </button>
-                 <button
+                <button
                   className="btn btn-primary"
                   onClick={async () => {
                     if (modalData.onConfirm) {
@@ -770,25 +972,38 @@ const handleMarquerCommeVue = async (commandeId) => {
           </div>
         </div>
       )}
-      
+
       {/* Modal de paiement frais (showPayModal) */}
       {showPayModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaMoneyBillWave style={{ color: "#007bff" }} />
+              <h2
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                
                 {modalData.title}
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={closeAllModals}>
+                ×
+              </button>
             </div>
-            
+
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+              <p
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "1.5",
+                  marginBottom: "20px",
+                }}
+              >
                 {modalData.message}
               </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+
+              <div
+                className="modal-actions"
+                style={{ justifyContent: "center", gap: "15px" }}
+              >
                 <button
                   className="btn btn-primary"
                   onClick={async () => {
@@ -813,25 +1028,38 @@ const handleMarquerCommeVue = async (commandeId) => {
           </div>
         </div>
       )}
-      
+
       {/* Modal d'expédition (conservée mais inutilisée dans ce flux corrigé) */}
       {showExpedierModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <h2
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
                 <FaTruck style={{ color: "#ffc107" }} />
                 {modalData.title}
               </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
+              <button className="modal-close" onClick={closeAllModals}>
+                ×
+              </button>
             </div>
-            
+
             <div className="modal-body">
-              <p style={{ fontSize: "16px", lineHeight: "1.5", marginBottom: "20px" }}>
+              <p
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "1.5",
+                  marginBottom: "20px",
+                }}
+              >
                 {modalData.message}
               </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+
+              <div
+                className="modal-actions"
+                style={{ justifyContent: "center", gap: "15px" }}
+              >
                 <button
                   className="btn btn-warning"
                   onClick={async () => {
@@ -842,7 +1070,8 @@ const handleMarquerCommeVue = async (commandeId) => {
                   }}
                   style={{ padding: "10px 30px" }}
                 >
-                  <FaTruck style={{marginRight:"8px"}} /> Confirmer Expédition
+                  <FaTruck style={{ marginRight: "8px" }} /> Confirmer
+                  Expédition
                 </button>
                 <button
                   className="btn btn-secondary"
@@ -856,9 +1085,6 @@ const handleMarquerCommeVue = async (commandeId) => {
           </div>
         </div>
       )}
-      
-    
-
     </div>
   );
 };

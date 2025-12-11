@@ -57,3 +57,7 @@ export const fetchModesActifs = async () => {
   const res = await api.get(`${MODES_PAIEMENT_URL}/actifs`, getConfig(false));
   return res.data;
 };
+export const fetchPaiementByCommande = async (reference) => {
+  const res = await api.get(`/paiements/commande/${reference}`, getConfig());
+  return res.data;
+};

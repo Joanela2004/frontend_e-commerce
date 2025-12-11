@@ -2,23 +2,18 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { deleteCommandeClient } from "../../../services/commandeService";
-import ModalConfirmation from "./ModalConfirmation"; // Ajuste le chemin si besoin
+import ModalConfirmation from "./ModalConfirmation";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-// Fonction de formatage fiable : date + heure au format malgache (serveur)
 const formatDateHeureServer = (dateString) => {
   if (!dateString) return "Date inconnue";
-
   const date = new Date(dateString);
-
-  
   if (isNaN(date.getTime())) return "Date invalide";
 
   const jour = String(date.getDate()).padStart(2, "0");
-  const mois = String(date.getMonth() + 1).padStart(2, "0"); // Mois commence à 0
+  const mois = String(date.getMonth() + 1).padStart(2, "0");
   const annee = date.getFullYear();
-
   const heures = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
 
@@ -37,22 +32,30 @@ const CarteCommande = ({ order, onSelectOrder, refreshCommandes }) => {
       productsGridRef.current.scrollLeft += direction === "gauche" ? -scrollAmount : scrollAmount;
     }
   };
+  
+  const modePaiement = order.mode_paiement || order.modePaiement;
+  const nomModePaiement = modePaiement?.nomModePaiement || "Non spécifié";
+  
+  const estEnAttenteDePaiement = () => {
+    const statutLower = (order.statut || "").toLowerCase();
+    
+    // Vérifie si le statut est "en attente"
+    if (statutLower.includes("attente")) {
+      // Si déjà payé via paiement séparé, ce n'est plus en attente
+      if (order.paiement?.statutPaiement === "payé") {
+        return false;
+      }
+      // Sinon, c'est en attente de paiement
+      return true;
+    }
+    
+    return false; 
+  };
 
-const estEnAttenteDePaiement = () => {
-  const statutLower = (order.statut || "").toLowerCase();
-  if (statutLower.includes("attente")) {
-   
-    if (order.paiement && order.paiement.statutPaiement === "payé") return false;
-    if (order.modePaiement?.nomModePaiement?.toLowerCase().includes("espèces")) return true;
-    return true;
-  }
-  return false; 
-};
-
-const estEnAttente = estEnAttenteDePaiement();
-
-  const modeActuel = (order?.modePaiement?.nomModePaiement || "").toLowerCase();
-  const estPaiementALivraison = modeActuel.includes("espèces") || modeActuel.includes("cash");
+  const estEnAttente = estEnAttenteDePaiement();
+  const estPaiementALivraison = nomModePaiement.toLowerCase().includes("espèces") || 
+                                nomModePaiement.toLowerCase().includes("cash") ||
+                                nomModePaiement.toLowerCase().includes("livraison");
 
   const handlePaymentClick = (e) => {
     e.stopPropagation();
@@ -73,7 +76,7 @@ const estEnAttente = estEnAttenteDePaiement();
     try {
       await deleteCommandeClient(order.referenceCommande);
       toast.success("Commande annulée avec succès ! Vous pouvez maintenant modifier vos produits.");
-      refreshCommandes(); // Rafraîchit la liste
+      refreshCommandes();
       navigate("/panier");
     } catch (err) {
       const message = err.response?.data?.message || err.message || "Impossible d'annuler la commande.";
@@ -111,7 +114,6 @@ const estEnAttente = estEnAttenteDePaiement();
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && estEnAttente && onSelectOrder(order)}
       >
-        {/* En-tête */}
         <div className="en-tete-carte">
           <div className="info-commande">
             <p>
@@ -119,7 +121,7 @@ const estEnAttente = estEnAttenteDePaiement();
               <span className="id-commande">{order.referenceCommande}</span>
             </p>
             <p className="date-commande">
-              {formatDateHeureServer(order.dateCommande)} {/* ← Date + Heure serveur */}
+              {formatDateHeureServer(order.dateCommande)}
             </p>
           </div>
           <div className="statut-total-commande">
@@ -134,7 +136,6 @@ const estEnAttente = estEnAttenteDePaiement();
 
         <hr className="separateur-carte" />
 
-        {/* Carrousel produits */}
         <div className="conteneur-carrousel-produits">
           {showNavigation && (
             <button
@@ -180,7 +181,7 @@ const estEnAttente = estEnAttenteDePaiement();
           )}
         </div>
 
-        {/* Boutons d'action */}
+        {/* Boutons d'action - CORRIGÉ */}
         <div className="pied-carte">
           {estEnAttente ? (
             <>
@@ -225,7 +226,6 @@ const estEnAttente = estEnAttenteDePaiement();
         </div>
       </div>
 
-      {/* Modal de confirmation d'annulation */}
       <ModalConfirmation
         show={showConfirmModal}
         onClose={closeConfirmModal}

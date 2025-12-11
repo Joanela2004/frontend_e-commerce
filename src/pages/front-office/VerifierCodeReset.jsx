@@ -9,6 +9,7 @@ const VerifierCodeReset = () => {
   const email = searchParams.get('email');
   const { showToast } = useToast();
 
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
   const [code, setCode] = useState('');
   const [nouveauMdp, setNouveauMdp] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -109,27 +110,43 @@ const VerifierCodeReset = () => {
 
         <div className="groupe-formulaire">
           <label>Nouveau mot de passe</label>
+         
           <input
-            type="password"
+      type={afficherMotDePasse ? "text" : "password"}
+      
             placeholder="Nouveau mot de passe"
             value={nouveauMdp}
             onChange={(e) => setNouveauMdp(e.target.value)}
             required
             minLength={6}
             disabled={estExpire}
-          />
+    />
+    <span
+      className="icone-oeil" style={{marginLeft:"5px"}}
+      onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
+    >
+      {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
+    </span>
         </div>
 
         <div className="groupe-formulaire">
           <label>Confirmer le mot de passe</label>
-          <input
-            type="password"
-            placeholder="Confirmer le mot de passe"
-            value={confirmation}
-            onChange={(e) => setConfirmation(e.target.value)}
-            required
-            disabled={estExpire}
-          />
+        <input
+      type={afficherMotDePasse ? "text" : "password"}
+      
+      value={confirmation}
+      onChange={(e) => setConfirmation(e.target.value)}
+           
+      required
+      minLength={6}
+      disabled={estExpire}
+    />
+    <span
+      className="icone-oeil" style={{marginLeft:"5px"}}
+      onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
+    >
+      {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
+    </span>
         </div>
 
         {message && <div className="message-succes">{message}</div>}

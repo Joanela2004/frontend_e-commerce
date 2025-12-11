@@ -13,276 +13,535 @@
   --color-orange-active: #ffa500; /* Ajouté pour l'état actif */
   --color-blue-header: #3498db; /* Bleu pour l'icône d'en-tête */
 }
+/* SuiviLivraison.css - Styles modernes */
 
-.suivi-livraison-page {
-  width: 100%;
-  margin-top: 50px;
-  padding: 10px 60px;
+.suivi-livraison-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 80px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f4f8 100%);
+}
+
+.page-header {
+
+margin-top: 40px;
   display: flex;
-  flex-direction: column;
-  align-items: center; /* Centré pour le h1 et le header de timeline */
-  color: var(--color-text-dark);
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--color-border-light);
 }
 
-.suivi-livraison-page h1 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 40px;
-  color: var(--color-green-primary);
-  font-weight: 600;
-  width: 100%; /* Permet au titre d'être centré malgré align-items: flex-end */
-}
-
-.bouton-retour {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* Plus d'espace pour l'icône */
-    background-color:var(--color-red-error);  
-    color:var(--color-border-light);
-    border: none;
-    padding: 10px 20px; /* Plus grand */
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    margin-top: 30px;
-}
-
-.bouton-retour:hover {
-  background-color: #c9302c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.conteneur {
-    width: 100%;
-    max-width: 1200px; /* Ajout d'une largeur max pour une meilleure lisibilité */
-}
-
-.suivi-livraison-conteneur {
-    display: flex;
-    gap: 30px; /* Espacement entre les colonnes */
-    flex-wrap: wrap; /* Permet aux colonnes de passer à la ligne sur petit écran */
-}
-
-.bloc {
+.btn-back {
+  background: var(--color-green-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
-  flex-direction: column; /* Les cards s'empilent dans le bloc */
-  gap: 20px;
-  flex: 1; /* Chaque bloc prend une part égale de l'espace disponible */
-  min-width: 300px; /* Taille minimale pour éviter un étirement excessif */
-}
-
-.info-cards-col {
-    /* Style spécifique si besoin pour la colonne des InfoCard, sinon hérite de .bloc */
-}
-
-.suivi-timeline-bloc {
-    /* Style spécifique si besoin pour la colonne de la timeline */
-}
-
-.info-card {
-  background-color: var(--color-background-white);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px var(--color-shadow-light); /* Ombre plus douce */
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   transition: all 0.3s ease;
-  height: auto;
-  border: 1px solid var(--color-border-light); /* Bordure légère */
+}
+
+.btn-back:hover {
+  background: var(--color-green-secondary);
+  transform: translateX(-3px);
+}
+
+.header-info {
+  text-align: left;
+}
+
+.header-info h1 {
+  font-size: 2rem;
+  color: var(--color-text-dark);
+  margin-bottom: 5px;
+}
+
+.order-date {
+  color: var(--color-text-light);
+  font-size: 0.95rem;
+}
+
+/* Carte de statut principale */
+.main-status-section {
+  margin-bottom: 30px;
+}
+
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  border-radius: 12px;
+  border: 2px solid;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+
+
+.status-icon {
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.status-content {
+  flex: 1;
+}
+
+.status-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.status-message {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* Grid de contenu */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cartes d'information */
+.info-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px var(--color-shadow-light);
+  margin-bottom: 25px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .info-card:hover {
-  transform: translateY(-2px); /* Effet plus subtil */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
 }
 
-.info-card-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 1px solid var(--color-border-light);
-    padding-bottom: 10px;
+
+
+
+
+
+.info-card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-.info-card-title h3 {
+.info-card-header h3 {
   margin: 0;
+  font-size: 1.3rem;
+  color: var(--color-text-dark);
+}
+
+.info-card-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-green-primary);
   font-size: 1.2rem;
-  color: var(--color-text-dark); /* Plus neutre */
+  box-shadow: 0 3px 10px var(--color-shadow-light);
+}
+
+.info-card-body {
+  padding: 20px;
+}
+
+/* Détails de commande */
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--color-text-medium);
+}
+
+.detail-value {
+  font-weight: 500;
+  color: var(--color-text-dark);
+}
+
+.detail-value.total-amount {
+  color: var(--color-green-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.detail-item.promo .detail-value {
+  color: var(--color-red-error);
   font-weight: 600;
 }
 
-.info-card-icon {
-    font-size: 1.3em;
-    color: var(--color-green-primary); /* Icône verte */
-    margin-right: 10px;
+/* Carte d'adresse */
+.address-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
-.info-card-content p {
-  margin: 5px 0;
+.address-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-green-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.address-details {
+  flex: 1;
+}
+
+.address-title {
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 3px;
+}
+
+.address-text {
+  color: var(--color-text-medium);
+  line-height: 1.4;
+}
+
+/* Informations de livraison */
+.delivery-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.delivery-item:last-child {
+  border-bottom: none;
+}
+
+.delivery-label {
+  font-weight: 600;
+  color: var(--color-text-medium);
+}
+
+.delivery-value {
+  font-weight: 500;
+  color: var(--color-text-dark);
+}
+
+.delivery-value.tracking-number {
+  color: var(--color-blue-header);
+  font-weight: 600;
+}
+
+.delivery-item.estimated .delivery-value {
+  color: var(--color-green-primary);
+  font-weight: 600;
+}
+
+/* Timeline */
+.timeline-container {
+  padding: 20px 0;
+}
+
+.timeline-step {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.timeline-step-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeline-icon-circle {
+  width: 50px;
+  height: 50px;
+  background: white;
+  border: 3px solid var(--color-border-medium);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--color-text-light);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.timeline-connector {
+  flex: 1;
+  width: 3px;
+  background: var(--color-border-medium);
+  margin: 10px 0;
+}
+
+.timeline-step.completed .timeline-icon-circle {
+  background: var(--color-green-primary);
+  border-color: var(--color-green-primary);
+  color: white;
+}
+
+.timeline-step.active .timeline-icon-circle {
+  background: var(--color-green-secondary);
+  border-color: var(--color-green-secondary);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+.timeline-step.completed .timeline-connector {
+  background: var(--color-green-primary);
+}
+
+.timeline-step-content {
+  flex: 1;
+  padding-top: 5px;
+}
+
+.step-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 5px;
+}
+
+.step-description {
+  color: var(--color-text-light);
   font-size: 0.95rem;
-  line-height: 1.5;
-}
-.info-card-content strong {
-    color: var(--color-text-dark);
+  margin-bottom: 8px;
 }
 
-/* --- EN-TÊTE GLOBAL DE LA TIMELINE --- */
-.timeline-header {
+.step-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+}
+
+/* Indicateur de progression */
+.progress-indicator {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.progress-bar {
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-green-primary), var(--color-blue-header));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-size: 0.95rem;
+}
+.right-column{
     display: flex;
-    align-items: center;
-    background-color: var(--color-background-white);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px var(--color-shadow-light);
-    padding: 25px 30px;
-    margin-bottom: 40px;
-    border: 1px solid var(--color-border-light);
-}
-
-.timeline-header-icon {
-    font-size: 2.5rem;
-    color: var(--color-blue-header); /* Couleur bleue pour l'icône camion */
-    margin-right: 20px;
-    background-color: #e6f2fa; /* Légèrement coloré */
-    padding: 10px;
-    border-radius: 50%;
-}
-
-.timeline-header-content h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: var(--color-text-dark);
-    font-weight: 600;
-}
-
-.timeline-header-content p {
-    margin: 5px 0 0;
-    font-size: 1.1rem;
-    color: var(--color-text-medium);
+    flex-direction: column;
+    height: auto;
 }
 
 
-/* --- Styles de la TIMELINE PRINCIPALE --- */
-.timeline-list {
-    position: relative;
-    padding: 20px 0 10px 0; /* Espacement intérieur pour la timeline */
+/* Section d'aide */
+.help-content {
+  text-align: center;
 }
 
-/* La ligne verticale de la timeline */
-.timeline-list::before {
-    content: '';
-    position: absolute;
-    left: 20px; /* Position de la ligne */
-    top: 0;
-    width: 2px; /* Épaisseur de la ligne */
-    height: 100%;
-    background-color: var(--color-border-light);
+.help-content p {
+  color: var(--color-text-medium);
+  margin-bottom: 15px;
 }
 
-.timeline-item {
-    display: flex;
-    align-items: flex-start; /* Aligne le contenu en haut */
-    margin-bottom: 30px; /* Espacement entre les items */
-    position: relative;
+.help-list {
+  text-align: left;
+  padding-left: 20px;
+  margin-bottom: 20px;
 }
 
-/* Cercle vert/gris pour l'état */
-.timeline-item .timeline-icon-wrapper {
+.help-list li {
+  color: var(--color-text-light);
+  margin-bottom: 8px;
+}
+
+.btn-help {
+  background: var(--color-orange-active);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-help:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+}
+
+/* Footer actions */
+.footer-actions {
+  text-align: center;
+  padding: 30px 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.btn-primary.large {
+  background: var(--color-text-dark);
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary.large:hover {
+  background: var(--color-text-medium);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* États de chargement et erreur */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid var(--color-green-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container h3 {
+  color: var(--color-red-error);
+  margin: 20px 0 10px;
+}
+
+.error-container p {
+  color: var(--color-text-light);
+  margin-bottom: 30px;
+  max-width: 500px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .suivi-livraison-container {
+    padding: 15px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .header-info {
+    text-align: left;
+  }
+  
+  .header-info h1 {
+    font-size: 1.6rem;
+  }
+  
+  .content-grid {
+    gap: 20px;
+  }
+  
+  .status-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .timeline-step {
+    gap: 15px;
+  }
+  
+  .timeline-icon-circle {
     width: 40px;
     height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
-    background-color: var(--color-border-light); /* Couleur par défaut (gris) */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    left: 0; /* Positionne le cercle sur la ligne */
-    z-index: 1; /* Au-dessus de la ligne */
-    color: #fff;
-    font-size: 1.2rem;
-}
-
-/* Icône de coche à l'intérieur du cercle */
-.timeline-item .timeline-icon-wrapper .timeline-icon {
-    font-size: 1.2rem;
-    color: white; /* Couleur de l'icône dans le cercle */
-}
-
-/* L'icône réelle sera celle de la coche si complété */
-.timeline-item.completed .timeline-icon-wrapper {
-    background-color: var(--color-green-primary); /* Vert si complété */
-}
-.timeline-item.completed .timeline-icon-wrapper .timeline-icon {
-    content: '✅'; /* La coche réelle, attention c'est du contenu, pas une icône font-awesome */
-    font-family: 'Arial Unicode MS', sans-serif; /* Pour assurer la visibilité de l'emoji */
-}
-
-/* Styles pour l'étape active/courante */
-.timeline-item.active .timeline-icon-wrapper {
-    background-color: var(--color-orange-active); /* Orange pour l'étape active */
-}
-.timeline-item.active .timeline-icon-wrapper .timeline-icon {
-    color: white; /* Garde la couleur de l'icône blanche */
-}
-
-
-.timeline-item .timeline-content {
-    margin-left: 60px; /* Décalage pour le contenu, après l'icône */
-    padding: 5px 0;
-    flex-grow: 1;
-}
-
-.timeline-item .timeline-label {
-    font-weight: 600;
-    color: var(--color-text-dark);
-    margin-bottom: 2px;
     font-size: 1rem;
-}
-
-.timeline-item.completed .timeline-label {
-    color: var(--color-green-primary); /* Texte vert si complété */
-}
-
-.timeline-item.active .timeline-label {
-    color: var(--color-orange-active); /* Texte orange si actif */
-}
-
-.timeline-item .timeline-date, .timeline-item .timeline-date-estimated {
-    font-size: 0.9rem;
-    color: var(--color-text-medium);
-}
-
-.timeline-item.active .timeline-date-estimated {
-    font-weight: 600;
-    color: var(--color-orange-active);
-}
-
-/* Ligne verte pour les étapes complétées */
-.timeline-item.completed:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 20px;
-    top: 20px; /* Départ de la ligne après l'icône */
-    height: calc(100% + 10px); /* Ligne entre les cercles */
-    width: 2px;
-    background-color: var(--color-green-primary);
-    z-index: 0;
-}
-
-
-/* Media Queries pour la réactivité */
-@media (max-width: 900px) {
-  .suivi-livraison-conteneur {
-    flex-direction: column;
-  }
-  .bloc {
-    min-width: 100%;
-  }
-  .suivi-livraison-page {
-      padding: 10px 20px;
   }
 }

@@ -269,8 +269,9 @@ const PanierSection = () => {
       const reference = res.commande?.referenceCommande || "CMD-XXXXXX";
       const montantTotal = res.commande?.montantTotal;
 
+    const dateLivraison = res.commande?.dateLivraisonSouhaitee;
      showToast("success", `Commande envoyée ! N°${reference}`);
-      setCommandeConfirmee({ referenceCommande: reference, montantTotal });
+      setCommandeConfirmee({ referenceCommande: reference, montantTotal,dateLivraison  });
       clearCart();
       setCurrentStep(3);
     } catch (err) {
@@ -503,7 +504,7 @@ const handleConfirmCash = () => {
             <DatePicker
               selected={dateLivraison ? parseISO(dateLivraison) : null}
             onChange={(date) => {
-  const iso = date ? format(date, "yyyy-MM-dd") : "";  // Format ISO standard attendu par le backend
+  const iso = date ? format(date, "yyyy-MM-dd") : ""; 
   setDateLivraison(iso);
   if (erreurDate) setErreurDate(null);
 }}
@@ -647,8 +648,7 @@ const handleConfirmCash = () => {
             </div>
           </div>
         )}
-
-       {currentStep === 3 && commandeConfirmee && (
+{currentStep === 3 && commandeConfirmee && (
   <div className="commande-envoyee-container">
     <div className="success-message-card">
       <div className="success-icon">
@@ -661,12 +661,25 @@ const handleConfirmCash = () => {
       <p className="order-number">
         N° de commande : <strong>{commandeConfirmee.referenceCommande}</strong>
       </p>
+      <p className="date-livraison">
+        Date de livraison prévue : <strong>
+          {commandeConfirmee.dateLivraison 
+            ? new Date(commandeConfirmee.dateLivraison).toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            : "Non définie"}
+        </strong>
+      </p>
       <p className="montant-total">
         Montant total : <strong>{commandeConfirmee.montantTotal} Ar</strong>
       </p>
       <p className="info-paiement">
         Choisissez votre mode de paiement ci-dessous :
       </p>
+    
     </div>
 
     <div className="modes-paiement-list">
