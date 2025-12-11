@@ -42,14 +42,26 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
   const indexDepart = (page - 1) * produitsParPage;
   const produitsAffiches = produitsFiltre.slice(indexDepart, indexDepart + produitsParPage);
 
-  const calculatePromotionalPrice = (prix, promotion) => {
+const calculatePromotionalPrice = (prix, promotion) => {
     if (!promotion) return null;
+
+    // Vérification stricte que la promo est active + dans les dates
+    const maintenant = new Date();
+    const debut = new Date(promotion.dateDebut);
+    const fin = new Date(promotion.dateFin);
+
+    const estActive =
+      promotion.statutPromotion === true &&  // ← booléen, pas string
+      debut <= maintenant &&
+      fin >= maintenant;
+
+    if (!estActive) return null;
+
     if (promotion.typePromotion === "Pourcentage") {
       return Math.round(prix * (1 - promotion.valeur / 100));
     }
-    return prix - promotion.valeur;
+    return Math.max(0, prix - promotion.valeur);
   };
-
   const handleAddToCart = (produit) => {
     const existingItem = cartItems.find((item) => item.nom === produit.nomProduit);
     const increment = 1;
@@ -86,7 +98,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
     <section className="produits-section">
       {showHeader && (
         <div className="produits-header">
-          <h3>Nos produits frais</h3>
+          <h3>Nos produits </h3>
           <p>
             « Nous mettons un point d’honneur à vous offrir des produits d’une fraîcheur irréprochable.
             Légumes, viandes ou volailles : tout provient de producteurs locaux et est préparé le jour même
@@ -98,17 +110,14 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
       <div className="produits-grid">
         {produitsAffiches.length > 0 ? (
           produitsAffiches.map((produit) => {
-            const hasPromo = produit.promotion && produit.promotion.statut === "active";
-           const prixPromo = hasPromo
-    ? produit.promotion.typePromotion === "Pourcentage"
-      ? Math.round(produit.prix * (1 - produit.promotion.valeur / 100))
-      : Math.max(0, produit.prix - produit.promotion.valeur) // évite prix négatif
-    : null;
+         const promo = produit.promotion;
+            const prixPromo = calculatePromotionalPrice(produit.prix, promo);
+            const hasPromo = prixPromo !== null && prixPromo < produit.prix;
             const inCart = cartItems.some((item) => item.nom === produit.nomProduit);
             const cartItem = cartItems.find((item) => item.nom === produit.nomProduit);
 
             return (
-              <div key={produit.numProduit} className="produit-card">
+              <div key={produit.numProduit} className="produit-card back-office-card">
                 {/* Badge Promo */}
                 {hasPromo && (
                   <span className="badge-promo">

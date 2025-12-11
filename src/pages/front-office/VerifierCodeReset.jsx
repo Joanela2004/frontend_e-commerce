@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { verifierCodeEtReset, envoyerCodeReset } from '../../services/AuthService';
+import { useToast } from "../../contexts/ToastContext";
 
 const VerifierCodeReset = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const email = searchParams.get('email');
+  const { showToast } = useToast();
 
   const [code, setCode] = useState('');
   const [nouveauMdp, setNouveauMdp] = useState('');
@@ -14,15 +16,18 @@ const VerifierCodeReset = () => {
   const [erreur, setErreur] = useState('');
   const [estExpire, setEstExpire] = useState(false);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
-const [showNouveauMdp, setShowNouveauMdp] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  // Vérifier si email est présent
   useEffect(() => {
     if (!email) {
       showToast('error', 'Aucun e-mail spécifié. Veuillez recommencer la procédure.');
     }
   }, [email, showToast]);
-
- 
+ useEffect(() => {
+    if (estExpire) {
+      showToast("error", "Le code de vérification a expiré. Veuillez en demander un nouveau.");
+    }
+  }, [estExpire, showToast]);
 
   const handleRenvoyerCode = async () => {
     if (!email) return;
@@ -32,7 +37,6 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
     try {
       await envoyerCodeReset({ email });
       setMessage('Un nouveau code a été envoyé !');
-      setTempsRestant(600);     
       setEstExpire(false);      
     } catch (err) {
       setErreur(err.response?.data?.message || 'Erreur lors du renvoi du code');
@@ -59,12 +63,17 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
         password_confirmation: confirmation
       });
       setMessage('Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.');
-         } catch (err) {
+      setErreur('');
+      setTimeout(() => navigate('/profil'), 2000);
+    } catch (err) {
       setErreur(err.response?.data?.message || 'Code incorrect ou expiré');
+        if (err.response?.data?.code === 'EXPIRE') {
+        setEstExpire(true);
+      }
     }
   };
 
-   if (!email) {
+  if (!email) {
     return (
       <div className="conteneur-formulaire">
         <div className="message-erreur">
@@ -83,8 +92,8 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
   return (
     <div className="conteneur-formulaire">
       <form onSubmit={handleSubmit}>
-        <h1 style={{marginBottom:"20px"}}>Vérification du code</h1>
-      
+        <h1 style={{ marginBottom: "20px" }}>Vérification du code</h1>
+
         <div className="groupe-formulaire">
           <label>Code de vérification</label>
           <input
@@ -109,7 +118,6 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
             minLength={6}
             disabled={estExpire}
           />
-          
         </div>
 
         <div className="groupe-formulaire">
@@ -124,13 +132,9 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
           />
         </div>
 
-       
-
-        
         {message && <div className="message-succes">{message}</div>}
         {erreur && <div className="message-erreur">{erreur}</div>}
 
-        {/* Bouton principal de réinitialisation */}
         <button
           type="submit"
           className="bouton bouton-primaire fond-vert"
@@ -139,19 +143,17 @@ const [showNouveauMdp, setShowNouveauMdp] = useState(false);
           Réinitialiser le mot de passe
         </button>
 
-       
-          <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={handleRenvoyerCode}
-              disabled={envoiEnCours}
-              className="bouton bouton-secondaire"
-              style={{ padding: '12px 24px', fontSize: '1em' }}
-            >
-              {envoiEnCours ? 'Envoi en cours...' : 'Renvoyer un nouveau code'}
-            </button>
-          </div>
-       
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={handleRenvoyerCode}
+            disabled={envoiEnCours}
+            className="bouton bouton-secondaire"
+            style={{ padding: '12px 24px', fontSize: '1em' }}
+          >
+            {envoiEnCours ? 'Envoi en cours...' : 'Renvoyer un nouveau code'}
+          </button>
+        </div>
       </form>
     </div>
   );

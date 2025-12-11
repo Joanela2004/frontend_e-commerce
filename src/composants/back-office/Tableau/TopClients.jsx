@@ -79,12 +79,19 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
       const promos = await fetchPromotions();
       const now = new Date();
 
-      const activePromos = promos.filter(p => {
-        const dateFin = new Date(p.dateFin);
-        const statut = (p.autoStatut || "").toLowerCase();
-        // Inclure seulement les promotions actives et non expirées
-        return statut === "active" && dateFin > now; 
-      });
+     const activePromos = promos.filter(p => {
+  const dateFin = new Date(p.dateFin);
+  const dateDebut = new Date(p.dateDebut);
+  const maintenant = new Date();
+
+   return (
+    p.codePromo &&                   
+    p.codePromo.trim() !== "" &&     
+    p.statutPromotion === true &&     
+    dateDebut <= maintenant &&        
+    dateFin > maintenant              
+  );
+});
 
       const promosWithStatus = await Promise.all(
         activePromos.map(async (p) => {

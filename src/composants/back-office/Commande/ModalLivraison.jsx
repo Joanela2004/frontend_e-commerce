@@ -1,59 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { FaTruck, FaMapMarkerAlt, FaUser, FaTag, FaBox, FaTimes } from "react-icons/fa";
 
-// Supposons que ce composant reçoit les props suivantes
 const ModalLivraison = ({ isOpen, onClose, onSubmit, initialData }) => {
-    const [data, setData] = useState(initialData);
+const [data, setdata] = useState({});
 
-    useEffect(() => {
-        if (isOpen) {
-            setData(initialData);
-        }
-    }, [isOpen, initialData]);
+  useEffect(() => {
+    if (initialData) {
+      setdata({
+        numCommande: initialData.numCommande || '',
+        referenceColis: initialData.referenceColis ||'',
+        lieuLivraison: initialData.lieuLivraison || '',
+        transporteur: initialData.transporteur || '',
+        contactTransporteur: initialData.contactTransporteur || '',
+        statutLivraison: "en cours",
+       
+      });
+    }
+  }, [initialData]);
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setData(prev => ({ ...prev, [name]: value }));
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setdata(prev => ({ ...prev, [name]: value }));
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Validation simple
-        if (!data.referenceColis || !data.lieuLivraison || !data.transporteur) {
-            alert("Veuillez remplir tous les champs obligatoires (Colis, Lieu, Transporteur).");
-            return;
-        }
-        onSubmit(data);
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(data);
+  };
 
     return (
         <div className="modal-overlay">
-            <div className="modal-content" style={{ maxWidth: "600px" }}> {/* Augmentation de la largeur pour 2 colonnes */}
+            <div className="modal-content" style={{ maxWidth: "600px" }}>
                 <div className="modal-header">
-                    <h2><FaTruck style={{ marginRight: "10px" }} /> Expédier la commande #{data.numCommande}</h2>
-                    <button className="modal-close" onClick={onClose}><FaTimes /></button>
+                    <h2>Expédier</h2>
+                    <button className="modal-close" onClick={onClose}>
+                        <FaTimes />
+                    </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="modal-form">
-                    <div className="modal-body"> {/* Conteneur du formulaire */}
-                        
+                    <div className="modal-body">
+
                         <div className="form-row">
-                            {/* Colonne 1: Référence Colis */}
+
+                            {/* Référence Colis */}
                             <div className="form-group">
                                 <label><FaTag /> Référence Colis</label>
                                 <input
                                     type="text"
                                     name="referenceColis"
                                     value={data.referenceColis}
-                                    onChange={handleChange}
-                                    required
+                                    disabled
                                     className="form-control"
                                 />
                             </div>
 
-                            {/* Colonne 2: Transporteur */}
+                            {/* Transporteur */}
                             <div className="form-group">
                                 <label><FaUser /> Transporteur</label>
                                 <input
@@ -65,10 +69,12 @@ const ModalLivraison = ({ isOpen, onClose, onSubmit, initialData }) => {
                                     className="form-control"
                                 />
                             </div>
+
                         </div>
 
                         <div className="form-row">
-                            {/* Colonne 1: Lieu de Livraison */}
+
+                            {/* Lieu de Livraison */}
                             <div className="form-group">
                                 <label><FaMapMarkerAlt /> Lieu de Livraison</label>
                                 <input
@@ -81,7 +87,7 @@ const ModalLivraison = ({ isOpen, onClose, onSubmit, initialData }) => {
                                 />
                             </div>
 
-                            {/* Colonne 2: Contact Transporteur */}
+                            {/* Contact Transporteur */}
                             <div className="form-group">
                                 <label><FaBox /> Contact Transporteur</label>
                                 <input
@@ -92,18 +98,20 @@ const ModalLivraison = ({ isOpen, onClose, onSubmit, initialData }) => {
                                     className="form-control"
                                 />
                             </div>
+
                         </div>
 
                     </div>
-                    
-                    {/* Les actions sont en dehors du modal-body mais utilisent le style .modal-actions */}
-                    <div className="modal-actions"> 
+
+                    <div className="modal-actions">
                         <button type="button" className="btn btn-secondary" onClick={onClose}>Annuler</button>
+
                         <button type="submit" className="btn btn-primary">
-                            <FaTruck style={{marginRight:"5px"}} /> Confirmer Expédition
+                            <FaTruck style={{ marginRight: "5px" }} /> Confirmer Expédition
                         </button>
                     </div>
                 </form>
+
             </div>
         </div>
     );

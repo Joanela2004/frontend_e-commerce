@@ -221,19 +221,19 @@ const Articles = () => {
                   }}>
                     {article.description || "Aucune description disponible."}
                   </p>
-
-                  {/* Boutons Modifier / Supprimer (tes classes conservées) */}
-                  <div className="panier-actions">
-                    <div style={{ display: "flex", gap: "10px" }}>
+                  <div className="card-footer">
+        <div className="table-actions">
+                   
                       <button className="edit" onClick={() => { setArticleAEditer(article); setIsModalOpen(true); }}>
                         <FaEdit /> Modifier
                       </button>
                       <button className="delete" onClick={() => handleSupprimer(article.numArticle, article.titre)}>
                         <FaTrash /> Supprimer
                       </button>
-                    </div>
+                   
                   </div>
                 </div>
+              </div>
               </div>
             );
           })

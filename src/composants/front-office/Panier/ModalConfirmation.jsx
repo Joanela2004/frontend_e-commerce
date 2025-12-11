@@ -27,13 +27,13 @@ const ModalConfirmation = ({ show, onClose, onConfirm }) => {
                 </div>
                 <div className="modal-footer">
                     <button 
-                        className="bouton bouton-secondaire"     onClick={onClose} 
+                        className="btn btn-secondary"     onClick={onClose} 
                        
                     >
                         Annuler
                     </button>
                     <button 
-                        className="btn bouton bouton-primaire " 
+                        className="btn btn-primary " 
                         onClick={onConfirm}
                       
                     >

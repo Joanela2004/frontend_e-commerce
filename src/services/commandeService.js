@@ -43,6 +43,10 @@ throw error;
 }
 };
 
+export const deleteCommandeClient = async (referenceCommande) => {
+  const res = await api.delete(`${MES_COMMANDES_URL}/${referenceCommande}`, getConfig());
+  return res.data;
+};
 export const fetchDetailCommande = async (id) => {
 try {
 const response = await api.get(`${COMMANDE_URL}/${id}`, getConfig());
@@ -52,7 +56,6 @@ console.error("Erreur fetchDetailCommande:", error.response?.data || error.messa
 throw error;
 }
 };
-
 
 export const markCommandeAsConsulted = async (numCommande) => {
     await api.put(`${COMMANDE_URL}/${numCommande}`, { estConsulte: 1 }, getConfig());

@@ -8,7 +8,7 @@ import "../styles/front-office/Profil/profil.css";
 import ModalConnexion from "../composants/front-office/ModalConnexion";
 import { logoutUser } from "../services/AuthService";
 import { CartContext } from "../contexts/CartContext"; 
-
+import PromoBanner from "./front-office/PromoBanner";
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -57,7 +57,7 @@ navigate("/", { replace: true });
   const badgeClass = getBadgeClass(totalWeight);
   return (
     <>
-      <header className="main-header">
+      <header className="main-header" >
         <Link to="/">
           <img src={logo} alt="Logo" className="header-logo" />
         </Link>
@@ -138,7 +138,7 @@ navigate("/", { replace: true });
           </div>
         </div>
       </header>
-
+<PromoBanner />
       {/* Overlay menu mobile */}
       <div className={`menu-overlay ${menuOpen ? "active" : ""}`} onClick={closeMenu}></div>
 

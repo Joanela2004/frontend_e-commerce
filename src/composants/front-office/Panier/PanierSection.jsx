@@ -23,14 +23,11 @@ import ModalConfirmation from "./ModalConfirmation";
 import ModalConfirmationCash from "./ModalConfirmationCash";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { fr } from "date-fns/locale";
 import { parseISO, format } from "date-fns";
 import "../../../styles/calendrier.css";
 import { useToast } from "../../../contexts/ToastContext"; 
 
-registerLocale("fr", fr);
-
-
+const TODAY_SERVER = new Date().toISOString().split("T")[0]; //
 
 const CheckoutFlowHeader = ({ currentStep }) => {
   const displaySteps = [
@@ -112,8 +109,11 @@ const PanierSection = () => {
     }
     return prixDeBase;
   };
-
-  const handleContinueShopping = () => navigate('/produits');
+ const handleRedirectToLogin = () => {
+    setShowLoginModal(false);
+    navigate("/profil");
+  };
+  const handleContinueShopping = () => navigate('/produit');
 
   const handlePasserCommande = () => {
     if (cartItems.length === 0) {
@@ -132,26 +132,49 @@ const PanierSection = () => {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadPublicData = async () => {
       try {
-        const [fraisData, decoupeData, lieuxData, modesData] = await Promise.all([
+        const [fraisData, decoupeData, lieuxData] = await Promise.all([
           fetchFrais(),
           fetchDecoupes(),
           fetchLieux(),
-          fetchModesActifs(),
         ]);
-        setFraisList(fraisData);
-        setDecoupesList(decoupeData);
-        setLieuxList(lieuxData);
-        const modesActifs = modesData.filter((mode) => mode.actif === true);
-        setModesPaiementList(modesActifs);
+        setFraisList(fraisData || []);
+        setDecoupesList(decoupeData || []);
+        setLieuxList(lieuxData || []);
       } catch (err) {
-        showToast("error", "Erreur lors du chargement des données.");
+        console.error("Erreur chargement données publiques :", err);
+        showToast("error", "Erreur lors du chargement des informations de livraison.");
       }
     };
-    loadData();
+    loadPublicData();
   }, []);
-
+  useEffect(() => {
+    if (currentStep === 3 && commandeConfirmee) {
+      const token = localStorage.getItem("userToken");
+      if (token) {
+        const loadModes = async () => {
+          try {
+            const modesData = await fetchModesActifs();
+            const modesActifs = (modesData || []).filter(mode => mode.actif === true);
+            setModesPaiementList(modesActifs);
+          } catch (err) {
+            if (err.response?.status === 401) {
+              showToast("warning", "Session expirée. Veuillez vous reconnecter.");
+              setShowLoginModal(true);
+            } else {
+              showToast("error", "Impossible de charger les modes de paiement.");
+            }
+            setModesPaiementList([]);
+          }
+        };
+        loadModes();
+      } else {
+        setShowLoginModal(true);
+        setModesPaiementList([]);
+      }
+    }
+  }, [currentStep, commandeConfirmee]);
   const totalPoids = totalWeight;
   const fraisSelonPoids = fraisList.find(
     (f) => totalPoids >= Number(f.poidsMin) && totalPoids <= Number(f.poidsMax)
@@ -164,7 +187,6 @@ const PanierSection = () => {
   const montantBrut = sousTotal + (payerLivraisonChecked ? fraisLivraisonTotal : 0);
   const montantAPayer = montantBrut - remise;
 
-  // Promotion automatique
   useEffect(() => {
     const appliquerPromoAuto = async () => {
       if (subtotal === 0) return;
@@ -172,8 +194,7 @@ const PanierSection = () => {
         const promoAuto = await appliquerPromotionAutomatique(subtotal);
         if (promoAuto && promoAuto.reduction > 0) {
           setRemise(promoAuto.reduction);
-          showToast("success", `Promotion automatique appliquée : ${promoAuto.reduction} Ar de réduction !`);
-        }
+         }
       } catch (err) {
         console.error("Erreur promo auto", err);
       }
@@ -219,7 +240,7 @@ const PanierSection = () => {
       setShowLoginModal(true);
       return;
     }
-
+    
     const payload = {
       numLieu: selectedLieuNum,
       lieuNom: lieuxList.find(l => (l.numLieu || l.id) == selectedLieuNum)?.nomLieu || "Non spécifié",
@@ -265,21 +286,18 @@ const handleChoisirPaiement = async (mode) => {
   const type = (mode.typePaiement || mode.nomModePaiement || "").toLowerCase().trim();
 
   try {
-    // ÉTAPE OBLIGATOIRE : on met à jour le mode de paiement dans la commande
-    // Cela évite le "N/A" dans le back-office pour Cash et MVola
-    await updateCommandeModePaiement(
+   
+     await updateCommandeModePaiement(
       commandeConfirmee.referenceCommande,
       mode.numModePaiement
     );
 
-    // 1. PAIEMENT EN ESPÈCES / CASH
-    if (type.includes("cash") || type.includes("espèces")) {
+     if (type.includes("cash") || type.includes("espèces")) {
       setSelectedModePaiement(mode.numModePaiement);
-      setShowCashConfirmation(true); // Affiche le modal de confirmation
+      setShowCashConfirmation(true);
       return;
     }
 
-    // 2. PAIEMENT PAR MVOLA
     if (type.includes("mvola")) {
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
 
@@ -298,7 +316,6 @@ const handleChoisirPaiement = async (mode) => {
       return;
     }
 
-    // 3. PAIEMENT PAR CARTE (Stripe)
     const sessionData = await createStripeSession({
       referenceCommande: commandeConfirmee.referenceCommande,
       numModePaiement: mode.numModePaiement,
@@ -315,6 +332,7 @@ const handleChoisirPaiement = async (mode) => {
     showToast("error", "Une erreur est survenue lors du traitement du paiement.");
   }
 };
+ 
 const handleConfirmCash = () => {
   showToast("success", "Commande confirmée ! Vous paierez en espèces à la livraison.");
   setShowCashConfirmation(false);
@@ -330,13 +348,11 @@ const handleConfirmCash = () => {
     }
   };
 
-
   return (
     <section className="panier-section-wrapper">
       <CheckoutFlowHeader currentStep={currentStep} />
       <div className="panier-section">
 
-        {/* ÉTAPE 1 : PANIER */}
         {currentStep === 1 && (
           <div className="panier-produits">
             <div className="panier-header">
@@ -486,15 +502,15 @@ const handleConfirmCash = () => {
             <FaCalendarAlt className="input-icon" />
             <DatePicker
               selected={dateLivraison ? parseISO(dateLivraison) : null}
-              onChange={(date) => {
-                const iso = date ? format(date, "yyyy-MM-dd") : "";
-                setDateLivraison(iso);
-                if (erreurDate) setErreurDate(null);
-              }}
+            onChange={(date) => {
+  const iso = date ? format(date, "yyyy-MM-dd") : "";  // Format ISO standard attendu par le backend
+  setDateLivraison(iso);
+  if (erreurDate) setErreurDate(null);
+}}
               dateFormat="dd/MM/yyyy"
-              locale="fr"
+              
               placeholderText="Choisir une date"
-              minDate={new Date()} // ← C'est tout ! Aujourd’hui et après uniquement
+              minDate={new Date(TODAY_SERVER)} 
               className="date-input-custom"
               required
               popperClassName="datepicker-popper"
@@ -605,11 +621,11 @@ const handleConfirmCash = () => {
               >
                 <FaArrowLeft /> Revenir au Panier
               </button>
-           
-       <button
+         <button
   className={`passer-commande-btn ${isCreating ? "loading" : ""}`}
   onClick={() => {
-        if (!selectedLieuNum) {
+    // Validation des champs obligatoires
+    if (!selectedLieuNum) {
       setErreurLieu("Veuillez sélectionner un lieu de livraison");
       return;
     }
@@ -617,7 +633,12 @@ const handleConfirmCash = () => {
       setErreurDate("Veuillez choisir une date de livraison");
       return;
     }
-    setShowConfirmationModal(true); 
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      setShowLoginModal(true); 
+      return;
+    }
+   setShowConfirmationModal(true);
   }}
   disabled={isCreating}
 >
@@ -690,7 +711,7 @@ const handleConfirmCash = () => {
     <div className="final-actions">
       <button 
         className="btn-continuer-achats" 
-        onClick={() => navigate("/produits")}
+        onClick={() => navigate("/produit")}
       >
         Découvrir plus de produits
       </button>
@@ -726,7 +747,7 @@ const handleConfirmCash = () => {
           onConfirm={handleCreateCommande}
           montantTotal={montantAPayer}
           isCreating={isCreating}
-        />
+        /> 
       )}
       {showCashConfirmation && (
   <ModalConfirmationCash

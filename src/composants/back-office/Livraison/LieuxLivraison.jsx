@@ -135,17 +135,17 @@ const LieuxLivraison = () => {
     try {
       if (editingId) {
         await updateLieu(editingId, payload);
-        showModal("success", "Succès", "Lieu de livraison mis à jour avec succès !");
+        showToast("success", "Succès", "Lieu de livraison mis à jour avec succès !");
       } else {
         await createLieu(payload);
-        showModal("success", "Succès", "Lieu de livraison ajouté avec succès !");
+        showToast("success", "Succès", "Lieu de livraison ajouté avec succès !");
       }
       chargerDonnees();
+      closeAllModals();
     } catch (err) {
       console.error("Erreur détaillée:", err);
 
-      // CAS SPÉCIAL : lieu soft-deleted → on propose la restauration
-      if (err.response?.status === 422 && err.response?.data?.soft_deleted) {
+         if (err.response?.status === 422 && err.response?.data?.soft_deleted) {
         showModal(
           "restore",
           "Lieu archivé trouvé",
@@ -290,7 +290,7 @@ const LieuxLivraison = () => {
       {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}/>
           <input
             type="text"
             placeholder="Rechercher par nom ou frais..."
@@ -321,7 +321,6 @@ const LieuxLivraison = () => {
               <input
                 type="number"
                 className="form-control"
-                placeholder="0"
                 value={filtreFraisMin}
                 onChange={(e) => setFiltreFraisMin(e.target.value)}
                 min="0"
@@ -334,7 +333,6 @@ const LieuxLivraison = () => {
               <input
                 type="number"
                 className="form-control"
-                placeholder="100000"
                 value={filtreFraisMax}
                 onChange={(e) => setFiltreFraisMax(e.target.value)}
                 min="0"
@@ -369,7 +367,7 @@ const LieuxLivraison = () => {
               <tr>
                 <th>ID</th>
                 <th>Nom du lieu</th>
-                <th>Frais supplémentaire</th>
+                <th>Frais distance</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -456,7 +454,6 @@ const LieuxLivraison = () => {
                     onChange={handleChange}
                     required
                     className="form-control"
-                    placeholder="Ex: Antananarivo "
                   />
                 </div>
               </div>
@@ -479,12 +476,13 @@ const LieuxLivraison = () => {
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="btn btn-primary">
-                  {editingId ? "Mettre à jour" : "Ajouter le lieu"}
-                </button>
                 <button type="button" className="btn btn-secondary" onClick={closeAllModals}>
                   Annuler
                 </button>
+                <button type="submit" onClick={handleSubmit}className="btn btn-primary">
+                  {editingId ? "Mettre à jour" : "Ajouter le lieu"}
+                </button>
+               
               </div>
             </form>
           </div>
@@ -582,42 +580,7 @@ const LieuxLivraison = () => {
         </div>
       )}
 
-      {/* Modal de succès */}
-      {showSuccessModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "500px" }}>
-            <div className="modal-header">
-              <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaMapMarkerAlt style={{ color: "#28a458" }} />
-                {modalData.title}
-              </h2>
-              <button className="modal-close" onClick={closeAllModals}>×</button>
-            </div>
-            
-            <div className="modal-body">
-              <p style={{ 
-                fontSize: "16px", 
-                lineHeight: "1.5", 
-                marginBottom: "20px",
-                textAlign: "center",
-                padding: "20px 0"
-              }}>
-                {modalData.message}
-              </p>
-              
-              <div className="modal-actions" style={{ justifyContent: "center" }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 40px" }}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+     
     </div>
   );
 };

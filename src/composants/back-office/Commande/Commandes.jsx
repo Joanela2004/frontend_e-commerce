@@ -193,7 +193,7 @@ const handleMarquerCommeVue = async (commandeId) => {
     setCurrentCmd(cmd);
     setCurrentDeliveryData({
       numCommande: cmd.numCommande,
-      referenceColis: '',
+      referenceColis:  livraison.referenceColis || '',
       lieuLivraison: livraison.lieuLivraison || '',
       transporteur: livraison.transporteur || '',
       contactTransporteur: livraison.contactTransporteur || '',
@@ -541,7 +541,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                      
-                      {commande.dateCommande ? new Date(commande.dateCommande).toLocaleDateString('fr-FR') : "N/A"}
+                      {commande.dateCommande ? new Date(commande.dateCommande).toLocaleDateString('fr-FR') : "_"}
                     </div>
                   </td>
                   <td>
@@ -572,7 +572,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                         style={{ width: "40px", height: "40px", objectFit: "contain" }}
                       />
                     ) : (
-                      <span>{commande.mode_paiement?.nomModePaiement || "N/A"}</span>
+                      <span>{commande.mode_paiement?.nomModePaiement || "_"}</span>
                     )}
                   </td>
                   <td>
@@ -627,8 +627,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                         </button>
                       )}
 
-                      {/* Bouton Annuler (Visible si la commande n'est ni expédiée, ni livrée, ni annulée) */}
-                      {(commande.statut !== 'expédiée' && commande.statut !== 'livrée'  && commande.statut !== 'payée' && commande.statut !== 'annulée') && (
+                         {(commande.statut == 'en attente') && (
                         <button
                           className="btn-cancel"
                           onClick={() => handleCancelClick(commande)}
@@ -652,8 +651,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                       )}
                     </div>
                   </td>
-                  {/* ✨ FIN CORRECTION DES ACTIONS ✨ */}
-
+                 
                 </tr>
               ))
             ) : (
@@ -704,8 +702,16 @@ const handleMarquerCommeVue = async (commandeId) => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+                
                 <button
-                  className="btn btn-success"
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+                <button
+                  className="btn btn-primary"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -715,13 +721,6 @@ const handleMarquerCommeVue = async (commandeId) => {
                   style={{ padding: "10px 30px" }}
                 >
                   <FaCheck style={{marginRight:"8px"}} /> Valider
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
                 </button>
               </div>
             </div>
@@ -735,8 +734,7 @@ const handleMarquerCommeVue = async (commandeId) => {
           <div className="modal-content" style={{ maxWidth: "500px" }}>
             <div className="modal-header">
               <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <FaExclamationTriangle style={{ color: "#dc3545" }} />
-                {modalData.title}
+                           {modalData.title}
               </h2>
               <button className="modal-close" onClick={closeAllModals}>×</button>
             </div>
@@ -747,8 +745,16 @@ const handleMarquerCommeVue = async (commandeId) => {
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
+               
                 <button
-                  className="btn btn-danger"
+                  className="btn btn-secondary"
+                  onClick={closeAllModals}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Retour
+                </button>
+                 <button
+                  className="btn btn-primary"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -757,14 +763,7 @@ const handleMarquerCommeVue = async (commandeId) => {
                   }}
                   style={{ padding: "10px 30px" }}
                 >
-                  Annuler la commande
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeAllModals}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Retour
+                  Oui
                 </button>
               </div>
             </div>
@@ -858,13 +857,7 @@ const handleMarquerCommeVue = async (commandeId) => {
         </div>
       )}
       
-      {/* Modal de succès/générique (si vous l'utilisez) */}
-      {showSuccessModal && (
-        // Ajoutez ici le code pour votre modal de succès si nécessaire
-        <div className="modal-overlay">
-          {/* ... contenu de la modal de succès ... */}
-        </div>
-      )}
+    
 
     </div>
   );

@@ -8,7 +8,6 @@ const ModalConfirmationCash = ({ show, onClose, onConfirm }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div style={{ textAlign: "center", padding: "40px 20px" }}>
-          {/* Icône succès */}
           <div style={{
             width: "90px",
             height: "90px",
@@ -34,7 +33,7 @@ const ModalConfirmationCash = ({ show, onClose, onConfirm }) => {
 
           <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
             <button
-              className="passer-commande-btn-retour"
+              className="btn btn-secondary"
               onClick={onClose}
               style={{ padding: "12px 25px", minWidth: "120px" }}
             >
@@ -42,11 +41,11 @@ const ModalConfirmationCash = ({ show, onClose, onConfirm }) => {
             </button>
 
             <button
-              className="passer-commande-btn"
+              className="btn btn-primary"
               onClick={onConfirm}
               style={{ padding: "12px 35px", minWidth: "180px" }}
             >
-              Confirmer la commande
+              Confirmer 
             </button>
           </div>
         </div>

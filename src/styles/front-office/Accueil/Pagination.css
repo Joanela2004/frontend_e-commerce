@@ -19,8 +19,7 @@
 
 .pagination-btn {
    box-shadow: var(--box-shadow);
-  width: 35px;
-  height: 35px;
+ 
   border: 2px solid transparent;
   border-radius: 50%;
   background-color: var(--color-background-white);

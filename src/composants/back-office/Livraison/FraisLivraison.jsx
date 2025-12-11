@@ -444,7 +444,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
       {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch  style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par poids ou frais..."
@@ -594,7 +594,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
         )}
       </div>
 
-      {/* Modal d'ajout/édition de tranche */}
+      
       {isFormOpen && (
         <div className="modal-overlay">
           <div className="modal-content" style={{ maxWidth: "500px" }}>
@@ -827,29 +827,20 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
             </div>
             
             <div className="modal-body">
-              <p style={{ 
-                fontSize: "16px", 
-                lineHeight: "1.5", 
-                marginBottom: "20px",
-                whiteSpace: "pre-line",
-                color: "#721c24",
-                backgroundColor: "#f8d7da",
-                padding: "15px",
-                borderRadius: "4px"
-              }}>
+              <p style={{width:"100%"}}>
                 {modalData.message}
               </p>
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
                  <button
-                  className="btn btn-secondary"
+                  className="edit"
                   onClick={closeAllModals}
                   style={{ padding: "10px 30px" }}
                 >
                   Annuler
                 </button>
                 <button
-                  className="btn btn-danger"
+                  className="delete"
                   onClick={async () => {
                     if (modalData.onConfirm) {
                       await modalData.onConfirm();
@@ -858,7 +849,7 @@ const checkIfTrancheExists = (nouveauMin, nouveauMax, excludeId = null) => {
                   }}
                   style={{ padding: "10px 30px" }}
                 >
-                  Confirmer la régénération
+                  Confirmer 
                 </button>
                
               </div>

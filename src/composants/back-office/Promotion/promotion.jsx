@@ -10,7 +10,6 @@ import {
   updatePromotion,
   deletePromotion,
 } from "../../../services/promotionService";
-
 import {
   FaGift,
   FaSearch,
@@ -20,9 +19,7 @@ import {
   FaTrash,
   FaExclamationTriangle,
 } from "react-icons/fa";
-
 import { useToast } from "../../../contexts/ToastContext";
-
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
@@ -30,7 +27,6 @@ import "../../../styles/back-office/toast.css";
 
 const Promotions = () => {
   const { showToast } = useToast();
-
   const [promotions, setPromotions] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [promotionAEditer, setPromotionAEditer] = useState(null);
@@ -44,7 +40,6 @@ const Promotions = () => {
   const [filtreDateMin, setFiltreDateMin] = useState("");
   const [filtreDateMax, setFiltreDateMax] = useState("");
 
-  // Modal suppression
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [promotionASupprimer, setPromotionASupprimer] = useState(null);
 
@@ -70,7 +65,7 @@ const Promotions = () => {
       if (promotionAEditer) {
         result = await updatePromotion(promotionAEditer.numPromotion, promotionData);
         setPromotions((prev) =>
-          prev.map((p) => (p.numPromotion === promotionAEditer.numPromotion ? result : p))
+          prev.map((p) => (p.numPromotion === result.numPromotion ? result : p))
         );
         showToast("success", "Promotion mise à jour avec succès !");
       } else {
@@ -98,7 +93,6 @@ const Promotions = () => {
 
   const confirmerSuppression = async () => {
     if (!promotionASupprimer) return;
-
     try {
       await deletePromotion(promotionASupprimer.numPromotion);
       setPromotions((prev) =>
@@ -113,6 +107,20 @@ const Promotions = () => {
     }
   };
 
+  // Calcul du statut réel (actif, inactif, expiré)
+  const getStatutAffichage = (promo) => {
+    const aujourdHui = new Date();
+    const dateFin = promo.dateFin ? new Date(promo.dateFin) : null;
+
+    if (dateFin && dateFin < aujourdHui) {
+      return { texte: "Expirée", classe: "expiree" };
+    }
+    if (promo.statutPromotion === true) {
+      return { texte: "Active", classe: "active" };
+    }
+    return { texte: "Inactive", classe: "inactive" };
+  };
+
   // Filtrage
   const filteredPromotions = promotions.filter((promo) => {
     const searchMatch =
@@ -120,11 +128,13 @@ const Promotions = () => {
       (promo.nomPromotion?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (promo.typePromotion?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
+    const statutActuel = getStatutAffichage(promo);
+
     const statutMatch =
       filtreStatut === "tous" ||
-      (filtreStatut === "active" && promo.statutPromotion === "Active") ||
-      (filtreStatut === "inactive" && promo.statutPromotion === "Inactive") ||
-      (filtreStatut === "expiree" && promo.statutPromotion === "Expirée");
+      (filtreStatut === "active" && statutActuel.texte === "Active") ||
+      (filtreStatut === "inactive" && statutActuel.texte === "Inactive") ||
+      (filtreStatut === "expiree" && statutActuel.texte === "Expirée");
 
     const typeMatch =
       filtreType === "tous" ||
@@ -156,16 +166,30 @@ const Promotions = () => {
   };
 
   const hasActiveFilters =
-    searchTerm || filtreStatut !== "tous" || filtreType !== "tous" || filtreDateMin || filtreDateMax;
+    searchTerm ||
+    filtreStatut !== "tous" ||
+    filtreType !== "tous" ||
+    filtreDateMin ||
+    filtreDateMax;
 
+  // Stats
   const stats = {
     total: filteredPromotions.length,
-    active: promotions.filter((p) => p.statutPromotion === "Active").length,
-    inactive: promotions.filter((p) => p.statutPromotion === "Inactive").length,
-    expiree: promotions.filter((p) => p.statutPromotion === "Expirée").length,
+    active: promotions.filter((p) => getStatutAffichage(p).texte === "Active").length,
+    inactive: promotions.filter((p) => getStatutAffichage(p).texte === "Inactive").length,
+    expiree: promotions.filter((p) => getStatutAffichage(p).texte === "Expirée").length,
   };
 
- 
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="loading-state">
+          <div className="loading-spinner"></div>
+          <p>Chargement des promotions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -203,8 +227,8 @@ const Promotions = () => {
 
       {/* Barre de recherche */}
       <div className="search-container">
-              <div className="search-bar">
-                <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
+        <div className="search-bar">
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
           <input
             type="text"
             placeholder="Rechercher par code, nom ou type..."
@@ -214,10 +238,16 @@ const Promotions = () => {
           <button
             className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-             style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
-                    >
-                      <FaFilter />
-                    </button>
+            style={{
+              border: "none",
+              background: "white",
+              color: "#28a458",
+              padding: "0 12px",
+              cursor: "pointer",
+            }}
+          >
+            <FaFilter />
+          </button>
           <FaSync
             onClick={reinitialiserFiltres}
             style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}
@@ -232,7 +262,11 @@ const Promotions = () => {
           <div className="filters-row">
             <div className="filter-group">
               <label>Statut</label>
-              <select className="form-control" value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+              <select
+                className="form-control"
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+              >
                 <option value="tous">Tous</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -241,17 +275,23 @@ const Promotions = () => {
             </div>
             <div className="filter-group">
               <label>Type</label>
-              <select className="form-control" value={filtreType} onChange={(e) => setFiltreType(e.target.value)}>
+              <select
+                className="form-control"
+                value={filtreType}
+                onChange={(e) => setFiltreType(e.target.value)}
+              >
                 <option value="tous">Tous</option>
                 <option value="pourcentage">Pourcentage</option>
                 <option value="montant fixe">Montant fixe</option>
               </select>
             </div>
             <div className="filter-group">
-              <label>Date début </label>
+              <label>Date début</label>
               <DatePicker
                 selected={filtreDateMin ? new Date(filtreDateMin) : null}
-                onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+                onChange={(date) =>
+                  setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")
+                }
                 dateFormat="dd/MM/yyyy"
                 locale={fr}
                 placeholderText="jj/mm/aaaa"
@@ -260,10 +300,12 @@ const Promotions = () => {
               />
             </div>
             <div className="filter-group">
-              <label>Date fin </label>
+              <label>Date fin</label>
               <DatePicker
                 selected={filtreDateMax ? new Date(filtreDateMax) : null}
-                onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+                onChange={(date) =>
+                  setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")
+                }
                 dateFormat="dd/MM/yyyy"
                 locale={fr}
                 placeholderText="jj/mm/aaaa"
@@ -277,7 +319,8 @@ const Promotions = () => {
           <div className="active-filters">
             {filtreStatut !== "tous" && (
               <span className="active-filter-tag">
-                Statut: {filtreStatut} <button onClick={() => setFiltreStatut("tous")}>×</button>
+                Statut: {filtreStatut === "active" ? "Active" : filtreStatut === "inactive" ? "Inactive" : "Expirée"}
+                <button onClick={() => setFiltreStatut("tous")}>×</button>
               </span>
             )}
             {filtreType !== "tous" && (
@@ -287,12 +330,12 @@ const Promotions = () => {
             )}
             {filtreDateMin && (
               <span className="active-filter-tag">
-                Début  {filtreDateMin} <button onClick={() => setFiltreDateMin("")}>×</button>
+                Début {filtreDateMin} <button onClick={() => setFiltreDateMin("")}>×</button>
               </span>
             )}
             {filtreDateMax && (
               <span className="active-filter-tag">
-                Fin  {filtreDateMax} <button onClick={() => setFiltreDateMax("")}>×</button>
+                Fin {filtreDateMax} <button onClick={() => setFiltreDateMax("")}>×</button>
               </span>
             )}
           </div>
@@ -317,50 +360,84 @@ const Promotions = () => {
           </thead>
           <tbody>
             {filteredPromotions.length > 0 ? (
-              filteredPromotions.map((promo) => (
-                <tr key={promo.numPromotion} className={promo.statutPromotion === "Active" ? "active-row" : ""}>
-                  <td><strong style={{ fontFamily: "monospace", color: "#8b5e3c" }}>{promo.codePromo}</strong></td>
-                  <td>{promo.nomPromotion}</td>
-                  <td>
-                    <span className={`badge-type ${promo.typePromotion === "Pourcentage" ? "badge-percent" : "badge-amount"}`}>
-                      {promo.typePromotion}
-                    </span>
-                  </td>
-                  <td>
-                    <strong>
-                      {promo.typePromotion === "Pourcentage" ? `${promo.valeur}%` : `${promo.valeur.toLocaleString()} Ar`}
-                    </strong>
-                  </td>
-                  <td>{promo.montantMinimum ? `${promo.montantMinimum.toLocaleString()} Ar` : "—"}</td>
-                  <td>{promo.dateDebut ? new Date(promo.dateDebut).toLocaleDateString("fr-FR") : "—"}</td>
-                  <td>{promo.dateFin ? new Date(promo.dateFin).toLocaleDateString("fr-FR") : "—"}</td>
-                  <td>
-                <td>
-  <span className={`status ${
-    promo.statut === "active" ? "active" :
-    promo.statut === "en_attente" ? "en-attente" :
-    promo.statut === "expirée" ? "expiree" :
-    "inactive"
-  }`}>
-    {promo.statut === "active" ? "Active" :
-     promo.statut === "en_attente" ? "En attente" :
-     promo.statut === "expirée" ? "Expirée" :
-     "Inactive"}
-  </span>
+              filteredPromotions.map((promo) => {
+                const statut = getStatutAffichage(promo);
+                return (
+                  <tr
+                    key={promo.numPromotion}
+                    className={statut.texte === "Active" ? "active-row" : ""}
+                  >
+                    <td>
+                      <strong style={{ fontFamily: "monospace", color: "#8b5e3c" }}>
+                        {promo.codePromo || "—"}
+                      </strong>
+                    </td>
+                    <td>{promo.nomPromotion}</td>
+                    <td>
+                      <span
+                        className={`badge-type ${
+                          promo.typePromotion === "Pourcentage" ? "badge-percent" : "badge-amount"
+                        }`}
+                      >
+                        {promo.typePromotion}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>
+                        {promo.typePromotion === "Pourcentage"
+                          ? `${promo.valeur}%`
+                          : `${promo.valeur.toLocaleString()} Ar`}
+                      </strong>
+                    </td>
+                    <td>
+                      {promo.montantMinimum
+                        ? `${promo.montantMinimum.toLocaleString()} Ar`
+                        : "—"}
+                    </td>
+                   <td>
+  {promo.dateDebut
+    ? new Date(promo.dateDebut).toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "—"}
 </td>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <button className="edit" onClick={() => handleEdit(promo)}>
-                        <FaEdit style={{ color: "#28a458", marginRight: "8px" }} /> Modifier
-                      </button>
-                      <button className="delete" onClick={() => openDeleteModal(promo)}>
-                        <FaTrash style={{ marginRight: "8px" }} /> Supprimer
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+<td>
+  {promo.dateFin
+    ? new Date(promo.dateFin).toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "—"}
+</td>
+                    <td>
+                      <span className={`status ${statut.classe}`}>
+                        {statut.texte}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        <button className="edit" onClick={() => handleEdit(promo)}>
+                          <FaEdit style={{ color: "#28a458", marginRight: "8px" }} />{" "}
+                          Modifier
+                        </button>
+                        <button
+                          className="delete"
+                          onClick={() => openDeleteModal(promo)}
+                        >
+                          <FaTrash style={{ marginRight: "8px" }} /> Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan="9" className="empty-table">
@@ -405,14 +482,24 @@ const Promotions = () => {
                 <FaExclamationTriangle style={{ color: "#dc3545" }} />
                 Confirmer la suppression
               </h2>
-              <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+              <button
+                className="modal-close"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                ×
+              </button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: "16px", lineHeight: "1.5" }}>
-                Êtes-vous sûr de vouloir supprimer la promotion <strong>{promotionASupprimer?.nomPromotion}</strong> (code : <strong>{promotionASupprimer?.codePromo}</strong>) ?
+                Êtes-vous sûr de vouloir supprimer la promotion{" "}
+                <strong>{promotionASupprimer?.nomPromotion}</strong> (code :{" "}
+                <strong>{promotionASupprimer?.codePromo || "aucun"}</strong>) ?
               </p>
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px", marginTop: "20px" }}>
-                <button className="edit" onClick={() => setShowDeleteModal(false)}>
+                <button
+                  className="edit"
+                  onClick={() => setShowDeleteModal(false)}
+                >
                   Annuler
                 </button>
                 <button className="delete" onClick={confirmerSuppression}>

@@ -377,7 +377,7 @@ const Produits = () => {
         {filteredProduits.length > 0 ? (
           filteredProduits.map((produit) => {
             const hasPromo =
-              produit.promotion && produit.promotion.statut === "active";
+              produit.promotion && produit.promotion.statutPromotion === true;
             const prixPromo = hasPromo
               ? produit.promotion.typePromotion === "Pourcentage"
                 ? Math.round(
@@ -587,11 +587,17 @@ const Produits = () => {
                   className="form-control"
                   >
                     <option value="">Aucune</option>
-                    {promotions.map((p) => (
-                      <option key={p.numPromotion} value={p.numPromotion}>
-                        {p.nomPromotion} ({p.valeur}%)
-                      </option>
-                    ))}
+                    {promotions
+  .filter(promo => 
+    promo.statutPromotion === true &&      
+    !promo.automatique &&                  
+    promo.codePromo == null               
+  )
+  .map((p) => (
+    <option key={p.numPromotion} value={p.numPromotion}>
+      {p.nomPromotion} : -{p.codePromo} ({p.valeur}{p.typePromotion === "Pourcentage" ? "%" : " Ar"})
+    </option>
+  ))}
                   </select>
                 </div>
               </div>

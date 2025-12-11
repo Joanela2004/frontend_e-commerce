@@ -107,7 +107,7 @@ const Header = () => {
               </div>
 
               {isProfileMenuOpen && (
-                <div className="profile-dropdown">
+                <div className="profile-dropdown" style={{display:"flex",alignItems:"center",flexDirection:"column",justifyContent:"center"}}>
                   <div className="profile-info">
                     <p className="profile-email">{userData?.email || 'admin@exemple.com'}</p>
                   </div>
@@ -117,10 +117,9 @@ const Header = () => {
                     Changer mot de passe
                   </button>
 
-                  <button onClick={handleLogout} className="dropdown-option logout-btn">
-                    <FaSignOutAlt className="dropdown-option-icon" />
-                    Déconnexion
-                  </button>
+                  <button onClick={handleLogout} className="btn" style={{fontSize:"1rem", margin:"10px 10px"}}>
+                Se déconnecter
+              </button>
                 </div>
               )}
             </div>

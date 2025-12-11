@@ -244,7 +244,7 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
                   value={form.auteur}
                   onChange={handleChange}
                   className={`form-control ${errors.auteur ? "error" : ""}`}
-                  placeholder="Jean Dupont"
+                 
                   required
                 />
                 {errors.auteur && <div className="error-message">{errors.auteur}</div>}

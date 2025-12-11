@@ -24,7 +24,7 @@ export const fetchProduits = async () => {
 
 export const fetchProduitsById = async (id) => {
   try {
-    const res = await api.get(PRODUIT_URL);
+    const res = await api.get(`PRODUIT_URL)/${id}`);
     return res.data;
   } catch (error) {
     console.error("Erreur fetchProduits:", error);

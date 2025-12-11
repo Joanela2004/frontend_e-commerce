@@ -12,7 +12,6 @@
   transform: scale(0.98) translateY(-4px) !important;
 }
 
-/* Image plus petite */
 .back-office-card .produit-image {
   height: 160px !important;
 }
@@ -37,18 +36,4 @@
   font-size: 0.95rem;
 }
 
-.back-office-card .nouveau-prix,
-.back-office-card .prix-normal {
-  font-size: 1.25rem !important;
-}
 
-.back-office-card .poids-disponible {
-  font-size: 0.9rem;
-}
-
-/* Boutons plus petits */
-.back-office-card .edit,
-.back-office-card .delete {
-  padding: 6px 12px !important;
-  font-size: 0.85rem !important;
-}

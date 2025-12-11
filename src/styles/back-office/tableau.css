@@ -236,7 +236,6 @@
   font-size: 0.9rem;
 }
 
-/* Styles pour les badges de statut */
 .status {
   display: inline-block;
   padding: 4px 10px;
@@ -277,7 +276,6 @@
   color: #25669c79;
 }
 
-/* Badges paiement */
 .badge-paid, .badge-unpaid {
   display: inline-block;
   padding: 4px 10px;
@@ -353,7 +351,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .table-container {
     border-radius: var(--rayon);
     margin: 0 -15px;

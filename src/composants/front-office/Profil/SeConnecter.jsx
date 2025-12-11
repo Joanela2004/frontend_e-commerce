@@ -23,7 +23,7 @@ const { showToast } = useToast();
       localStorage.setItem('userToken', response.access_token);
       localStorage.setItem('userData', JSON.stringify(response.user));
     
-      navigate(response.user?.role === 'admin' ? '/admin' : '/profil');
+      navigate(response.user?.role === 'admin' ? '/admin' : '/accueil');
     } catch (err) {
       showToast('error', err.response?.status === 401 
       ? 'Email ou mot de passe incorrect' 

@@ -90,7 +90,7 @@
 /* ===== MODAL HEADER ===== */
 .modal-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid var(--color-border-light);
@@ -101,13 +101,6 @@
   border-radius: 8px 8px 0 0;
 }
 
-.modal-header h2,
-.modal-header h3 {
-  margin: 0;
-  color: var(--color-text-dark);
-  font-size: 1.3rem;
-  font-weight: 600;
-}
 
 .modal-close-btn {
   background: none;
@@ -200,8 +193,8 @@
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-green-primary);
-  color: var(--color-background-white);
+  background-color: var(--color-background-white);
+
 }
 
 .btn-primary {

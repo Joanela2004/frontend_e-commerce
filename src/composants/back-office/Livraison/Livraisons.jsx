@@ -412,10 +412,9 @@ const Livraisons = () => {
         </button>
       </div>
 
-      {/* Barre de recherche et filtres */}
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch className="search-icon" />
+          <FaSearch  style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par commande, transporteur, référence ou client..."
@@ -621,18 +620,16 @@ const Livraisons = () => {
                     </div>
                   </td>
                   <td>
-                    {livraison.dateExpedition
-                      ? new Date(livraison.dateExpedition).toLocaleDateString(
-                          "fr-FR"
-                        )
-                      : "-"}
+                  <td>
+  {livraison.dateExpedition || "-"}
+</td>
+
                   </td>
                   <td>
-                    {livraison.dateLivraison
-                      ? new Date(livraison.dateLivraison).toLocaleDateString(
-                          "fr-FR"
-                        )
-                      : "-"}
+                  <td>
+  {livraison.dateLivraison || "-"}
+</td>
+
                   </td>
                   <td>
                     <span
@@ -649,9 +646,7 @@ const Livraisons = () => {
                         </>
                       ) : (
                         <>
-                          <FaExclamationTriangle
-                            style={{ marginRight: "5px" }}
-                          />{" "}
+                        
                           En cours
                         </>
                       )}

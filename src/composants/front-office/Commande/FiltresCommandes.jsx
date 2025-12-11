@@ -4,7 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
 const FiltresCommandes = ({ filtreStatut, setFiltreStatut, filtreDate, setFiltreDate, statutsDisponibles }) => {
   return (
-    <div className="filtres-commandes-conteneur">
+    <div className="filtres-commandes-conteneur" style={{marginTop:"80px"}}>
       <div className="filtre-item">
         <p>Rechercher par date</p>
       <DatePicker

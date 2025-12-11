@@ -16,6 +16,17 @@ const HistoriqueCommandes = () => {
   const [showPaiementModal, setShowPaiementModal] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState(null);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    refreshCommandes();
+}, []);
+const refreshCommandes = async () => {
+    try {
+        const res = await fetchMesCommandes();
+        setCommandes(res);
+    } catch (err) {
+        console.error(err);
+    }
+};
 
   const fetchData = async () => {
     try {
@@ -32,8 +43,6 @@ const HistoriqueCommandes = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // Ouvre le modal de paiement UNIQUEMENT si la commande est encore "en attente"
   const handleSelectOrder = (order) => {
     const estEnAttente = ["en attente", "attente"].some(s =>
       (order.statut || "").toLowerCase().includes(s)
@@ -88,7 +97,7 @@ const HistoriqueCommandes = () => {
 
       <div className="list-commandes-section">
         {commandesFiltrees.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state" style={{margin:"0 20px"}}>
             <h3>Aucune commande trouvée</h3>
             <p>
               {filtreStatut !== "Tous" || filtreDate
@@ -103,6 +112,7 @@ const HistoriqueCommandes = () => {
                 key={order.numCommande}
                 order={order}
                 onSelectOrder={handleSelectOrder}
+                refreshCommandes={refreshCommandes}
               />
             ))}
           </div>

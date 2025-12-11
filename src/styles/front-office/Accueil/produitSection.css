@@ -25,9 +25,8 @@
 
 .produits-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
- 
-  margin: 0 auto;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
   padding: 10px 80px;
 }
 
@@ -68,23 +67,21 @@
  align-items: center;
  justify-content: center;
 }
-
+.produit-body{
+  height: 50%;
+}
 .produit-image img {
   width: 100%;
-  height: 100%;
+  height: 200px;
   object-fit: cover;
  }
 
 
 
-/* Corps de la carte */
-.produit-body {
-  padding: 20px;
-}
 
 .produit-title {
+  margin-top: 15px;
   font-size: 1.25rem;
-  margin: 10px 0 10px 0;
   color:#3d3b3b ;
   font-weight: 600;
 }
@@ -102,20 +99,17 @@
   font-size: 0.8rem;
 }
 
-/* Prix + poids */
-.produit-prix-poids {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  height: 50px;
-}
+ .produit-prix-poids {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    height: 100px;
+  }
 
 .ancien-prix {
   display: block;
   text-decoration: line-through;
   color: #95a5a6;
-  
   font-size: 0.95rem;
 }
 
@@ -143,7 +137,6 @@
   margin-right: 6px;
 }
 
-/* Boutons panier */
 .panier-actions {
   text-align: center;
 }
@@ -153,7 +146,7 @@
   color: white;
   border: none;
   border-radius: 50px;
-  padding: 12px 28px;
+  padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
   display: inline-flex;
@@ -181,8 +174,10 @@
   padding: 10px 20px;
   font-size: 1.1rem;
 }
+
 .btn-add-cart,.quantity-control{
   height: 40px;
+  
 }
 .btn-moins,
 .btn-plus {
@@ -230,42 +225,36 @@
   .produits-header h3 {
     font-size: 2rem;
   }
- .produit-image{
-  height: 50%;
- }
 
- .produit-body {
-  padding: 10px;
+.produit-image img{
+  padding-bottom: 40px;
 }
-
-.produit-card {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  position: relative;
-  width: 250px;
-}
-.produits-grid {
-  gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 10px 20px;
-}
-
 .produit-title {
-  font-size: 1rem;
-  margin: 0 0 5px 0;
-  color: #219653;
-  font-weight: 600;
+  margin-top:0;
 }
+.produit-card {
+    width: 100%; 
+    height: auto; 
+    margin: 0;
+  }
+  
+.produits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 10px 15px; 
+    margin: 0 auto;
+  }
+
+  .produits-section {
+    padding: 40px 10px; 
+  }
+
 
 .produit-categorie {
   display: flex;
   align-items: center;
   color: #7f8c8d;
-  font-size: 0.8rem;
+  font-size: 0.5rem;
   margin-bottom: 14px;
 }
 
@@ -274,12 +263,13 @@
   font-size: 0.8rem;
 }
 
-.produit-prix-poids {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
+   .produit-prix-poids {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px; 
+    height: 50px;
+  }
 
 .ancien-prix {
   display: block;
@@ -294,6 +284,9 @@
   font-weight: bold;
   color: #e74c3c;
 }
+.nouveau-prix, .prix-normal {
+    font-size: 1.20rem;
+  }
 
 .prix-normal {
   font-size: 1rem;
@@ -302,10 +295,10 @@
 }
 .poids-disponible {
   display: flex;
-  
+  font-size: 0.8rem;
   align-items: center;
   color: #8b5e3c;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .poids-disponible svg {
@@ -313,9 +306,7 @@
   font-size: 0.8rem;
 }
 
-.btn-add-cart,.quantity-control{
-  height: 20px;
-}
+
 .quantity-control {
   display: flex;
   align-items: center;
@@ -358,14 +349,5 @@
 }
 }
 
-@media (max-width: 480px) {
- 
-  .produit-prix-poids {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-   .produit-image{
-  height: 30%;
- }
-}
+
+
