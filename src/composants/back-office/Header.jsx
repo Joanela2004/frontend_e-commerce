@@ -41,7 +41,7 @@ const Header = () => {
       document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
       document.body.style.overflow = 'auto';
 
-      navigate("/profil", { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
@@ -98,7 +98,7 @@ const Header = () => {
               >
                 <FaUserCircle className="profile-icon" />
                 <span className="profile-name">
-                  {userData?.nomUtilisateur || 'Admin'}
+                  {userData?.email}
                 </span>
                 <FaCaretDown
                   className={`caret-icon ${isProfileMenuOpen ? 'rotate' : ''}`}
@@ -108,9 +108,7 @@ const Header = () => {
 
               {isProfileMenuOpen && (
                 <div className="profile-dropdown" style={{display:"flex",alignItems:"center",flexDirection:"column",justifyContent:"center"}}>
-                  <div className="profile-info">
-                    <p className="profile-email">{userData?.email || 'admin@exemple.com'}</p>
-                  </div>
+                  
 
                   <button onClick={handleChangePassword} className="dropdown-option change-password-btn">
                     <FaLock className="dropdown-option-icon" style={{ color: "#28a745" }} />

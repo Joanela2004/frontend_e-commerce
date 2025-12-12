@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 
 // Pages Front-Office
+import SeConnecter from '../pages/front-office/Connexion';
 import Accueil from "../pages/front-office/Accueil";
 import Actualite from "../pages/front-office/Actualite";
 import ActualiteDetails from "../pages/front-office/ActualiteDetails";
@@ -46,9 +47,10 @@ export default function AppRoutes() {
         <Route path="/actualite" element={<Actualite />} />
         <Route path="/actualite/:id" element={<ActualiteDetails />} />
         <Route path="/profil" element={<Profil />} />
+        <Route path="/profil/connexion" element={<SeConnecter />} />
      <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
      <Route path="/verifier-code-reset" element={<VerifierCodeReset />} />
-        {/* Pages de paiement Stripe */}
+       
         <Route path="/success" element={<Success />} />
         <Route path="/cancel" element={<Cancel />} />
 

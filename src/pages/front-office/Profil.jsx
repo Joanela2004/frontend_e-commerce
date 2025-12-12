@@ -55,10 +55,7 @@ const Profil = () => {
                 <div className="form-card">
                   <Authentifier />
                 </div>
-
-                <div className="form-card">
-                  <SeConnecter />
-                </div>
+                
               </div>
             </div>
           )}

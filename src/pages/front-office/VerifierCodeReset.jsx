@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link ,useNavigate } from 'react-router-dom';
 import { verifierCodeEtReset, envoyerCodeReset } from '../../services/AuthService';
 import { useToast } from "../../contexts/ToastContext";
-
+import { FiEye, FiEyeOff } from "react-icons/fi";
 const VerifierCodeReset = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,7 +18,6 @@ const VerifierCodeReset = () => {
   const [estExpire, setEstExpire] = useState(false);
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
-  // Vérifier si email est présent
   useEffect(() => {
     if (!email) {
       showToast('error', 'Aucun e-mail spécifié. Veuillez recommencer la procédure.');
@@ -37,10 +36,13 @@ const VerifierCodeReset = () => {
     setMessage('');
     try {
       await envoyerCodeReset({ email });
-      setMessage('Un nouveau code a été envoyé !');
+      showToast("success", "Un nouveau code a été envoyé !");
       setEstExpire(false);      
     } catch (err) {
-      setErreur(err.response?.data?.message || 'Erreur lors du renvoi du code');
+    showToast(
+        "error",
+        err.response?.data?.message || "Erreur lors du renvoi du code"
+      );  
     } finally {
       setEnvoiEnCours(false);
     }
@@ -53,7 +55,8 @@ const VerifierCodeReset = () => {
       return;
     }
     if (nouveauMdp !== confirmation) {
-      setErreur('Les mots de passe ne correspondent pas');
+      showToast('Erreur','Les mots de passe ne correspondent pas');
+
       return;
     }
     try {
@@ -63,11 +66,11 @@ const VerifierCodeReset = () => {
         password: nouveauMdp,
         password_confirmation: confirmation
       });
-      setMessage('Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.');
+      showToast('success','Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.');
       setErreur('');
-      setTimeout(() => navigate('/profil'), 2000);
+      setTimeout(() => navigate('/profil/connexion'), 1000);
     } catch (err) {
-      setErreur(err.response?.data?.message || 'Code incorrect ou expiré');
+      showToast(err.response?.data?.message || 'Code incorrect ou expiré');
         if (err.response?.data?.code === 'EXPIRE') {
         setEstExpire(true);
       }
@@ -99,7 +102,7 @@ const VerifierCodeReset = () => {
           <label>Code de vérification</label>
           <input
             type="text"
-            placeholder="123456"
+           
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             maxLength={6}
@@ -110,7 +113,8 @@ const VerifierCodeReset = () => {
 
         <div className="groupe-formulaire">
           <label>Nouveau mot de passe</label>
-         
+          <div className="champ-mot-de-passe" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+           
           <input
       type={afficherMotDePasse ? "text" : "password"}
       
@@ -127,10 +131,13 @@ const VerifierCodeReset = () => {
     >
       {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
     </span>
+    </div>
         </div>
 
         <div className="groupe-formulaire">
           <label>Confirmer le mot de passe</label>
+         <div className="champ-mot-de-passe" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+           
         <input
       type={afficherMotDePasse ? "text" : "password"}
       
@@ -147,6 +154,7 @@ const VerifierCodeReset = () => {
     >
       {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
     </span>
+    </div>
         </div>
 
         {message && <div className="message-succes">{message}</div>}
@@ -171,6 +179,10 @@ const VerifierCodeReset = () => {
             {envoiEnCours ? 'Envoi en cours...' : 'Renvoyer un nouveau code'}
           </button>
         </div>
+         <p style={{ marginTop: "15px", textAlign: "center" }}>
+          
+         <Link to="/profil/connexion" className="lien-mot-de-passe">Revenir</Link>
+        </p>
       </form>
     </div>
   );
