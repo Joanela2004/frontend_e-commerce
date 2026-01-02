@@ -7,7 +7,7 @@ export const useToast = () => useContext(ToastContext);
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const showToast = useCallback((type, message, title = null, duration = 3000) => {
+  const showToast = useCallback((type, message, title = null, duration = 5000) => {
     const id = Date.now();
     const toast = {
       id,

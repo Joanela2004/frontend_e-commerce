@@ -8,7 +8,15 @@ margin-top: 20px;
 .getkpi-container{
 display: flex;
 flex-direction: row;
-margin-top: 20px;  
+margin-top: 20px; 
+justify-content: center;
+align-items: center;
+
+}
+.getkpi{
+
+display: flex;
+flex-direction: column;
 }
 .kpis-grid{
     display: flex;

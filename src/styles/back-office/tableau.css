@@ -272,8 +272,8 @@
 }
 
 .status.payée {
-  background: #99cbec;
-  color: #25669c79;
+  background: #fff3cd;
+  color: #856404;
 }
 
 .badge-paid, .badge-unpaid {
@@ -479,9 +479,13 @@
 }
 
 .card-footer {
+  position: absolute;
+ top:auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 15px 20px;
-  border-top: 1px solid var(--color-border);
-  background: #f8f9fa;
+ background: #f8f9fa;
 }
 
 .card-image {

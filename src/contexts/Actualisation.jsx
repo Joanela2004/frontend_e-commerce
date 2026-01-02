@@ -30,8 +30,7 @@ export const NouvelleCommandeProvider = ({ children }) => {
         try {
             await markCommandeAsConsulted(numCommande);
             setNewOrdersCount(prev => Math.max(0, prev - 1));
-            // Optionnel : recharger pour être 100% sûr (très rapide)
-            await loadNewOrders();
+                await loadNewOrders();
         } catch (err) {
             console.error("Erreur markAsConsulted", err);
             throw err;
@@ -40,7 +39,7 @@ export const NouvelleCommandeProvider = ({ children }) => {
 
     useEffect(() => {
         loadNewOrders();
-        const interval = setInterval(loadNewOrders, 30000); // toutes les 30s
+        const interval = setInterval(loadNewOrders, 30000); 
         return () => clearInterval(interval);
     }, []);
 

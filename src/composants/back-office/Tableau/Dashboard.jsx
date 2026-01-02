@@ -59,21 +59,23 @@ export default function Dashboard() {
         </div>
            
 
-        <div style={{display:"flex",marginBottom:"20px"}}className="date-range-wrapper">
-          <DateRange onChange={setDates} />
-        </div>
+       
        
       </div>
 
       {/* Section Graphiques */}
       <div className="charts-main-section">
-        {/* Grand graphique à gauche */}
-        <div className="main-chart">
+        <div style={{display:"flex",marginBottom:"20px"}}className="date-range-wrapper">
+          <DateRange onChange={setDates} />
+        </div>
+        <div style={{display:"flex",marginBottom:"20px"}}className="main-chart">
           <SalesOverTime start={dates.start} end={dates.end} interval="day" />
         </div>
         
-        {/* Petits graphiques à droite */}
-        <div className="side-charts">
+       
+      </div>
+ {/* Petits graphiques à droite */}
+        <div className="charts-main-section">
           <div className="chart-card">
             <SalesByCategory start={dates.start} end={dates.end} />
           </div>
@@ -86,8 +88,6 @@ export default function Dashboard() {
             />
           </div>
         </div>
-      </div>
-
       {/* Section Top Clients */}
       <div className="top-clients-section">
         <TopClients start={dates.start} end={dates.end} limit={10} />

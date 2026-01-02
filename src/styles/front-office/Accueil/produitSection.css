@@ -80,7 +80,6 @@
 
 
 .produit-title {
-  margin-top: 15px;
   font-size: 1.25rem;
   color:#3d3b3b ;
   font-weight: 600;
@@ -146,10 +145,10 @@
   color: white;
   border: none;
   border-radius: 50px;
-  padding: 10px 20px;
   font-size: 1rem;
   cursor: pointer;
-  display: inline-flex;
+  display:flex;
+  justify-content: center;
   align-items: center;
   gap: 10px;
   transition: background 0.3s;
@@ -177,7 +176,13 @@
 
 .btn-add-cart,.quantity-control{
   height: 40px;
-  
+  position: absolute;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  bottom: 0;
+  left:0;
+  right: 0;
 }
 .btn-moins,
 .btn-plus {
@@ -226,22 +231,18 @@
     font-size: 2rem;
   }
 
-.produit-image img{
-  padding-bottom: 40px;
-}
-.produit-title {
-  margin-top:0;
-}
+
+
 .produit-card {
     width: 100%; 
     height: auto; 
     margin: 0;
   }
   
-.produits-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .produits-grid {
+    grid-template-columns: repeat(1, 1fr);
     gap: 20px;
-    padding: 10px 15px; 
+    padding: 10px 15px;
     margin: 0 auto;
   }
 
@@ -319,20 +320,7 @@
 }
 
 
-.btn-add-cart {
-  margin-top: 20px;
-  background: #27ae60;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 12px 14px;
-  font-size: 1rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: background 0.3s;
-}
+
 .btn-moins,
 .btn-plus {
   background: none;

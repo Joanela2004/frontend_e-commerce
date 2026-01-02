@@ -11,9 +11,7 @@ import {
   FaCalendarAlt,
   FaMapMarkerAlt,
   FaWeightHanging,
-  FaShippingFast,
   FaCheckCircle,
-  FaExclamationTriangle,
   FaEdit,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
@@ -24,10 +22,6 @@ import { updateCommandeAdmin } from "../../../services/commandeService";
 import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
-
-// =========================================================================
-// COMPOSANT MODAL CORRIGÉ
-// =========================================================================
 
 const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
   const [formData, setFormData] = useState({});
@@ -56,16 +50,13 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const updatedData = { ...formData };
 
-      // Si le statut passe à 'livrée' et que la date n'est pas déjà définie, on l'ajoute
       if (
         updatedData.statutLivraison === "livrée" &&
         !updatedData.dateLivraison
       ) {
-        // Format YYYY-MM-DD HH:MM:SS
         updatedData.dateLivraison = new Date()
           .toISOString()
           .slice(0, 19)
@@ -74,15 +65,9 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
 
       await updateLivraison(updatedData.numLivraison, updatedData);
 
-      let newStatutCommande = null;
       if (updatedData.statutLivraison === "livrée") {
-        newStatutCommande = "livrée";
-      }
-
-      // Mise à jour de la commande associée si nécessaire
-      if (newStatutCommande) {
         await updateCommandeAdmin(updatedData.numCommande, {
-          statut: newStatutCommande,
+          statut: "livrée",
           dateLivraison: updatedData.dateLivraison,
         });
       }
@@ -102,7 +87,6 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
       <div className="modal-content" style={{ maxWidth: "600px" }}>
         <div className="modal-header">
           <h2>
-            {/* Utilisation de var(--color-primary) ou #28a458 pour la cohérence */}
             <FaEdit style={{ color: "var(--color-primary, #28a458)" }} />
             Modifier la Livraison #{livraison?.numCommande}
           </h2>
@@ -111,11 +95,8 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
           </button>
         </div>
 
-        {/* Ajout de la classe modal-form au formulaire */}
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
-            
-            {/* Ligne 1 : Transporteur & Référence Colis */}
             <div className="form-row">
               <div className="form-group">
                 <label>Transporteur</label>
@@ -126,10 +107,9 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   onChange={handleChange}
                   required
                   placeholder="Nom du transporteur"
-                  className="form-control" // Ajout de la classe
+                  className="form-control"
                 />
               </div>
-
               <div className="form-group">
                 <label>Référence Colis</label>
                 <input
@@ -139,12 +119,11 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   onChange={handleChange}
                   required
                   placeholder="Numéro de suivi"
-                  className="form-control" // Ajout de la classe
+                  className="form-control"
                 />
               </div>
             </div>
 
-            {/* Ligne 2 : Lieu de livraison & Contact Transporteur */}
             <div className="form-row">
               <div className="form-group">
                 <label>Lieu de livraison</label>
@@ -155,10 +134,9 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   onChange={handleChange}
                   required
                   placeholder="Adresse de livraison"
-                  className="form-control" // Ajout de la classe
+                  className="form-control"
                 />
               </div>
-
               <div className="form-group">
                 <label>Contact Transporteur</label>
                 <input
@@ -167,31 +145,28 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
                   value={formData.contactTransporteur}
                   onChange={handleChange}
                   placeholder="Téléphone ou email du transporteur"
-                  className="form-control" // Ajout de la classe
+                  className="form-control"
                 />
               </div>
             </div>
 
-            {/* Ligne 3 : Statut (Pleine largeur) */}
-            <div className="form-row" style={{ paddingBottom: '20px' }}> 
-                <div className="form-group" style={{ flex: '1 1 100%' }}>
-                  <label>Statut de la livraison</label>
-                  <select
-                    name="statutLivraison"
-                    value={formData.statutLivraison}
-                    onChange={handleChange}
-                    required
-                    className="form-control" 
-                  >
-                    <option value="en cours">En cours</option>
-                    <option value="livrée">Livrée</option>
-                  </select>
-                </div>
+            <div className="form-row" style={{ paddingBottom: "20px" }}>
+              <div className="form-group" style={{ flex: "1 1 100%" }}>
+                <label>Statut de la livraison</label>
+                <select
+                  name="statutLivraison"
+                  value={formData.statutLivraison}
+                  onChange={handleChange}
+                  required
+                  className="form-control"
+                >
+                  <option value="en cours">En cours</option>
+                  <option value="livrée">Livrée</option>
+                </select>
+              </div>
             </div>
+          </div>
 
-          </div> {/* Fin modal-body */}
-
-          {/* Actions : alignement à droite et ordre standard (Annuler / Primaire) */}
           <div className="modal-actions">
             <button
               type="button"
@@ -203,7 +178,7 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
             </button>
             <button
               type="submit"
-              className="btn btn-primary" // Utilisation de btn-primary
+              className="btn btn-primary"
               disabled={loading}
               style={{ display: "flex", alignItems: "center", gap: "8px" }}
             >
@@ -225,10 +200,6 @@ const LivraisonModal = ({ isOpen, onClose, livraison, onSave }) => {
   );
 };
 
-// =========================================================================
-// LE RESTE DU FICHIER (COMPOSANT Livraisons) EST INCHANGÉ
-// =========================================================================
-
 const Livraisons = () => {
   const [livraisons, setLivraisons] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -238,7 +209,6 @@ const Livraisons = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const navigate = useNavigate();
 
-  // États pour les filtres
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [filtreDateMin, setFiltreDateMin] = useState("");
   const [filtreDateMax, setFiltreDateMax] = useState("");
@@ -260,68 +230,46 @@ const Livraisons = () => {
     loadData();
   }, []);
 
-  // Extraire les transporteurs uniques pour le filtre
   const transporteursUniques = [
     ...new Set(
       livraisons.filter((l) => l.transporteur).map((l) => l.transporteur)
     ),
   ];
 
-  // Filtrer les livraisons
-  const filteredLivraisons = livraisons.filter((livraison) => {
-    const searchMatch =
-      (livraison.numCommande?.toString() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (livraison.transporteur?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (livraison.referenceColis?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (livraison.lieuLivraison?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (livraison.commande?.referenceCommande?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (
-        livraison.commande?.utilisateur?.nomUtilisateur?.toLowerCase() || ""
-      ).includes(searchTerm.toLowerCase());
+  // Filtrage des livraisons
+  const filteredLivraisons = livraisons
+    .filter((livraison) => {
+      // NOUVELLE RÈGLE : on n'affiche que celles qui ont une date d'expédition
+      if (!livraison.dateExpedition) return false;
 
-    const statutMatch =
-      filtreStatut === "tous" || livraison.statutLivraison === filtreStatut;
+      const searchMatch =
+        (livraison.numCommande?.toString() || "").includes(searchTerm.toLowerCase()) ||
+        (livraison.transporteur?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (livraison.referenceColis?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (livraison.lieuLivraison?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (livraison.commande?.referenceCommande?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (livraison.commande?.utilisateur?.nomUtilisateur?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
-    const transporteurMatch =
-      !filtreTransporteur ||
-      livraison.transporteur?.toLowerCase() ===
-        filtreTransporteur.toLowerCase();
+      const statutMatch = filtreStatut === "tous" || livraison.statutLivraison === filtreStatut;
+      const transporteurMatch =
+        !filtreTransporteur ||
+        livraison.transporteur?.toLowerCase() === filtreTransporteur.toLowerCase();
 
-    const dateExpedition = livraison.dateExpedition
-      ? new Date(livraison.dateExpedition)
-      : null;
-    const dateLivraison = livraison.dateLivraison
-      ? new Date(livraison.dateLivraison)
-      : null;
+      const dateExpedition = livraison.dateExpedition ? new Date(livraison.dateExpedition) : null;
+      const dateLivraison = livraison.dateLivraison ? new Date(livraison.dateLivraison) : null;
 
-    const dateMinMatch =
-      !filtreDateMin ||
-      (dateExpedition && dateExpedition >= new Date(filtreDateMin)) ||
-      (dateLivraison && dateLivraison >= new Date(filtreDateMin));
+      const dateMinMatch =
+        !filtreDateMin ||
+        (dateExpedition && dateExpedition >= new Date(filtreDateMin)) ||
+        (dateLivraison && dateLivraison >= new Date(filtreDateMin));
 
-    const dateMaxMatch =
-      !filtreDateMax ||
-      (dateExpedition && dateExpedition <= new Date(filtreDateMax)) ||
-      (dateLivraison && dateLivraison <= new Date(filtreDateMax));
+      const dateMaxMatch =
+        !filtreDateMax ||
+        (dateExpedition && dateExpedition <= new Date(filtreDateMax)) ||
+        (dateLivraison && dateLivraison <= new Date(filtreDateMax));
 
-    return (
-      searchMatch &&
-      statutMatch &&
-      transporteurMatch &&
-      dateMinMatch &&
-      dateMaxMatch
-    );
-  });
+      return searchMatch && statutMatch && transporteurMatch && dateMinMatch && dateMaxMatch;
+    });
 
   const reinitialiserFiltres = () => {
     setSearchTerm("");
@@ -332,17 +280,13 @@ const Livraisons = () => {
   };
 
   const hasActiveFilters =
-    searchTerm ||
-    filtreStatut !== "tous" ||
-    filtreDateMin ||
-    filtreDateMax ||
-    filtreTransporteur;
+    searchTerm || filtreStatut !== "tous" || filtreDateMin || filtreDateMax || filtreTransporteur;
 
   const livraisonsEnCours = livraisons.filter(
-    (l) => l.statutLivraison === "en cours"
+    (l) => l.dateExpedition && l.statutLivraison === "en cours"
   ).length;
   const livraisonsLivrees = livraisons.filter(
-    (l) => l.statutLivraison === "livrée"
+    (l) => l.dateExpedition && l.statutLivraison === "livrée"
   ).length;
   const transporteursCount = transporteursUniques.length;
 
@@ -366,55 +310,36 @@ const Livraisons = () => {
           </h1>
           <div className="stats-container" style={{ marginTop: "10px" }}>
             <span className="stat-item">
-              {filteredLivraisons.length} livraison
-              {filteredLivraisons.length !== 1 ? "s" : ""} trouvée
-              {filteredLivraisons.length !== 1 ? "s" : ""}
+              {filteredLivraisons.length} livraison{filteredLivraisons.length !== 1 ? "s" : ""} trouvée{filteredLivraisons.length !== 1 ? "s" : ""}
             </span>
-            <span
-              className="stat-item"
-              style={{ backgroundColor: "#fff3cd", color: "#856404" }}
-            >
+            <span className="stat-item" style={{ backgroundColor: "#fff3cd", color: "#856404" }}>
               {livraisonsEnCours} en cours
             </span>
-            <span
-              className="stat-item"
-              style={{ backgroundColor: "#d4edda", color: "#155724" }}
-            >
+            <span className="stat-item" style={{ backgroundColor: "#d4edda", color: "#155724" }}>
               {livraisonsLivrees} livrée{livraisonsLivrees !== 1 ? "s" : ""}
             </span>
-            <span
-              className="stat-item"
-              style={{ backgroundColor: "#e3f2fd", color: "#1565c0" }}
-            >
-              {transporteursCount} transporteur
-              {transporteursCount !== 1 ? "s" : ""}
+            <span className="stat-item" style={{ backgroundColor: "#e3f2fd", color: "#1565c0" }}>
+              {transporteursCount} transporteur{transporteursCount !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Onglets de navigation */}
       <div className="navigation-tabs" style={{ marginBottom: "20px" }}>
         <button className="tab-active">
           <FaTruck style={{ marginRight: "8px" }} /> Livraisons
         </button>
-        <button
-          className="tab-inactive"
-          onClick={() => navigate("/admin/livraisons/frais")}
-        >
-        <FaWeightHanging style={{ marginRight: '8px' }} /> Frais
+        <button className="tab-inactive" onClick={() => navigate("/admin/livraisons/frais")}>
+          <FaWeightHanging style={{ marginRight: "8px" }} /> Frais
         </button>
-        <button
-          className="tab-inactive"
-          onClick={() => navigate("/admin/livraisons/lieux")}
-        >
+        <button className="tab-inactive" onClick={() => navigate("/admin/livraisons/lieux")}>
           <FaMapMarkerAlt style={{ marginRight: "8px" }} /> Lieux de livraison
         </button>
       </div>
 
       <div className="search-container">
         <div className="search-bar">
-          <FaSearch  style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
+          <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }} />
           <input
             type="text"
             placeholder="Rechercher par commande, transporteur, référence ou client..."
@@ -448,30 +373,20 @@ const Livraisons = () => {
         </div>
       </div>
 
-      {/* Filtres avancés */}
       {showAdvancedFilters && (
         <div className="filters-container">
           <div className="filters-row">
             <div className="filter-group">
               <label>Statut</label>
-              <select
-                className="form-control"
-                value={filtreStatut}
-                onChange={(e) => setFiltreStatut(e.target.value)}
-              >
+              <select className="form-control" value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
                 <option value="tous">Tous les statuts</option>
                 <option value="en cours">En cours</option>
                 <option value="livrée">Livrée</option>
               </select>
             </div>
-
             <div className="filter-group">
               <label>Transporteur</label>
-              <select
-                className="form-control"
-                value={filtreTransporteur}
-                onChange={(e) => setFiltreTransporteur(e.target.value)}
-              >
+              <select className="form-control" value={filtreTransporteur} onChange={(e) => setFiltreTransporteur(e.target.value)}>
                 <option value="">Tous les transporteurs</option>
                 {transporteursUniques.map((transporteur, index) => (
                   <option key={index} value={transporteur}>
@@ -480,39 +395,36 @@ const Livraisons = () => {
                 ))}
               </select>
             </div>
-
             <div className="filter-group">
               <label>
                 <FaCalendarAlt style={{ marginRight: "5px" }} /> Date min
               </label>
-             <DatePicker
-    selected={filtreDateMin ? new Date(filtreDateMin) : null}
-    onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
-    dateFormat="dd/MM/yyyy"
-    locale={fr}
-    placeholderText="jj/mm/aaaa"
-    className="form-control"
-    isClearable
-  />
+              <DatePicker
+                selected={filtreDateMin ? new Date(filtreDateMin) : null}
+                onChange={(date) => setFiltreDateMin(date ? date.toISOString().split("T")[0] : "")}
+                dateFormat="dd/MM/yyyy"
+                locale={fr}
+                placeholderText="jj/mm/aaaa"
+                className="form-control"
+                isClearable
+              />
             </div>
-
             <div className="filter-group">
               <label>
                 <FaCalendarAlt style={{ marginRight: "5px" }} /> Date max
               </label>
               <DatePicker
-    selected={filtreDateMax ? new Date(filtreDateMax) : null}
-    onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
-    dateFormat="dd/MM/yyyy"
-    locale={fr}
-    placeholderText="jj/mm/aaaa"
-    className="form-control"
-    isClearable
-  />
+                selected={filtreDateMax ? new Date(filtreDateMax) : null}
+                onChange={(date) => setFiltreDateMax(date ? date.toISOString().split("T")[0] : "")}
+                dateFormat="dd/MM/yyyy"
+                locale={fr}
+                placeholderText="jj/mm/aaaa"
+                className="form-control"
+                isClearable
+              />
             </div>
           </div>
 
-          {/* Affichage des filtres actifs */}
           <div className="active-filters">
             {filtreStatut !== "tous" && (
               <span className="active-filter-tag">
@@ -542,7 +454,6 @@ const Livraisons = () => {
         </div>
       )}
 
-      {/* Tableau des livraisons */}
       <div className="table-container">
         {filteredLivraisons.length > 0 ? (
           <table className="data-table">
@@ -563,27 +474,13 @@ const Livraisons = () => {
               {filteredLivraisons.map((livraison) => (
                 <tr key={livraison.numLivraison}>
                   <td>
-                    <span
-                      
-                    >
-                      #
-                      {livraison.commande?.referenceCommande ||
-                        livraison.numCommande}
-                    </span>
+                    #{livraison.commande?.referenceCommande || livraison.numCommande}
                   </td>
                   <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div>
                         <div style={{ fontWeight: "500" }}>
-                          {livraison.commande?.utilisateur?.nomUtilisateur ||
-                            "-"}
+                          {livraison.commande?.utilisateur?.nomUtilisateur || "-"}
                         </div>
                         <div style={{ fontSize: "0.85em", color: "#666" }}>
                           {livraison.commande?.utilisateur?.contact || ""}
@@ -591,83 +488,56 @@ const Livraisons = () => {
                       </div>
                     </div>
                   </td>
+                  <td>{livraison.transporteur || "-"}</td>
                   <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <span>{livraison.transporteur || "-"}</span>
-                    </div>
+                    <span style={{ fontFamily: "monospace" }}>{livraison.referenceColis || "-"}</span>
                   </td>
                   <td>
-                    <span style={{ fontFamily: "monospace" }}>
-                      {livraison.referenceColis || "-"}
-                    </span>
-                  </td>
-                  <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <FaMapMarkerAlt style={{ color: "#dc3545" }} />
                       <span>{livraison.lieuLivraison || "-"}</span>
                     </div>
                   </td>
-                  <td>
-                  <td>
-  {livraison.dateExpedition || "-"}
-</td>
-
-                  </td>
-                  <td>
-                  <td>
-  {livraison.dateLivraison || "-"}
-</td>
-
-                  </td>
+                  <td>{livraison.dateExpedition || "-"}</td>
+                  <td>{livraison.dateLivraison || "-"}</td>
                   <td>
                     <span
                       className={`status ${
-                        livraison.statutLivraison === "livrée"
-                          ? "livrée"
-                          : "en-cours"
+                        livraison.statutLivraison === "livrée" ? "livrée" : "en-cours"
                       }`}
                     >
                       {livraison.statutLivraison === "livrée" ? (
                         <>
-                          <FaCheckCircle style={{ marginRight: "5px" }} />{" "}
-                          Livrée
+                          <FaCheckCircle style={{ marginRight: "5px" }} /> Livrée
                         </>
                       ) : (
-                        <>
-                        
-                          En cours
-                        </>
+                        "En cours"
                       )}
                     </span>
                   </td>
                   <td>
                     <div className="table-actions" style={{ gap: "8px" }}>
-                      <button
-                        className="edit"
-                        onClick={() => {
-                          setCurrentLivraison(livraison);
-                          setIsModalOpen(true);
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <FaEdit style={{ color: "#28a458" }} /> Modifier
-                      </button>
+                      {livraison.statutLivraison === "en cours" && (
+                        <button
+                          className="edit"
+                          onClick={() => {
+                            setCurrentLivraison(livraison);
+                            setIsModalOpen(true);
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
+                          }}
+                        >
+                          <FaEdit style={{ color: "#28a458" }} /> Modifier
+                        </button>
+                      )}
+                      {livraison.statutLivraison === "livrée" && (
+                        <span style={{ color: "#666", fontStyle: "italic", fontSize: "0.9em" }}>
+                          Terminée
+                        </span>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -680,12 +550,10 @@ const Livraisons = () => {
               <h3>
                 {hasActiveFilters
                   ? "Aucune livraison ne correspond à vos critères"
-                  : "Aucune livraison trouvée"}
+                  : "Aucune livraison expédiée pour le moment"}
               </h3>
               <p>
-                {hasActiveFilters
-                  ? "Essayez avec d'autres termes de recherche ou modifiez les filtres."
-                  : "Les livraisons apparaîtront ici lorsqu'elles seront créées."}
+                Les livraisons apparaîtront ici dès qu'une date d'expédition sera définie.
               </p>
             </div>
           </div>

@@ -9,7 +9,6 @@ export default function DateRange({ onChange }) {
   const [start, setStart] = useState(new Date());
   const [end, setEnd] = useState(new Date());
 
-  // Format date to dd/MM/yyyy for display
   const formatDate = (date) => {
     return format(date, 'dd/MM/yyyy');
   };
@@ -20,24 +19,12 @@ export default function DateRange({ onChange }) {
   };
 
   // Handle manual input
-  const handleManualInput = (type, value) => {
-    try {
-      const date = parseDate(value);
-      if (type === 'start') {
-        setStart(date);
-      } else {
-        setEnd(date);
-      }
-    } catch (error) {
-      console.error('Date invalide');
-    }
-  };
-
+ 
   // Send updates to parent whenever values change
   useEffect(() => {
     if (start && end) {
-      const formattedStart = format(start, 'yyyy-MM-dd');
-      const formattedEnd = format(end, 'yyyy-MM-dd');
+      const formattedStart = format(start, 'dd-MM-yyyy');
+      const formattedEnd = format(end, 'dd-MM-yyyy');
       onChange({
         start: formattedStart,
         end: formattedEnd,

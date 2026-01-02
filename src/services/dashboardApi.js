@@ -51,7 +51,6 @@ export default {
   );
 },
 
-  // Top clients → ordre cohérent
   topClients(start = null, end = null, limit = 10) {
     return api.get("/dashboard/top-clients", getConfig({ start, end, limit }));
   },

@@ -65,3 +65,8 @@ export const getNewOrdersCount = async () => {
     const commandes = await fetchCommandes();
     return commandes.filter(cmd => !cmd.estConsulte).length;
 };
+export const verifierEtExpedierCommande = async (numCommande, livraisonData) => {
+  const response = await api.post(`/commandes/${numCommande}/verifier-et-expedier`, livraisonData,
+    getConfig());
+  return response.data;
+};

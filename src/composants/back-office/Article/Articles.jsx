@@ -76,7 +76,6 @@ const Articles = () => {
     setFiltreDate("");
     setFiltreStatut("tous");
     setShowAdvancedFilters(false);
-    showToast("info", "Filtres réinitialisés");
   };
 
   const handleSupprimer = (id, titre) => {
@@ -123,8 +122,6 @@ const Articles = () => {
           <FaPlus /> Ajouter un article
         </button>
       </div>
-
-      {/* Recherche + Filtres */}
       <div className="search-container">
         <div className="search-bar">
           <FaSearch style={{ marginLeft: "8px", color: "#28a458", cursor: "pointer" }}  />
@@ -182,7 +179,6 @@ const Articles = () => {
         </div>
       )}
 
-      {/* GRILLE D'ARTICLES – MÊME STYLE QUE LES PRODUITS */}
       <div className="produits-grid back-office-grid">
         {filteredArticles.length > 0 ? (
           filteredArticles.map((article) => {
@@ -204,21 +200,16 @@ const Articles = () => {
                 <div className="produit-body">
                   <h3 className="produit-title">{article.titre}</h3>
 
-                  <div className="produit-categorie" style={{ fontSize: "0.85rem", color: "#888" }}>
-                    <FaUser /> {article.auteur || "Anonyme"} • <FaCalendarAlt /> {date}
-                  </div>
+                  <div className="produit-categorie article-meta">
+                   <span>
+                                           <FaUser /> {article.auteur || "Anonyme"}
+                                         </span>
+                                         <span>
+                                           <FaCalendarAlt /> {date}
+                                         </span>
+                        </div>
 
-                  <p style={{
-                    flexGrow: 1,
-                    fontSize: "0.95rem",
-                    color: "#666",
-                    lineHeight: "1.5",
-                    margin: "12px 0",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden"
-                  }}>
+                  <p className="article-extrait">
                     {article.description || "Aucune description disponible."}
                   </p>
                   <div className="card-footer">

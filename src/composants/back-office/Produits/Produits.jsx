@@ -218,7 +218,6 @@ const Produits = () => {
     setFiltrePrixMin("");
     setFiltrePrixMax("");
     setFiltreStatut("tous");
-    showToast("info", "Filtres réinitialisés");
   };
 
   const stats = {
@@ -249,9 +248,7 @@ const Produits = () => {
             <span className="stat-item">
               {stats.filtered} trouvé{stats.filtered > 1 ? "s" : ""}
             </span>
-            <span className="stat-item success">
-              {stats.actifs} actif{stats.actifs > 1 ? "s" : ""}
-            </span>
+           
             <span className="stat-item warning">{stats.enPromo} en promo</span>
             <span className="stat-item info">{stats.total} total</span>
           </div>
@@ -391,14 +388,13 @@ const Produits = () => {
                 key={produit.numProduit}
                 className="produit-card back-office-card"
               >
-                {/* Badge promo */}
+               
                 {hasPromo && (
                   <span className="badge-promo">
                     -{produit.promotion.valeur}%
                   </span>
                 )}
 
-                {/* Image */}
                 <div className="produit-image">
                   <img
                     src={
@@ -411,7 +407,7 @@ const Produits = () => {
                   />
                 </div>
 
-                {/* Contenu */}
+               
                 <div className="produit-body">
                   <h3 className="produit-title">{produit.nomProduit}</h3>
                   {produit.categorie && (

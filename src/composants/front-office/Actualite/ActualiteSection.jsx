@@ -13,11 +13,10 @@ import PaginationProduits from "../Accueil/PaginationProduits";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
-
+import "../../../styles/back-office/tableau.css";
 import "../../../styles/front-office/Actualite/ActualiteSection.css";
 import "../../../styles/front-office/Produits/categorieSection.css"; 
 import "../../../styles/front-office/Accueil/produitSection.css";
-
 const IMAGE_BASE_URL =import.meta.env.VITE_IMAGE_BASE_URL ;
 
 const ActualiteSection = () => {
@@ -125,7 +124,7 @@ const ActualiteSection = () => {
     
 
       {/* Barre de recherche (identique à Produits) */}
-      <div className="search-container" style={{marginTop:"100px"}}>
+      <div className="search-container" style={{marginTop:"150px"}}>
         <div className="search-bar">
           <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
           <input
@@ -213,8 +212,6 @@ const ActualiteSection = () => {
         </div>
       )}
 
-      {/* Grille des articles */}
-      <div className="produits-section">
         <div className="produits-grid back-office-grid">
           {articlesAffiches.length > 0 ? (
             articlesAffiches.map((article) => {
@@ -254,13 +251,16 @@ const ActualiteSection = () => {
                       {article.description?.length > 130 && "..."}
                     </p>
 
-                    <div className="panier-actions">
+                    <div  style={{position:"absolute",bottom:"0",right:"0",left:"0",marginBottom:"10px",marginTop:"20px"}}>
+                       <div className="table-actions" >
                       <Link
                         to={`/actualite/${article.numArticle}`}
                         className="btn-add-cart lire-btn"
-                      >
+                     
+                     >
                         Lire la suite
                       </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ const ActualiteSection = () => {
             onPageChange={setPage}
           />
         </div>)}
-      </div>
+    
     </section>
   );
 };

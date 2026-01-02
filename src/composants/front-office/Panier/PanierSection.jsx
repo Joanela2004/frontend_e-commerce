@@ -16,7 +16,7 @@ import "../../../styles/front-office/Panier/panierSection.css";
 import { CartContext } from "../../../contexts/CartContext";
 import { createCommande } from "../../../services/commandeService";
 import { fetchFrais, fetchLieux } from "../../../services/livraisonService";
-import { useNavigate } from "react-router-dom";
+import { useLocation,useNavigate } from "react-router-dom";
 import ModalConnexion from "../ModalConnexion";
 import { fetchDecoupes } from "../../../services/DecoupeService";
 import ModalConfirmation from "./ModalConfirmation";
@@ -69,7 +69,7 @@ const PanierSection = () => {
 
   const { showToast } = useToast(); 
   const navigate = useNavigate();
-
+const location = useLocation();
   const [decoupesList, setDecoupesList] = useState([]);
   const [payerLivraisonChecked, setPayerLivraisonChecked] = useState(true);
   const [errorModalData, setErrorModalData] = useState(null);
@@ -113,6 +113,7 @@ const PanierSection = () => {
     setShowLoginModal(false);
     navigate("/profil");
   };
+ 
   const handleContinueShopping = () => navigate('/produit');
 
   const handlePasserCommande = () => {
@@ -149,6 +150,30 @@ const PanierSection = () => {
     };
     loadPublicData();
   }, []);
+  useEffect(() => {
+  // Vérifie s'il y a une redirection en attente après login
+  const pending = localStorage.getItem("pendingCheckoutRedirect");
+  if (pending) {
+    try {
+      const { path, step } = JSON.parse(pending);
+      if (path === "/panier") {
+        setCurrentStep(step);
+        // Optionnel : scroll en haut
+        window.scrollTo(0, 0);
+      }
+    } catch (e) {
+      console.error("Erreur lecture pendingCheckoutRedirect", e);
+    } finally {
+      localStorage.removeItem("pendingCheckoutRedirect");
+    }
+  }
+
+  if (location.state?.restoreStep) {
+    setCurrentStep(location.state.restoreStep);
+    // Nettoie le state
+    window.history.replaceState({}, document.title);
+  }
+}, [location.state]);
   useEffect(() => {
     if (currentStep === 3 && commandeConfirmee) {
       const token = localStorage.getItem("userToken");

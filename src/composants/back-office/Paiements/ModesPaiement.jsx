@@ -187,7 +187,6 @@ const ModesPaiement = () => {
   const reinitialiserFiltres = () => {
     setFiltreStatut("tous");
     setSearchTerm("");
-    showToast("info", "Filtres réinitialisés");
   };
 
   // Vérifier si des filtres sont actifs

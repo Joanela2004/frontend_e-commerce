@@ -1,8 +1,8 @@
-// Fichier : ProduitsSection.jsx
+
 import React, { useEffect, useState, useContext } from "react";
 import { FaWeightHanging, FaTag } from "react-icons/fa";
 import panierIcon from "../../../assets/icones/panier.png";
-import "../../../styles/front-office/Accueil/produitSection.css"; // ← Ton nouveau CSS
+import "../../../styles/front-office/Accueil/produitSection.css";
 import PaginationProduits from "./PaginationProduits";
 import { fetchProduits } from "../../../services/produitService";
 import { CartContext } from "../../../contexts/CartContext";
@@ -16,7 +16,7 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
   const [errorModalData, setErrorModalData] = useState(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
 
-  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL ;
 
   useEffect(() => {
     const loadProduits = async () => {
@@ -45,13 +45,12 @@ const ProduitsSection = ({ categorieActive, showHeader = true }) => {
 const calculatePromotionalPrice = (prix, promotion) => {
     if (!promotion) return null;
 
-    // Vérification stricte que la promo est active + dans les dates
     const maintenant = new Date();
     const debut = new Date(promotion.dateDebut);
     const fin = new Date(promotion.dateFin);
 
     const estActive =
-      promotion.statutPromotion === true &&  // ← booléen, pas string
+      promotion.statutPromotion === true &&  
       debut <= maintenant &&
       fin >= maintenant;
 
@@ -118,7 +117,7 @@ const calculatePromotionalPrice = (prix, promotion) => {
 
             return (
               <div key={produit.numProduit} className="produit-card back-office-card">
-                {/* Badge Promo */}
+                
                 {hasPromo && (
                   <span className="badge-promo">
                     -{produit.promotion.valeur}
@@ -126,7 +125,7 @@ const calculatePromotionalPrice = (prix, promotion) => {
                   </span>
                 )}
 
-                {/* Image */}
+              
                 <div className="produit-image">
                   <img
                     src={produit.image ? `${IMAGE_BASE_URL}${produit.image}` : "/placeholder.png"}
@@ -135,7 +134,7 @@ const calculatePromotionalPrice = (prix, promotion) => {
                   />
                 </div>
 
-                {/* Contenu */}
+               
                 <div className="produit-body">
                   <h3 className="produit-title">{produit.nomProduit}</h3>
 
@@ -163,7 +162,7 @@ const calculatePromotionalPrice = (prix, promotion) => {
                     </div>
                   </div>
 
-                  {/* Bouton panier */}
+                  
                   <div className="panier-actions">
                     {inCart ? (
                       <div className="quantity-control">

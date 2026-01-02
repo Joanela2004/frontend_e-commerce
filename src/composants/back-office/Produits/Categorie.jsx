@@ -175,7 +175,6 @@ const Categorie = () => {
   // Réinitialiser tous les filtres
   const reinitialiserFiltres = () => {
     setSearchTerm("");
-    showToast("info", "Recherche réinitialisée");
   };
 
   // Vérifier si des filtres sont actifs

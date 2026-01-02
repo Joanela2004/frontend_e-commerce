@@ -101,7 +101,7 @@
 }
 
 .search-container {
-  margin-bottom: 20px;
+  margin-top: 40px;
 }
 
 .search-bar {
@@ -594,8 +594,9 @@
   color: #721c24;
 }
 .stat-item.paye{
-  background: #99cbec;
-  color: #25669c79;
+  
+  background: #fff3cd;
+  color: #856404;
 }
 
 .stat-item.new-orders {
@@ -604,7 +605,6 @@
   font-weight: 600;
 }
 
-/* Lignes nouvelles commandes */
 .new-order-row {
   background-color: rgba(13, 110, 253, 0.05) !important;
   border-left: 4px solid #0d6efd;

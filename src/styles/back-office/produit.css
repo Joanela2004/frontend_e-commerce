@@ -12,13 +12,12 @@
   transform: scale(0.98) translateY(-4px) !important;
 }
 
-.back-office-card .produit-image {
-  height: 160px !important;
-}
 
 /* Texte plus compact */
 .back-office-card .produit-body {
+ 
   padding: 16px !important;
+  margin-bottom: 20px;
 }
 
 .back-office-card .produit-title {

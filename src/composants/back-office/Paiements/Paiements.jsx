@@ -87,7 +87,7 @@ const Paiements = () => {
   const handleMarkAsPaid = async (paiement) => {
     showModal(
       "Confirmer le paiement",
-      `Êtes-vous sûr de vouloir marquer le paiement #${paiement.numPaiement} comme effectué ?\n\nCommande: CMD-${paiement.numCommande}\nClient: ${paiement.commande?.utilisateur?.prenom || ''} ${paiement.commande?.utilisateur?.nom || ''}\nMontant: ${paiement.montantApayer || 0} €`,
+      `Êtes-vous sûr de vouloir marquer le paiement comme effectué ?`,
       paiement.numPaiement,
       async () => {
         setLoadingAction(paiement.numPaiement);
@@ -151,7 +151,6 @@ const Paiements = () => {
     setFiltreMontantMin("");
     setFiltreMontantMax("");
     setSearchTerm("");
-    showToast("info", "Filtres réinitialisés");
   };
 
   // Vérifier si des filtres sont actifs
@@ -284,7 +283,6 @@ const Paiements = () => {
               <input
                 type="number"
                 className="form-control"
-                placeholder="0"
                 value={filtreMontantMin}
                 onChange={(e) => setFiltreMontantMin(e.target.value)}
                 min="0"
@@ -297,7 +295,6 @@ const Paiements = () => {
               <input
                 type="number"
                 className="form-control"
-                placeholder="10000"
                 value={filtreMontantMax}
                 onChange={(e) => setFiltreMontantMax(e.target.value)}
                 min="0"
@@ -328,13 +325,13 @@ const Paiements = () => {
             )}
             {filtreMontantMin && (
               <span className="active-filter-tag">
-                Montant min: {filtreMontantMin} €
+                Montant min: {filtreMontantMin} Ar
                 <button onClick={() => setFiltreMontantMin("")}>×</button>
               </span>
             )}
             {filtreMontantMax && (
               <span className="active-filter-tag">
-                Montant max: {filtreMontantMax} €
+                Montant : {filtreMontantMax} Ar
                 <button onClick={() => setFiltreMontantMax("")}>×</button>
               </span>
             )}
@@ -347,7 +344,6 @@ const Paiements = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID Paiement</th>
               <th>Commande</th>
               <th>Client</th>
               <th>Montant (en Ar)</th>
@@ -361,7 +357,7 @@ const Paiements = () => {
             {filteredPaiements.length > 0 ? (
               filteredPaiements.map((paiement) => (
                 <tr key={paiement.numPaiement}>
-                  <td>#{paiement.numPaiement}</td>
+                 
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div>
@@ -498,6 +494,13 @@ const Paiements = () => {
               
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px" }}>
                 <button
+                  className="btn btn-secondary"
+                  onClick={closeModal}
+                  style={{ padding: "10px 30px" }}
+                >
+                  Annuler
+                </button>
+                <button
                   className="btn btn-success"
                   onClick={async () => {
                     if (modalData.onConfirm) {
@@ -509,13 +512,7 @@ const Paiements = () => {
                 >
                   <FaCheckCircle style={{marginRight:"8px"}} /> Confirmer
                 </button>
-                <button
-                  className="btn btn-secondary"
-                  onClick={closeModal}
-                  style={{ padding: "10px 30px" }}
-                >
-                  Annuler
-                </button>
+               
               </div>
             </div>
           </div>

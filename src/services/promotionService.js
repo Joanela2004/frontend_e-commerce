@@ -13,7 +13,15 @@ const getConfig = () => {
         }
     };
 };
-
+export const fetchPromotionsAutomatiquesActives = async () => {
+  try {
+    const res = await api.get("/promotions/automatiques/actives");
+    return res.data;
+  } catch (err) {
+    console.error("Erreur bannière promo :", err);
+    return null;
+  }
+};
 export const fetchPromotions = async () => {
     try {
         const res = await api.get(PROMOTION_URL,getConfig());

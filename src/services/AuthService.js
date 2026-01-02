@@ -35,7 +35,6 @@ export const registerUser = async (userData) => {
 // Connexion
 export const loginUser = async (loginData) => {
   const localCartItems = getLocalCart();
-
   const res = await api.post('/login', {
     email: loginData.email,
     motDePasse: loginData.motDePasse,
@@ -46,6 +45,23 @@ export const loginUser = async (loginData) => {
     localStorage.setItem(USER_TOKEN_KEY, res.data.access_token);
     localStorage.setItem(USER_DATA_KEY, JSON.stringify(res.data.user));
     clearLocalCart();
+
+    // === NOUVELLE LOGIQUE : Redirection intelligente après login ===
+    const redirectAfterLogin = localStorage.getItem("redirectAfterLogin");
+
+    if (redirectAfterLogin === "/panier") {
+            const savedStep = localStorage.getItem("checkoutStepAfterLogin") || "2"; // par défaut étape 2
+
+     localStorage.removeItem("redirectAfterLogin");
+      localStorage.removeItem("checkoutStepAfterLogin");
+
+           localStorage.setItem("pendingCheckoutRedirect", JSON.stringify({
+        path: "/panier",
+        step: Number(savedStep)
+      }));
+    }
+    // ================================================================
+
   }
 
   return res.data;

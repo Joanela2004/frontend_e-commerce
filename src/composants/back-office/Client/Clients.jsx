@@ -111,18 +111,11 @@ const [dateMaxPicker, setDateMaxPicker] = useState(null);
         <div>
           <h1><FaUsers style={{marginRight: '10px'}} /> Gestion des Clients</h1>
           <div className="stats-container" style={{ marginTop: '10px' }}>
-            <span className="stat-item">
-              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} trouvé{filteredClients.length !== 1 ? 's' : ''}
-            </span>
+          
             <span className="stat-item" style={{ backgroundColor: '#d4edda', color: '#155724' }}>
               {totalClients} total
             </span>
-            <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
-              {clientsAvecContact} avec contact
-            </span>
-            <span className="stat-item" style={{ backgroundColor: '#fff3cd', color: '#856404' }}>
-              {clientsSansContact} sans contact
-            </span>
+           
           </div>
         </div>
       </div>
@@ -240,7 +233,7 @@ const [dateMaxPicker, setDateMaxPicker] = useState(null);
                       color: '#8b5e3c',
                       fontFamily: 'monospace'
                     }}>
-                      #{client.numUtilisateur}
+                      {client.numUtilisateur}
                     </span>
                   </td>
                   <td>
@@ -258,7 +251,6 @@ const [dateMaxPicker, setDateMaxPicker] = useState(null);
     }}
   />
 ) : (
-  // Sinon → afficher le cercle avec l'initiale
   <div style={{ 
     width: "40px",
     height: "40px",

@@ -192,7 +192,6 @@ const Decoupes = () => {
     setFiltreCoefficientMin("");
     setFiltreCoefficientMax("");
     setSearchTerm("");
-    showToast("info", "Filtres réinitialisés");
   };
 
   // Vérifier si des filtres sont actifs

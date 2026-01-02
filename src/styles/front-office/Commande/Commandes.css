@@ -203,11 +203,11 @@
 
 .stat-item.annulee {
   background: #f8d7da;
-  color: #721c24;
+  color: #d9534f;
 }
 .stat-item.paye{
-  background: #99cbec;
-  color: #25669c79;
+  background: #8B5E3C ;
+  color: #f8d7da;
 }
 
 .stat-item.new-orders {

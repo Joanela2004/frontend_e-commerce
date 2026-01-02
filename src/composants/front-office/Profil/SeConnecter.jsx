@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Ajout de Link et useEffect déjà présent
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../../../services/AuthService';
 import "../../../styles/front-office/Profil/profil.css";
 import { useToast } from "../../../contexts/ToastContext";
@@ -13,25 +13,33 @@ const SeConnecter = () => {
   const navigate = useNavigate();
   const [afficherMotDePasse, setAfficherMotDePasse] = useState(false);
 
-  // Redirection si connecté (vers /profil)
-  useEffect(() => {
-    if (localStorage.getItem('userToken')) {
-      navigate('/profil');
-    }
-  }, [navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErreur('');
     try {
       const response = await loginUser({ email, motDePasse });
-      localStorage.setItem('userToken', response.access_token);
-      localStorage.setItem('userData', JSON.stringify(response.user));
-      navigate(response.user?.role === 'admin' ? '/admin' : '/'); 
+
+      const redirectAfterLogin = localStorage.getItem("redirectAfterLogin");
+
+      if (redirectAfterLogin === "/panier") {
+        localStorage.removeItem("redirectAfterLogin");
+        localStorage.removeItem("checkoutStepAfterLogin");
+        navigate("/panier");
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+        return;
+      }
+
+      // Connexion classique : redirection selon rôle
+      const destination = response.user?.role === 'admin' ? '/admin' : '/profil';
+      navigate(destination);
     } catch (err) {
-      showToast('error', err.response?.status === 401
-        ? 'votre email ou votre mot de passe est incorrect'
-        : err.response?.data?.message || 'Erreur de connexion'
+      showToast(
+        'error',
+        err.response?.status === 401
+          ? 'Votre email ou votre mot de passe est incorrect'
+          : err.response?.data?.message || 'Erreur de connexion'
       );
     }
   };
@@ -45,7 +53,9 @@ const SeConnecter = () => {
         </div>
         <div className="groupe">
           <div className="groupe-formulaire">
-            <label>Adresse e-mail <span className="etoile-obligatoire">*</span></label>
+            <label>
+              Adresse e-mail <span className="etoile-obligatoire">*</span>
+            </label>
             <input
               type="email"
               value={email}
@@ -54,7 +64,9 @@ const SeConnecter = () => {
             />
           </div>
           <div className="groupe-formulaire">
-            <label>Mot de passe <span className="etoile-obligatoire">*</span></label>
+            <label>
+              Mot de passe <span className="etoile-obligatoire">*</span>
+            </label>
             <div className="champ-mot-de-passe" style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
               <input
                 type={afficherMotDePasse ? "text" : "password"}
@@ -64,7 +76,8 @@ const SeConnecter = () => {
                 minLength={6}
               />
               <span
-                className="icone-oeil" style={{ marginLeft: "5px" }}
+                className="icone-oeil"
+                style={{ marginLeft: "5px" }}
                 onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
               >
                 {afficherMotDePasse ? <FiEye /> : <FiEyeOff />}
@@ -79,12 +92,14 @@ const SeConnecter = () => {
             SE CONNECTER
           </button>
           <p style={{ marginTop: "15px", textAlign: "center" }}>
-            Pas encore de compte ? <Link to="/profil" className="lien-mot-de-passe">S'inscrire</Link>
+            Pas encore de compte ?{' '}
+            <Link to="/profil" className="lien-mot-de-passe">
+              S'inscrire
+            </Link>
           </p>
           <p style={{ display: "flex", marginTop: "10px" }}>
-            <span className='etoile-obligatoire'>* </span> : champ obligatoire
+            <span className="etoile-obligatoire">* </span> : champ obligatoire
           </p>
-         
         </div>
       </form>
     </div>

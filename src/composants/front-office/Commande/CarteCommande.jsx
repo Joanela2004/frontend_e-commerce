@@ -39,13 +39,11 @@ const CarteCommande = ({ order, onSelectOrder, refreshCommandes }) => {
   const estEnAttenteDePaiement = () => {
     const statutLower = (order.statut || "").toLowerCase();
     
-    // Vérifie si le statut est "en attente"
+   
     if (statutLower.includes("attente")) {
-      // Si déjà payé via paiement séparé, ce n'est plus en attente
       if (order.paiement?.statutPaiement === "payé") {
         return false;
       }
-      // Sinon, c'est en attente de paiement
       return true;
     }
     

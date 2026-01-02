@@ -147,7 +147,6 @@ useEffect(() => {
     setShowAdvancedFilters(false);
   };
 
-  // Filtrage
   const filteredProduits = produits.filter((p) => {
     if (!p) return false;
 

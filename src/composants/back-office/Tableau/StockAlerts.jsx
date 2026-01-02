@@ -55,10 +55,7 @@ export default function StockAlerts({ threshold = 1.0 }) {
             <FaBell style={{ color: "#28a458" }} />
             Alertes de Stock
           </h2>
-          <div className="seuil-info" style={{ marginTop: "8px" }}>
-            <FaChartLine className="icon" />
-            <span>Seuil d'alerte: {threshold} kg</span>
-          </div>
+       
         </div>
         <div className="stock-badge">
           {produits.length} alerte{produits.length !== 1 ? 's' : ''}
@@ -100,10 +97,7 @@ export default function StockAlerts({ threshold = 1.0 }) {
                   </div>
                   <div className="stock-details">
                     <h3 className="product-name">{p.nomProduit}</h3>
-                    <div className="seuil-info">
-                      <FaExclamationTriangle className="icon" />
-                      <span>Seuil minimum: {threshold} kg</span>
-                    </div>
+                    
                     <div className="seuil-info">
                       <FaWeightHanging className="icon" />
                       <span>Poids actuel: {p.poids} kg</span>
@@ -111,38 +105,7 @@ export default function StockAlerts({ threshold = 1.0 }) {
                   </div>
                 </div>
 
-                <div className="stock-progress">
-                  <div 
-                    className="stock-progress-bar"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-
-                <div className="stock-status">
-                  <div className="stock-count-container">
-                    <p className="stock-count">{p.poids}</p>
-                    <span className="stock-label">en stock</span>
-                  </div>
-                  
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{
-                      fontSize: "0.85rem",
-                      color: status === "critical" ? "#ef4444" : 
-                             status === "warning" ? "#f59e0b" : "#3b82f6",
-                      fontWeight: "600",
-                      marginBottom: "4px"
-                    }}>
-                      {status === "critical" ? "CRITIQUE" : 
-                       status === "warning" ? "ATTENTION" : "FAIBLE"}
-                    </div>
-                    <div style={{
-                      fontSize: "0.8rem",
-                      color: "#64748b"
-                    }}>
-                      {p.poids <= threshold ? "Sous le seuil" : "Proche du seuil"}
-                    </div>
-                  </div>
-                </div>
+               
               </div>
             );
           })}
