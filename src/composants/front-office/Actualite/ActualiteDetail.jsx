@@ -4,7 +4,7 @@ import { FaUser, FaCalendarAlt, FaArrowLeft } from "react-icons/fa";
 import { fetchArticleById } from "../../../services/articleService";
 import "../../../styles/front-office/Actualite/ActualiteDetail.css";
 
-const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL ;
 
 const ActualiteDetail = () => {
   const { id } = useParams();
@@ -59,7 +59,7 @@ const ActualiteDetail = () => {
 
       {/* Bouton retour */}
       <div className="detail-back">
-        <Link to="/actualites" className="btn-back-article">
+        <Link to="/actualite" className="btn-back-article">
           <FaArrowLeft /> Retour aux actualités
         </Link>
       </div>

@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from "react";
 import {
   FaSearch,
-  FaFilter,
-  FaSync,
   FaUser,
   FaCalendarAlt,
   FaTag,
+  FaWeightHanging,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { fetchArticles} from "../../../services/articleService";
+import { fetchArticles } from "../../../services/articleService";
 import PaginationProduits from "../Accueil/PaginationProduits";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
+
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/front-office/Actualite/ActualiteSection.css";
 import "../../../styles/front-office/Produits/categorieSection.css"; 
 import "../../../styles/front-office/Accueil/produitSection.css";
-const IMAGE_BASE_URL =import.meta.env.VITE_IMAGE_BASE_URL ;
+
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL ;
 
 const ActualiteSection = () => {
   const [articles, setArticles] = useState([]);
@@ -27,9 +28,8 @@ const ActualiteSection = () => {
   // États filtres
   const [recherche, setRecherche] = useState("");
   const [filtreAuteur, setFiltreAuteur] = useState("tous");
-  const [filtreDate, setFiltreDate] = useState(""); // format YYYY-MM-DD
+  const [filtreDate, setFiltreDate] = useState(""); // YYYY-MM-DD
   const [filtreStatut, setFiltreStatut] = useState("tous"); // tous | recent | ancien
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const [page, setPage] = useState(1);
   const articlesParPage = 6;
@@ -77,24 +77,19 @@ const ActualiteSection = () => {
     // Filtre date exacte
     if (filtreDate) {
       resultats = resultats.filter(
-        (a) =>
-          new Date(a.datePublication).toISOString().slice(0, 10) === filtreDate
+        (a) => new Date(a.datePublication).toISOString().slice(0, 10) === filtreDate
       );
     }
 
-    // Filtre statut (récent / ancien)
+    // Filtre période
     if (filtreStatut === "recent") {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
-      resultats = resultats.filter(
-        (a) => new Date(a.datePublication) >= weekAgo
-      );
+      resultats = resultats.filter((a) => new Date(a.datePublication) >= weekAgo);
     } else if (filtreStatut === "ancien") {
       const monthAgo = new Date();
       monthAgo.setMonth(monthAgo.getMonth() - 1);
-      resultats = resultats.filter(
-        (a) => new Date(a.datePublication) < monthAgo
-      );
+      resultats = resultats.filter((a) => new Date(a.datePublication) < monthAgo);
     }
 
     setFilteredArticles(resultats);
@@ -104,116 +99,88 @@ const ActualiteSection = () => {
   // Liste des auteurs uniques
   const auteursUniques = [...new Set(articles.map((a) => a.auteur).filter(Boolean))];
 
-  const reinitialiserFiltres = () => {
-    setRecherche("");
-    setFiltreAuteur("tous");
-    setFiltreDate("");
-    setFiltreStatut("tous");
-    setShowAdvancedFilters(false);
-  };
-
+  // Pagination
   const indexDebut = (page - 1) * articlesParPage;
-  const articlesAffiches = filteredArticles.slice(
-    indexDebut,
-    indexDebut + articlesParPage
-  );
-
+  const articlesAffiches = filteredArticles.slice(indexDebut, indexDebut + articlesParPage);
 
   return (
-    <section >
-    
-
-      {/* Barre de recherche (identique à Produits) */}
-      <div className="search-container" style={{marginTop:"150px"}}>
-        <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
-          <input
-            type="text"
-            placeholder="Rechercher un article par titre, auteur..."
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-          />
-          <button
-            className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-        style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
-        >
-            <FaFilter />
-          </button>
-
-          {(recherche || filtreAuteur !== "tous" || filtreDate || filtreStatut !== "tous") && (
-            <FaSync
-              style={{
-                marginLeft: "8px",
-                cursor: "pointer",
-                color: "#28a458",
-              }}
-              onClick={reinitialiserFiltres}
-              title="Réinitialiser les filtres"
+    <section>
+      {/* Barre de recherche simple et propre */}
+      <div className="heroProduit-middle" style={{ marginTop: "100px" }}>
+        <div className="search-container">
+          <div className="search-bar">
+            <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
+            <input
+              type="text"
+              placeholder="Rechercher un article par titre, auteur..."
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
             />
-          )}
+          </div>
         </div>
       </div>
 
-        {showAdvancedFilters && (
-        <div className="filters-container">
-          <div className="filters-row">
-            <div className="filter-group">
-              <label>
-                <FaUser style={{ marginRight: "6px" }} />
-                Auteur
-              </label>
-              <select
-                value={filtreAuteur}
-                onChange={(e) => setFiltreAuteur(e.target.value)}
-              >
-                <option value="tous">Tous les auteurs</option>
-                {auteursUniques.map((auteur) => (
-                  <option key={auteur} value={auteur}>
-                    {auteur}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* Filtres affichés directement en boutons stylisés (comme dans Produits) */}
+      <div className="categories-filters-section">
+        <div className="categories-filters-row">
+        
 
-            <div className="filter-group">
-              <label>
-                <FaCalendarAlt style={{ marginRight: "6px" }} />
-                Date exacte
-              </label>
-              <DatePicker
-                selected={filtreDate ? new Date(filtreDate) : null}
-                onChange={(date) =>
-                  setFiltreDate(date ? date.toISOString().slice(0, 10) : "")
-                }
-                dateFormat="dd/MM/yyyy"
-                locale={fr}
-                placeholderText="Choisir une date"
-                className="form-control"
-                isClearable
-              />
-            </div>
+          {/* Période */}
+          <button
+            className={`filter-category-btn ${filtreStatut === "tous" ? "active" : ""}`}
+            onClick={() => setFiltreStatut("tous")}
+          >
+            Toutes les périodes
+          </button>
+          <button
+            className={`filter-category-btn ${filtreStatut === "recent" ? "active" : ""}`}
+            onClick={() => setFiltreStatut("recent")}
+          >
+            <FaCalendarAlt />
+            Récents (7 jours)
+          </button>
+          <button
+            className={`filter-category-btn ${filtreStatut === "ancien" ? "active" : ""}`}
+            onClick={() => setFiltreStatut("ancien")}
+          >
+            <FaCalendarAlt />
+            Anciens (+1 mois)
+          </button>
 
-            <div className="filter-group">
-              <label>
-                <FaTag style={{ marginRight: "6px" }} />
-                Période
-              </label>
-              <select
-                value={filtreStatut}
-                onChange={(e) => setFiltreStatut(e.target.value)}
-              >
-                <option value="tous">Toutes les périodes</option>
-                <option value="recent">Récents (7 derniers jours)</option>
-                <option value="ancien">Anciens (plus d'1 mois)</option>
-              </select>
-            </div>
+          {/* Date exacte avec DatePicker intégré dans un bouton stylisé */}
+          <div className="date-filter-wrapper">
+            <DatePicker
+              selected={filtreDate ? new Date(filtreDate) : null}
+              onChange={(date) =>
+                setFiltreDate(date ? date.toISOString().slice(0, 10) : "")
+              }
+              dateFormat="dd/MM/yyyy"
+              locale={fr}
+              placeholderText="Date exacte"
+              isClearable
+              customInput={
+                <button
+                  className={`filter-category-btn ${
+                    filtreDate ? "active" : ""
+                  } date-picker-btn`}
+                >
+                  <FaCalendarAlt />
+                  {filtreDate
+                    ? new Date(filtreDate).toLocaleDateString("fr-FR")
+                    : "Date exacte"}
+                </button>
+              }
+            />
           </div>
         </div>
-      )}
+      </div>
 
+      {/* Grille des articles */}
+      <div className="produits-section">
         <div className="produits-grid back-office-grid">
-          {articlesAffiches.length > 0 ? (
+          {loading ? (
+            <div className="no-products">Chargement des actualités...</div>
+          ) : articlesAffiches.length > 0 ? (
             articlesAffiches.map((article) => {
               const date = article.datePublication
                 ? new Date(article.datePublication).toLocaleDateString("fr-FR")
@@ -232,10 +199,8 @@ const ActualiteSection = () => {
                       onError={(e) => (e.target.src = "/placeholder.png")}
                     />
                   </div>
-
                   <div className="produit-body">
                     <h3 className="produit-title">{article.titre}</h3>
-
                     <div className="produit-categorie article-meta">
                       <span>
                         <FaUser /> {article.auteur || "Anonyme"}
@@ -244,23 +209,18 @@ const ActualiteSection = () => {
                         <FaCalendarAlt /> {date}
                       </span>
                     </div>
-
                     <p className="article-extrait">
                       {article.description?.substring(0, 130) ||
                         "Aucune description disponible."}
                       {article.description?.length > 130 && "..."}
                     </p>
-
-                    <div  style={{position:"absolute",bottom:"0",right:"0",left:"0",marginBottom:"10px",marginTop:"20px"}}>
-                       <div className="table-actions" >
+                    <div className="table-actions" style={{ marginTop: "20px" }}>
                       <Link
                         to={`/actualite/${article.numArticle}`}
                         className="btn-add-cart lire-btn"
-                     
-                     >
+                      >
                         Lire la suite
                       </Link>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -280,14 +240,15 @@ const ActualiteSection = () => {
         {/* Pagination */}
         {filteredArticles.length > articlesParPage && (
           <div className="pagination-container">
-          <PaginationProduits
-            totalProduits={filteredArticles.length}
-            produitsParPage={articlesParPage}
-            currentPage={page}
-            onPageChange={setPage}
-          />
-        </div>)}
-    
+            <PaginationProduits
+              totalProduits={filteredArticles.length}
+              produitsParPage={articlesParPage}
+              currentPage={page}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
+      </div>
     </section>
   );
 };

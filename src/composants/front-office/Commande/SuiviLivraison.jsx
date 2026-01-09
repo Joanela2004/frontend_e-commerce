@@ -77,7 +77,6 @@ const StatusCard = ({ status, title, message, icon: Icon, color }) => {
   );
 };
 
-// Composant InfoCard amélioré
 const InfoCard = ({ icon: Icon, title, children, variant = 'default' }) => (
   <div className={`info-card ${variant}`}>
     <div className="info-card-header">
@@ -379,9 +378,7 @@ const SuiviLivraison = () => {
                   style={{ width: `${((currentIndex + 1) / timelineSteps.length) * 100}%` }}
                 ></div>
               </div>
-              <div className="progress-text">
-                Étape {currentIndex + 1} sur {timelineSteps.length}
-              </div>
+              
             </div>
           </InfoCard>
 

@@ -417,29 +417,7 @@ const Commandes = () => {
                 popperPlacement="bottom"
               />
             </div>
-            <div className="filter-group">
-              <label><FaMoneyBillWave style={{ marginRight: "5px" }} /> Prix min</label>
-              <input
-                type="number"
-                className="form-control"
-                placeholder="0"
-                value={filtrePrixMin}
-                onChange={(e) => setFiltrePrixMin(e.target.value)}
-                min="0"
-                step="1000"
-              />
-            </div>
-            <div className="filter-group">
-              <label><FaMoneyBillWave style={{ marginRight: "5px" }} /> Prix max</label>
-              <input
-                type="number"
-                className="form-control"
-                value={filtrePrixMax}
-                onChange={(e) => setFiltrePrixMax(e.target.value)}
-                min="0"
-                step="1000"
-              />
-            </div>
+            
             <div className="filter-group">
               <label>Paiement Frais</label>
               <select
@@ -550,7 +528,7 @@ const Commandes = () => {
                   </td>
                   <td>
                     <span style={{ fontWeight: "bold", color: "#8b5e3c" }}>
-                      {(commande.montantTotal || 0).toLocaleString("fr-FR")} 
+                      {Number(commande.montantTotal || 0).toLocaleString("fr-FR")} 
                     </span>
                   </td>
                   <td>

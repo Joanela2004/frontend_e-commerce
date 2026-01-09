@@ -77,7 +77,6 @@ transition: transform var(--transition-speed);
   box-shadow: 0 8px 20px var(--color-shadow);
 }
 
-.kpi-card h3,
 .getkpi-card h3 {
   font-size: 0.9rem;
   font-weight: 500;
@@ -104,4 +103,12 @@ transition: transform var(--transition-speed);
   font-weight: 700;
   color: var(--color-background-white);
   margin: 0;
+}
+.kpi-value{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.3rem;
+
 }

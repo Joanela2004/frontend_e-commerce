@@ -1,12 +1,9 @@
 import React, { useContext, useState, useEffect } from "react";
 import {
   FaSearch,
-  FaFilter,
-  FaSync,
   FaTag,
   FaWeightHanging,
 } from "react-icons/fa";
-
 import { fetchProduits } from "../../../services/produitService";
 import { getCategories } from "../../../services/categorieService";
 import panierIcon from "../../../assets/icones/panier.png";
@@ -19,27 +16,22 @@ import "../../../styles/front-office/Accueil/produitSection.css";
 import "../../../styles/back-office/produit.css";
 import "../../../styles/front-office/Produits/categorieSection.css";
 import "../../../styles/front-office/global.css";
-import "../../../styles/back-office/global.css";
-import "../../../styles/front-office/Produits/heroSection.css";
 
+import "../../../styles/front-office/Produits/heroSection.css";
 const CategorieSection = () => {
-  // États
   const [produits, setProduits] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtreCategorie, setFiltreCategorie] = useState("tous");
   const [filtrePromotion, setFiltrePromotion] = useState("tous");
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Pagination & panier
   const [page, setPage] = useState(1);
   const [errorModalData, setErrorModalData] = useState(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
 
   const produitsParPage = 8;
-  const IMAGE_BASE_URL =
-    import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
 
   const { cartItems, addToCart, updateQuantity } = useContext(CartContext);
   const { showToast } = useToast();
@@ -68,31 +60,28 @@ const CategorieSection = () => {
     };
     chargerDonnees();
   }, [showToast]);
-useEffect(() => {
+
+  // Réinitialiser la page lors des changements de filtres/recherche
+  useEffect(() => {
     setPage(1);
   }, [searchTerm, filtreCategorie, filtrePromotion]);
 
+  // Vérification promotion active
   const aUnePromotionActive = (produit) => {
     if (!produit?.promotion) return false;
     const maintenant = new Date();
     const debut = new Date(produit.promotion.dateDebut);
     const fin = new Date(produit.promotion.dateFin);
-    return (
-      produit.promotion.statutPromotion === true &&
-      debut <= maintenant &&
-      fin >= maintenant
-    );
+    return produit.promotion.statutPromotion && debut <= maintenant && fin >= maintenant;
   };
 
+  // Calcul prix promotionnel
   const calculatePromotionalPrice = (prix, promotion) => {
     if (!promotion) return null;
     const maintenant = new Date();
     const debut = new Date(promotion.dateDebut);
     const fin = new Date(promotion.dateFin);
-    const estActive =
-      promotion.statutPromotion === true &&
-      debut <= maintenant &&
-      fin >= maintenant;
+    const estActive = promotion.statutPromotion && debut <= maintenant && fin >= maintenant;
     if (!estActive) return null;
 
     if (promotion.typePromotion === "Pourcentage") {
@@ -101,19 +90,15 @@ useEffect(() => {
     return Math.max(0, prix - promotion.valeur);
   };
 
+  // Gestion ajout au panier
   const handleAddToCart = (produit) => {
-    const existingItem = cartItems.find(
-      (item) => item.nom === produit.nomProduit
-    );
+    const existingItem = cartItems.find((item) => item.nom === produit.nomProduit);
     const increment = 1;
 
     if (existingItem) {
       const nextPoids = existingItem.poids + increment;
       if (nextPoids > existingItem.poidsDisponible) {
-        setErrorModalData({
-          nom: existingItem.nom,
-          maxPoids: existingItem.poidsDisponible,
-        });
+        setErrorModalData({ nom: existingItem.nom, maxPoids: existingItem.poidsDisponible });
         setShowErrorModal(true);
         return;
       }
@@ -129,9 +114,7 @@ useEffect(() => {
         numProduit: produit.numProduit,
         nom: produit.nomProduit,
         prixPerKg: Number(produit.prix) || 0,
-        image: produit.image
-          ? `${IMAGE_BASE_URL}${produit.image}`
-          : "/placeholder.png",
+        image: produit.image ? `${IMAGE_BASE_URL}${produit.image}` : "/placeholder.png",
         nomCategorie: produit.categorie?.nomCategorie,
         poids: increment,
         poidsDisponible: poidsDispo,
@@ -140,13 +123,7 @@ useEffect(() => {
     }
   };
 
-  const reinitialiserFiltres = () => {
-    setSearchTerm("");
-    setFiltreCategorie("tous");
-    setFiltrePromotion("tous");
-    setShowAdvancedFilters(false);
-  };
-
+  // Filtrage des produits
   const filteredProduits = produits.filter((p) => {
     if (!p) return false;
 
@@ -156,8 +133,7 @@ useEffect(() => {
       p.categorie?.nomCategorie?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchCategorie =
-      filtreCategorie === "tous" ||
-      p.numCategorie === Number(filtreCategorie);
+      filtreCategorie === "tous" || p.numCategorie === Number(filtreCategorie);
 
     const matchPromotion =
       filtrePromotion === "tous" ||
@@ -169,133 +145,92 @@ useEffect(() => {
 
   // Pagination
   const indexDepart = (page - 1) * produitsParPage;
-  const produitsAffiches = filteredProduits.slice(
-    indexDepart,
-    indexDepart + produitsParPage
-  );
-
- 
+  const produitsAffiches = filteredProduits.slice(indexDepart, indexDepart + produitsParPage);
 
   return (
-    <section >
-    
-
-      {/* Barre de recherche */}
+    <section>
+      {/* Barre de recherche - PROPRE, SANS BOUTONS FILTRE NI RESET */}
       <div className="heroProduit-middle">
-      <div className="search-container">
-        <div className="search-bar">
-          <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
-          <input
-            type="text"
-            placeholder="Rechercher par nom ou catégorie..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button
-            className={`filter-toggle ${showAdvancedFilters ? "active" : ""}`}
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          style={{ border:"none", display:"flex", alignItems:"center", background:"white", color:"#28a458", paddingRight:"10px"}}
-          >
-            <FaFilter />
-          </button>
-
-          {(searchTerm || filtreCategorie !== "tous" || filtrePromotion !== "tous") && (
-            <FaSync
-              style={{ marginLeft: "8px", cursor: "pointer", color: "#28a458" }}
-              onClick={reinitialiserFiltres}
+        <div className="search-container">
+          <div className="search-bar">
+            <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />
+            <input
+              type="text"
+              placeholder="Rechercher par nom ou catégorie..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          )}
-        </div>
-      </div>
-     
-
-      {/* Filtres avancés */}
-      {showAdvancedFilters && (
-        <div className="filters-container"   >
-          <div className="filters-row">
-            <div className="filter-group" >
-              <label>Catégorie</label>
-              <select
-                value={filtreCategorie}
-                onChange={(e) => setFiltreCategorie(e.target.value)}
-              
-              >
-                <option value="tous">Toutes les catégories</option>
-                {categories.map((cat) => (
-                  <option key={cat.numCategorie} value={cat.numCategorie}>
-                    {cat.nomCategorie}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>
-                <FaTag style={{ marginRight: "6px" }} />
-                Promotion
-              </label>
-              <select
-                value={filtrePromotion}
-                onChange={(e) => setFiltrePromotion(e.target.value)}
-              >
-                <option value="tous">Toutes</option>
-                <option value="avec">En promotion</option>
-                <option value="sans">Sans promotion</option>
-              </select>
-            </div>
           </div>
         </div>
-      )}
- </div>
+      </div>
+
+      {/* Filtres par catégorie - AFFICHÉS DIRECTEMENT, TOUJOURS VISIBLES */}
+      <div className="categories-filters-section">
+        <div className="categories-filters-row">
+          <button
+            className={`filter-category-btn ${filtreCategorie === "tous" ? "active" : ""}`}
+            onClick={() => setFiltreCategorie("tous")}
+          >
+            Toutes les catégories
+          </button>
+
+          {categories.map((cat) => (
+            <button
+              key={cat.numCategorie}
+              className={`filter-category-btn ${filtreCategorie == cat.numCategorie ? "active" : ""}`}
+              onClick={() => setFiltreCategorie(cat.numCategorie)}
+            >
+              <FaTag />
+              {cat.nomCategorie}
+            </button>
+          ))}
+
+          {/* Filtre promotion (optionnel, vous pouvez le supprimer si vous ne voulez pas) */}
+          <button
+            className={`filter-category-btn ${filtrePromotion === "avec" ? "active" : ""}`}
+            onClick={() => setFiltrePromotion(filtrePromotion === "avec" ? "tous" : "avec")}
+          >
+            <FaTag style={{ color: "#e74c3c" }} />
+            En promotion
+          </button>
+        </div>
+      </div>
+
       {/* Grille des produits */}
       <div className="produits-section">
-        <div className="produits-grid ">
-          {produitsAffiches.length > 0 ? (
+        <div className="produits-grid">
+          {loading ? (
+            <div className="no-products">Chargement des produits...</div>
+          ) : produitsAffiches.length > 0 ? (
             produitsAffiches.map((produit) => {
               const promo = produit.promotion;
               const prixPromo = calculatePromotionalPrice(produit.prix, promo);
               const hasPromo = prixPromo !== null && prixPromo < produit.prix;
-
-              const inCart = cartItems.some(
-                (item) => item.nom === produit.nomProduit
-              );
-              const cartItem = cartItems.find(
-                (item) => item.nom === produit.nomProduit
-              );
+              const inCart = cartItems.some((item) => item.nom === produit.nomProduit);
+              const cartItem = cartItems.find((item) => item.nom === produit.nomProduit);
 
               return (
-                <div
-                  key={produit.numProduit}
-                  className="produit-card back-office-card"
-                >
+                <div key={produit.numProduit} className="produit-card back-office-card">
                   {hasPromo && (
                     <span className="badge-promo">
                       -{promo.valeur}
                       {promo.typePromotion === "Pourcentage" ? "%" : " Ar"}
                     </span>
                   )}
-
                   <div className="produit-image">
                     <img
-                      src={
-                        produit.image
-                          ? `${IMAGE_BASE_URL}${produit.image}`
-                          : "/placeholder.png"
-                      }
+                      src={produit.image ? `${IMAGE_BASE_URL}${produit.image}` : "/placeholder.png"}
                       alt={produit.nomProduit}
                       onError={(e) => (e.target.src = "/placeholder.png")}
                     />
                   </div>
-
                   <div className="produit-body">
                     <h3 className="produit-title">{produit.nomProduit}</h3>
-
                     {produit.categorie && (
                       <span className="produit-categorie">
                         <FaTag /> {produit.categorie.nomCategorie}
                       </span>
                     )}
-
                     <div className="produit-prix-poids">
                       <div className="prix-container">
                         {hasPromo ? (
@@ -313,38 +248,29 @@ useEffect(() => {
                           </span>
                         )}
                       </div>
-
                       <div className="poids-disponible">
                         <FaWeightHanging />
                         <strong>{produit.poids} kg</strong>
                       </div>
                     </div>
-
                     <div className="panier-actions">
                       {inCart ? (
                         <div className="quantity-control">
                           <button
                             onClick={() =>
-                              cartItem.poids > 1 &&
-                              updateQuantity(cartItem.id, cartItem.poids - 1)
+                              cartItem.poids > 1 && updateQuantity(cartItem.id, cartItem.poids - 1)
                             }
                             className="btn-moins"
                           >
                             −
                           </button>
                           <span className="quantity">{cartItem.poids}</span>
-                          <button
-                            onClick={() => handleAddToCart(produit)}
-                            className="btn-plus"
-                          >
+                          <button onClick={() => handleAddToCart(produit)} className="btn-plus">
                             +
                           </button>
                         </div>
                       ) : (
-                        <button
-                          onClick={() => handleAddToCart(produit)}
-                          className="btn-add-cart"
-                        >
+                        <button onClick={() => handleAddToCart(produit)} className="btn-add-cart">
                           <img src={panierIcon} alt="Ajouter" />
                           Ajouter
                         </button>

@@ -33,13 +33,11 @@ const Promotions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
   // Filtres
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [filtreType, setFiltreType] = useState("tous");
   const [filtreDateMin, setFiltreDateMin] = useState("");
   const [filtreDateMax, setFiltreDateMax] = useState("");
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [promotionASupprimer, setPromotionASupprimer] = useState(null);
 
@@ -63,7 +61,7 @@ const Promotions = () => {
     try {
       let result;
       if (promotionAEditer) {
-        result = await updatePromotion(promotionAEditer.numPromotion, promotionData);
+         result = await updatePromotion(promotionAEditer.numPromotion, promotionData);
         setPromotions((prev) =>
           prev.map((p) => (p.numPromotion === result.numPromotion ? result : p))
         );
@@ -106,12 +104,30 @@ const Promotions = () => {
       setPromotionASupprimer(null);
     }
   };
+  const toggleStatutPromotion = async (promo) => {
+    const statutActuel = getStatutAffichage(promo);
+    if (statutActuel.texte === "Expirée") {
+      showToast("warning", "Impossible d'activer une promotion expirée.");
+      return;
+    }
 
-  // Calcul du statut réel (actif, inactif, expiré)
+    try {
+      const nouveauStatut = !promo.statutPromotion;
+      const updatedData = { ...promo, statutPromotion: nouveauStatut };
+      const updatedPromo = await updatePromotion(promo.numPromotion, updatedData);
+
+      setPromotions((prev) =>
+        prev.map((p) => (p.numPromotion === updatedPromo.numPromotion ? updatedPromo : p))
+      );
+    } catch (error) {
+      showToast("error", "Erreur lors du changement de statut");
+    }
+  };
+
+  // Calcul du statut réel
   const getStatutAffichage = (promo) => {
     const aujourdHui = new Date();
     const dateFin = promo.dateFin ? new Date(promo.dateFin) : null;
-
     if (dateFin && dateFin < aujourdHui) {
       return { texte: "Expirée", classe: "expiree" };
     }
@@ -129,7 +145,6 @@ const Promotions = () => {
       (promo.typePromotion?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     const statutActuel = getStatutAffichage(promo);
-
     const statutMatch =
       filtreStatut === "tous" ||
       (filtreStatut === "active" && statutActuel.texte === "Active") ||
@@ -142,12 +157,10 @@ const Promotions = () => {
 
     const debut = promo.dateDebut ? new Date(promo.dateDebut) : null;
     const fin = promo.dateFin ? new Date(promo.dateFin) : null;
-
     const dateMinOk =
       !filtreDateMin ||
       (debut && debut >= new Date(filtreDateMin)) ||
       (fin && fin >= new Date(filtreDateMin));
-
     const dateMaxOk =
       !filtreDateMax ||
       (debut && debut <= new Date(filtreDateMax)) ||
@@ -172,7 +185,6 @@ const Promotions = () => {
     filtreDateMin ||
     filtreDateMax;
 
-  // Stats
   const stats = {
     total: filteredPromotions.length,
     active: promotions.filter((p) => getStatutAffichage(p).texte === "Active").length,
@@ -281,8 +293,8 @@ const Promotions = () => {
                 onChange={(e) => setFiltreType(e.target.value)}
               >
                 <option value="tous">Tous</option>
-                <option value="pourcentage">Pourcentage</option>
-                <option value="montant fixe">Montant fixe</option>
+                <option value="Pourcentage">Pourcentage</option>
+                <option value="Montant fixe">Montant fixe</option>
               </select>
             </div>
             <div className="filter-group">
@@ -314,7 +326,6 @@ const Promotions = () => {
               />
             </div>
           </div>
-
           {/* Tags filtres actifs */}
           <div className="active-filters">
             {filtreStatut !== "tous" && (
@@ -355,6 +366,7 @@ const Promotions = () => {
               <th>Début</th>
               <th>Fin</th>
               <th>Statut</th>
+              <th>Activer/Désactiver</th> {/* Nouvelle colonne */}
               <th>Actions</th>
             </tr>
           </thead>
@@ -394,39 +406,52 @@ const Promotions = () => {
                         ? `${promo.montantMinimum.toLocaleString()} Ar`
                         : "—"}
                     </td>
-                   <td>
-  {promo.dateDebut
-    ? new Date(promo.dateDebut).toLocaleString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    : "—"}
-</td>
-<td>
-  {promo.dateFin
-    ? new Date(promo.dateFin).toLocaleString("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })
-    : "—"}
-</td>
+                    <td>
+                      {promo.dateDebut
+                        ? new Date(promo.dateDebut).toLocaleString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
+                    <td>
+                      {promo.dateFin
+                        ? new Date(promo.dateFin).toLocaleString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
                     <td>
                       <span className={`status ${statut.classe}`}>
                         {statut.texte}
                       </span>
                     </td>
+                    {/* Nouvelle colonne Toggle */}
+                   <td>
+  <label className="switch" title={promo.statutPromotion ? "Désactiver la promotion" : "Activer la promotion"}>
+    <input
+      type="checkbox"
+      checked={promo.statutPromotion}
+      onChange={() => toggleStatutPromotion(promo)}
+      disabled={statut.texte === "Expirée"}
+    />
+    <span className="slider round"></span>
+  </label>
+</td>
                     <td>
                       <div className="table-actions">
-                        <button className="edit" onClick={() => handleEdit(promo)}>
-                          <FaEdit style={{ color: "#28a458", marginRight: "8px" }} />{" "}
-                          Modifier
-                        </button>
+                        {statut.texte !== "Expirée" && (
+                          <button className="edit" onClick={() => handleEdit(promo)}>
+                            <FaEdit style={{ color: "#28a458", marginRight: "8px" }} /> Modifier
+                          </button>
+                        )}
                         <button
                           className="delete"
                           onClick={() => openDeleteModal(promo)}
@@ -440,7 +465,7 @@ const Promotions = () => {
               })
             ) : (
               <tr>
-                <td colSpan="9" className="empty-table">
+                <td colSpan="10" className="empty-table">
                   <div style={{ textAlign: "center", padding: "40px 20px" }}>
                     <h3>
                       {hasActiveFilters
@@ -492,8 +517,7 @@ const Promotions = () => {
             <div className="modal-body">
               <p style={{ fontSize: "16px", lineHeight: "1.5" }}>
                 Êtes-vous sûr de vouloir supprimer la promotion{" "}
-                <strong>{promotionASupprimer?.nomPromotion}</strong> (code :{" "}
-                <strong>{promotionASupprimer?.codePromo || "aucun"}</strong>) ?
+                <strong>{promotionASupprimer?.nomPromotion}</strong>
               </p>
               <div className="modal-actions" style={{ justifyContent: "center", gap: "15px", marginTop: "20px" }}>
                 <button

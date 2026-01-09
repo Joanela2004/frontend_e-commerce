@@ -10,6 +10,126 @@
   --color-background-white: #ffff;
 }
 
+.categories-filters-section {
+  padding: 20px 0 20px;
+  background-color: #f9f9f9;
+}
+
+.categories-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.filter-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  white-space: nowrap;
+}
+
+.filter-category-btn:hover {
+  border-color: #28a458;
+  transform: translateY(-2px);
+}
+
+.filter-category-btn.active {
+  background-color: #28a458;
+  color: white;
+  border-color: #28a458;
+}
+
+.filter-category-btn.active svg {
+  color: white;
+}
+
+.filter-category-btn svg {
+  font-size: 16px;
+}
+
+/* Style pour le DatePicker personnalisé */
+.date-filter-wrapper {
+  display: inline-block;
+}
+
+.date-picker-btn {
+  min-width: 180px;
+  justify-content: center;
+}
+
+.react-datepicker-wrapper,
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+}
+.new-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 30px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+}
+
+.filter-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-category-btn:hover {
+  border-color: #28a458;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(40, 164, 88, 0.2);
+}
+
+.filter-category-btn.active {
+  background: #28a458;
+  color: white;
+  border-color: #28a458;
+}
+
+.filter-category-btn.active svg {
+  color: white;
+}
+
+.filter-category-btn svg {
+  font-size: 18px;
+}
 .categorie-menu{
 display: flex;
 align-items: center;

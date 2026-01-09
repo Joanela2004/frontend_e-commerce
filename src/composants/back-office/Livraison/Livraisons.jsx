@@ -474,7 +474,7 @@ const Livraisons = () => {
               {filteredLivraisons.map((livraison) => (
                 <tr key={livraison.numLivraison}>
                   <td>
-                    #{livraison.commande?.referenceCommande || livraison.numCommande}
+                    {livraison.commande?.referenceCommande || livraison.numCommande}
                   </td>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

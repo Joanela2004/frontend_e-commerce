@@ -7,9 +7,9 @@ import "../../../styles/front-office/global.css";
 import "../../../styles/front-office/Accueil/PointsFortSection.css";
 
 const pointsFort = [
-   { id: 3, nom: "deliver", desciption: "Nous livrons dans tout Madagascar avec une chaîne du froid préservée ", image: deliver },
+   { id: 3, nom: "Livraison", desciption: "Nous livrons dans tout Madagascar avec une chaîne du froid préservée ", image: deliver },
   
-  { id: 1, nom: "qualite", desciption: "Nous livrons dans tout Madagascar avec une chaîne du froid préservée", image: qualite},
+  { id: 1, nom: "Qualité", desciption: "Nous livrons dans tout Madagascar avec une chaîne du froid préservée", image: qualite},
   { id: 2, nom: "Paiement", desciption: "Mobile Money, Carte bancaire, Virement ou Paiement à la livraison", image: carte },
  
 ];

@@ -6,7 +6,7 @@ import SalesOverTime from "./SalesOverTime";
 import TopProducts from "./TopProducts";
 import TopClients from "./TopClients";
 import StockAlerts from "./StockAlerts";
-import GetKpis from "./GetKpis";
+// import GetKpis from "./GetKpis";
 import DateRange from "./DateRange";
 import "../../../styles/back-office/Dashboard.css";
 
@@ -54,7 +54,7 @@ export default function Dashboard() {
       <div className="kpis-grid">
         <div className="kpis-primary">
       <Kpis start={dates.start} end={dates.end} />
-          <GetKpis start={dates.start} end={dates.end} />
+          {/* <GetKpis start={dates.start} end={dates.end} /> */}
           
         </div>
            

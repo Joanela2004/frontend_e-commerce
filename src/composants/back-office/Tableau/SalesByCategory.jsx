@@ -13,22 +13,20 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function SalesByCategory() {
+export default function SalesByCategory({ start, end }) {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const res = await dashboardApi.salesByCategory(
-        "2025-01-01",
-        "2025-01-31",
-        "ca"
-      );
+      setLoading(true);
+
+     
+      const res = await dashboardApi.salesByCategory(start, end);
 
       const labels = res.data.map(item => item.nomCategorie);
       const values = res.data.map(item => item.total);
 
-     
       setChartData({
         labels,
         datasets: [
@@ -38,11 +36,10 @@ export default function SalesByCategory() {
             backgroundColor: [
               '#8b5e3c',
               '#28a458',
-              '#5E8BA8', // Bleu
-             
-              ' #0e6bc2dc', // Vert Clair
-              '#9FB3C3', // Bleu Gris
-              '#D2B48C', // Fauve
+              '#5E8BA8', 
+              '#0e6bc2dc',
+              '#9FB3C3',
+              '#D2B48C',
             ],
             borderColor: '#FFFFFF',
             borderWidth: 2,
@@ -59,19 +56,13 @@ export default function SalesByCategory() {
 
   useEffect(() => {
     loadData();
-  }, []);
-
-  if (loading) return <div className="loading">Chargement...</div>;
-
+  }, [start, end]);
   return (
-    <div className="sales-category-container" >
-      
+    <div className="sales-category-container">
       {chartData && (
-        
         <div style={{width:"80%",height:"88%",padding:"20px"}}>
           <h2>Ventes par Catégorie</h2>
-
-          <Pie  data={chartData} />
+          <Pie data={chartData} />
         </div>
       )}
     </div>

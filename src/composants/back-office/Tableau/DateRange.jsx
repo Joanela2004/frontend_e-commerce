@@ -1,145 +1,135 @@
-import React,{ useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
-import { FaCalendarAlt, FaArrowRight } from "react-icons/fa";
-import { format, parse } from "date-fns";
-import "../../../styles/back-office/DateRange.css"
+import { FaCalendarAlt } from "react-icons/fa";
+import { format } from "date-fns";
+import "../../../styles/back-office/DateRange.css";
+
+/* --- util : lundi de la semaine courante --- */
+const getMonday = () => {
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  return monday;
+};
+
 export default function DateRange({ onChange }) {
-  const [start, setStart] = useState(new Date());
+
+  /* --- états --- */
+  const [start, setStart] = useState(getMonday());
   const [end, setEnd] = useState(new Date());
+  const [activeFilter, setActiveFilter] = useState("week");
 
-  const formatDate = (date) => {
-    return format(date, 'dd/MM/yyyy');
-  };
+  /* --- format affichage --- */
+  const formatDisplay = (date) => format(date, "dd/MM/yyyy");
 
-  // Parse dd/MM/yyyy to Date object
-  const parseDate = (dateString) => {
-    return parse(dateString, 'dd/MM/yyyy', new Date());
-  };
-
-  // Handle manual input
- 
-  // Send updates to parent whenever values change
+  /* --- notifier le parent --- */
   useEffect(() => {
     if (start && end) {
-      const formattedStart = format(start, 'dd-MM-yyyy');
-      const formattedEnd = format(end, 'dd-MM-yyyy');
       onChange({
-        start: formattedStart,
-        end: formattedEnd,
-        displayStart: formatDate(start),
-        displayEnd: formatDate(end)
+        start: format(start, "yyyy-MM-dd"),
+        end: format(end, "yyyy-MM-dd"),
+        displayStart: formatDisplay(start),
+        displayEnd: formatDisplay(end),
       });
     }
   }, [start, end, onChange]);
 
-  // Custom input component for better styling
-  const CustomInput = React.forwardRef(({ value, onClick, onChange, placeholder }, ref) => (
+  /* --- custom input --- */
+  const CustomInput = React.forwardRef(({ value, onClick }, ref) => (
     <div className="custom-date-input" onClick={onClick} ref={ref}>
       <FaCalendarAlt className="calendar-icon" />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange && onChange(e.target.value)}
-        placeholder={placeholder}
-        className="date-text-input"
-        readOnly={!onChange}
-      />
+      <input className="date-text-input" value={value} readOnly />
     </div>
   ));
 
   return (
     <div className="date-range-container">
+
+      {/* Header */}
       <div className="date-range-header">
         <h3>
           <FaCalendarAlt />
           Sélectionner une période
         </h3>
       </div>
-      
-      <div className="date-range-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div className="date-picker-group" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div className="date-label">
-            <label htmlFor="start-date">Date de début</label>
-          </div>
-          <div className="date-picker-wrapper">
-            <DatePicker
-              selected={start}
-              onChange={(date) => setStart(date)}
-              dateFormat="dd/MM/yyyy"
-              locale={fr}
-              customInput={<CustomInput />}
-              showMonthDropdown
-              showYearDropdown
-              dropdownMode="select"
-              className="date-picker"
-              id="start-date"
-            />
-          </div>
-        
+
+      {/* Dates */}
+      <div className="date-range-body">
+
+        <div className="date-picker-group">
+          <label>Date de début</label>
+          <DatePicker
+            selected={start}
+            onChange={(date) => {
+              setStart(date);
+              setActiveFilter(null);
+            }}
+            locale={fr}
+            dateFormat="dd/MM/yyyy"
+            customInput={<CustomInput />}
+          />
         </div>
 
-       
-
-        <div className="date-picker-group" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div className="date-label">
-            <label htmlFor="end-date">Date de fin</label>
-          </div>
-          <div className="date-picker-wrapper">
-            <DatePicker
-              selected={end}
-              onChange={(date) => setEnd(date)}
-              dateFormat="dd/MM/yyyy"
-              locale={fr}
-              minDate={start}
-              customInput={<CustomInput />}
-              showMonthDropdown
-              showYearDropdown
-              dropdownMode="select"
-              className="date-picker"
-              id="end-date"
-            />
-          </div>
-        
+        <div className="date-picker-group">
+          <label>Date de fin</label>
+          <DatePicker
+            selected={end}
+            minDate={start}
+            onChange={(date) => {
+              setEnd(date);
+              setActiveFilter(null);
+            }}
+            locale={fr}
+            dateFormat="dd/MM/yyyy"
+            customInput={<CustomInput />}
+          />
         </div>
+
       </div>
-      
+
+      {/* Boutons rapides */}
       <div className="date-range-footer">
-        <button 
-          className="quick-date-btn"
+
+        <button
+          className={`quick-date-btn ${activeFilter === "today" ? "active" : ""}`}
           onClick={() => {
             const today = new Date();
             setStart(today);
             setEnd(today);
+            setActiveFilter("today");
           }}
         >
-          Aujourd'hui
+          Aujourd’hui
         </button>
-        <button 
-          className="quick-date-btn"
+
+        <button
+          className={`quick-date-btn ${activeFilter === "week" ? "active" : ""}`}
           onClick={() => {
             const today = new Date();
-            const weekAgo = new Date();
-            weekAgo.setDate(today.getDate() - 7);
-            setStart(weekAgo);
+            setStart(getMonday());
             setEnd(today);
+            setActiveFilter("week");
           }}
         >
-          Dernière semaine
+          Cette semaine
         </button>
-        <button 
-          className="quick-date-btn"
+
+        <button
+          className={`quick-date-btn ${activeFilter === "month" ? "active" : ""}`}
           onClick={() => {
             const today = new Date();
-            const monthAgo = new Date();
+            const monthAgo = new Date(today);
             monthAgo.setMonth(today.getMonth() - 1);
             setStart(monthAgo);
             setEnd(today);
+            setActiveFilter("month");
           }}
         >
           Dernier mois
         </button>
+
       </div>
     </div>
   );

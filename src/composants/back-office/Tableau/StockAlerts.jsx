@@ -36,16 +36,7 @@ export default function StockAlerts({ threshold = 1.0 }) {
     return Math.min((poids / maxPoids) * 100, 100);
   };
 
-  if (loading) {
-    return (
-      <div className="stock-alerts-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Chargement des alertes...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="stock-alerts-container">

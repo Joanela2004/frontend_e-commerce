@@ -146,15 +146,10 @@ const CommandesClient = () => {
               {filteredCommandes.length} commande{filteredCommandes.length !== 1 ? 's' : ''} trouvée{filteredCommandes.length !== 1 ? 's' : ''}
             </span>
             <span className="stat-item" style={{ backgroundColor: '#e3f2fd', color: '#1565c0' }}>
-              Total: {totalMontant.toLocaleString()} Ar
+              Total: {totalMontant.toLocaleString("fr-FR")} Ar
             </span>
             
-            <span className="stat-item attente">
-              {commandesEnAttente} en attente
-            </span>
-            <span className="stat-item validee">
-              {commandesValidees} validée{commandesValidees !== 1 ? 's' : ''}
-            </span>
+           
           </div>
         </div>
           <div className="table-actions">
@@ -318,7 +313,7 @@ const CommandesClient = () => {
                 <tr key={commande.numCommande}>
                   <td>
                     <span >
-                      #{commande.referenceCommande || commande.numCommande}
+                      {commande.referenceCommande || commande.numCommande}
                     </span>
                   </td>
                   <td>
@@ -331,17 +326,17 @@ const CommandesClient = () => {
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <span>
-                      {Number(commande.sousTotal || 0).toLocaleString()} Ar
+                      {Number(commande.sousTotal || 0).toLocaleString("fr-FR")} Ar
                     </span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <span >
-                      {Number(commande.fraisLivraison || 0).toLocaleString()} Ar
+                      {Number(commande.fraisLivraison || 0).toLocaleString("fr-FR")} Ar
                     </span>
                   </td>
                   <td style={{ textAlign: 'right' }}>
                     <span className="montant" >
-                      <strong>{Number(commande.montantTotal || 0).toLocaleString()} Ar</strong>
+                      <strong>{Number(commande.montantTotal || 0).toLocaleString("fr-FR")} Ar</strong>
                     </span>
                   </td>
                   <td>

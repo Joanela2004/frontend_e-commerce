@@ -8,11 +8,12 @@ export default function Kpis({ range = "30d", start = null, end = null }) {
 
   const fetchKpis = async () => {
     try {
+      setLoading(true);
       const res = await dashboardApi.Kpis(start, end, range);
-      setKpis(res.data.kpis);
+      setKpis(res.data.kpis || {});
     } catch (err) {
       console.error("Erreur API KPIs:", err);
-      setKpis(null);
+      setKpis({});
     } finally {
       setLoading(false);
     }
@@ -22,33 +23,47 @@ export default function Kpis({ range = "30d", start = null, end = null }) {
     fetchKpis();
   }, [range, start, end]);
 
-  if (loading || !kpis) return <div className="loading">Chargement...</div>;
+  if (!kpis) return <div className="kpis-error">Erreur de chargement des KPIs</div>;
+
+  const formatNumber = (num) => (num ?? 0).toLocaleString("fr-FR");
 
   return (
-    <div className="kpis-container">
-      {/* Chiffre d'affaires total */}
-      <div className="kpi-card">
-        <h3>Chiffre d'affaires</h3>
-        <p>{kpis.totalRevenu.toLocaleString()} Ar</p>
+    <div className="kpis-grid">
+    
+      <div className="kpi-card total-global" style={{background:"#28a458"}}>
+        <h3 style={{color:"white"}}>Chiffre d'affaires total</h3>
+        <div className="kpi-value " style={{color:"white"}} >
+          {formatNumber(kpis.revenuTotalGlobal)} Ar
+        </div>
       </div>
 
-      {/* Nombre de produits vendus */}
-      <div className="kpi-card">
-        <h3>Produits vendus</h3>
-        <p>{kpis.produitsVendus.toLocaleString()}</p>
+      {/* 2. Chiffre d'affaires de la période sélectionnée */}
+      <div className="kpi-card period-ca">
+        <h3>Chiffre d'affaire de la période</h3>
+        <div className="kpi-value">
+          {formatNumber(kpis.revenu)} Ar
+        </div>
       </div>
 
-      {/* Nombre de commandes */}
+      {/* Commandes livrées (période) */}
       <div className="kpi-card">
-        <h3>Commandes</h3>
-        <p>{kpis.commandesCount.toLocaleString()}</p>
+        <h3>Commandes livrées</h3>
+        <div className="kpi-value">
+          {formatNumber(kpis.totalCommandes)}
+        </div>
       </div>
+
+     
 
       {/* Nouveaux clients */}
       <div className="kpi-card">
-        <h3>Nouveaux clients</h3>
-        <p>{kpis.clientsNouveaux.toLocaleString()}</p>
+        <h3> Clients</h3>
+        <div className="kpi-value">
+          {formatNumber(kpis.clientsNouveaux)}
+        </div>
       </div>
+
+      
     </div>
   );
 }

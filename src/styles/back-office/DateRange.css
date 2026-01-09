@@ -1,4 +1,10 @@
 /* --- Conteneur Principal --- */
+.quick-date-btn.active {
+  background-color: #28a458;
+  color: white;
+  font-weight: 600;
+}
+
 .date-range-container {
   background-color: #ffffff; /* Fond blanc propre */
   border-radius: 12px;

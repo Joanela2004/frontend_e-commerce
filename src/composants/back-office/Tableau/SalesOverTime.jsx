@@ -46,8 +46,7 @@ export default function SalesOverTime({ start, end, interval = "day" }) {
     fetch();
   }, [start, end, interval]);
 
-  if (loading) return <div className="chart-loading">Chargement du graphique...</div>;
-
+ 
   const options = {
     responsive: true,
     plugins: { legend: { position: "top" } },

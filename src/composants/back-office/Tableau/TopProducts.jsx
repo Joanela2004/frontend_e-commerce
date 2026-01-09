@@ -100,8 +100,6 @@ export default function TopProducts({ start = null, end = null, limit = 10, metr
     loadData();
   }, [start, end, limit, metric]);
 
-  if (loading) return <div className="loading">Chargement top produits...</div>;
-
   return (
     <>
       <h2>Vente par produits</h2>

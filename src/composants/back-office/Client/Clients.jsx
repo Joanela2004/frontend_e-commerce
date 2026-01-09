@@ -239,7 +239,6 @@ const [dateMaxPicker, setDateMaxPicker] = useState(null);
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       {client.image ? (
-  // Si le client a une image → afficher la photo
   <img 
     src={`${IMAGE_BASE_URL}${client.image}`}
     alt={client.nomUtilisateur} 

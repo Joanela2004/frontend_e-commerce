@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTag, FaMoneyBillWave, FaCalendarAlt, FaCheckCircle, FaClock } from "react-icons/fa";
+import { FaTag, FaMoneyBillWave, FaCalendarAlt, FaClock } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from "date-fns/locale";
@@ -24,7 +24,6 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
   const [dateDebut, setDateDebut] = useState(null);
   const [dateFin, setDateFin] = useState(null);
   const [montantMinimum, setMontantMinimum] = useState('');
-  const [statut, setStatut] = useState('Active');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,13 +38,11 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
       setDateDebut(promotionAEditer.dateDebut ? new Date(promotionAEditer.dateDebut) : null);
       setDateFin(promotionAEditer.dateFin ? new Date(promotionAEditer.dateFin) : null);
       setMontantMinimum(promotionAEditer.montantMinimum || '');
-      setStatut(promotionAEditer.statutPromotion ? 'Active' : 'Inactive');
     } else {
       const now = new Date();
       const madagascarOffset = 3 * 60;
       const localOffset = now.getTimezoneOffset();
       const madagascarTime = new Date(now.getTime() + (madagascarOffset + localOffset) * 60 * 1000);
-
       setCode('');
       setNom('');
       setTypePromotion('Pourcentage');
@@ -54,13 +51,11 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
       setDateDebut(madagascarTime);
       setDateFin(null);
       setMontantMinimum('');
-      setStatut('Active');
     }
   }, [promotionAEditer, isOpen]);
 
   const handleValeurChange = (e) => {
     let inputValue = e.target.value;
-
     if (typePromotion === 'Pourcentage') {
       if (inputValue === '' || inputValue === '0') {
         setValeur('');
@@ -83,7 +78,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
     e.preventDefault();
     setLoading(true);
 
-    const finalValeur = typePromotion === 'Pourcentage' 
+    const finalValeur = typePromotion === 'Pourcentage'
       ? Math.min(parseFloat(valeur) || 0, 100)
       : parseFloat(valeur) || 0;
 
@@ -96,7 +91,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
       dateDebut: formatDateTimeForServer(dateDebut),
       dateFin: formatDateTimeForServer(dateFin),
       montantMinimum: montantMinimum ? parseFloat(montantMinimum) : 0,
-      statutPromotion: statut === "Active",
+      statutPromotion: true, // Par défaut : active lors de la création
     };
 
     onSave(promotionData);
@@ -113,10 +108,8 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
           </h3>
           <button onClick={onClose} className="modal-close" disabled={loading}>×</button>
         </div>
-
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="modal-body">
-
             <div className="form-row">
               <div className="form-group">
                 <label className="required">Type de promotion</label>
@@ -133,7 +126,6 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                 </div>
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label className={typeMode === "code" ? "required" : ""}>
@@ -147,7 +139,6 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                 <input type="text" value={nom} onChange={(e) => setNom(e.target.value)} required className="form-control" />
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label className="required">Type de réduction</label>
@@ -181,22 +172,13 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                 )}
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label><FaMoneyBillWave /> Montant minimum (Ar)</label>
                 <input type="number" value={montantMinimum} onChange={(e) => setMontantMinimum(e.target.value)}
                   min="0" step="100" className="form-control" />
               </div>
-              <div className="form-group">
-                <label><FaCheckCircle /> Statut</label>
-                <select value={statut} onChange={(e) => setStatut(e.target.value)} className="form-control">
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label className="required"><FaCalendarAlt /> <FaClock /> Date et heure de début</label>
@@ -228,9 +210,7 @@ const AjouterPromotionModal = ({ isOpen, onClose, onSave, promotionAEditer }) =>
                 />
               </div>
             </div>
-
           </div>
-
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
               Annuler

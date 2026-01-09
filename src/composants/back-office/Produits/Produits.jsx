@@ -31,12 +31,8 @@ import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
 import "../../../styles/back-office/produit.css"; 
-import "../../../styles/front-office/Accueil/produitSection.css"; // ← Cartes magnifiques
-
+import "../../../styles/front-office/Accueil/produitSection.css"; 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
-
-
-
 const Produits = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -55,7 +51,6 @@ const Produits = () => {
   const [filtrePrixMax, setFiltrePrixMax] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("tous");
 
-  // Modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [produitEnCours, setProduitEnCours] = useState(null);
@@ -180,7 +175,6 @@ const Produits = () => {
     setShowRestoreModal(false);
   };
 
-  // Filtrage
   const filteredProduits = produits.filter((p) => {
     const matchSearch =
       p.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -240,7 +234,6 @@ const Produits = () => {
 
   return (
     <div className="page-container">
-      {/* Header + Stats */}
       <div className="page-header">
         <div>
           <h1>Gestion des Produits</h1>
@@ -257,8 +250,6 @@ const Produits = () => {
           <FaPlus /> Ajouter un produit
         </button>
       </div>
-
-      {/* Navigation Tabs */}
       <div className="navigation-tabs">
         <button className="tab-active">
           <FaBox /> Produits

@@ -39,7 +39,7 @@ color: var(--color-green-primary);
 }
 .about-text p{
    width:400px;
-  
+    font-size: 1.2rem;
 }
 
 .about-images{

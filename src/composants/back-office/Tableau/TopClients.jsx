@@ -150,13 +150,24 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
   };
 
   if (loading) return <div className="widget-loading">Chargement...</div>;
-  if (clients.length === 0)
-    return <div className="widget-empty">Aucun client dans cette période</div>;
+  if (clients.length === 0) {
+  return (
+    <div className="top-clients-widget">
+      <h2 className="widget-title">Top Clients Fidèles</h2>
+      <div className="widget-empty" style={{ textAlign: "center", padding: "40px 20px" }}>
+        <p style={{ fontSize: "1.1em", color: "#666" }}>
+          Aucun client n'a commandé durant cette période.
+        </p>
+      </div>
+    </div>
+  );
+}
+ const donutColors = [
 
-  const donutColors = [
+    "#28a458",
     "#ff8c00",
+    " #8B5E3C",
     "#ff6200",
-    "#ff9a00",
     "#ffb84d",
     "#ffd19a",
     "#28a458",
@@ -228,17 +239,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
                   color: "#333",
                 },
               },
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const label = context.label || "";
-                    const value = context.raw || 0;
-                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                    return `${label}: ${value} unité(s) (${percentage}%)`;
-                  },
-                },
-              },
+              
             },
             cutout: "65%",
           };
@@ -246,14 +247,34 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
           return (
             <div key={c.numUtilisateur} className="progress-item">
               <div className="item-header">
-                <div className="client-avatar">
-                  {c.image ? (
-                    <img src={`${IMAGE_BASE_URL}${c.image}`} alt={c.nomUtilisateur} />
-                  ) : (
-                    <div className="placeholder-avatar">
-                      {c.nomUtilisateur?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                  )}
+                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {c.image ? (
+  <img 
+    src={`${IMAGE_BASE_URL}${c.image}`}
+    alt={c.nomUtilisateur} 
+    style={{
+      width: "40px",
+      height: "40px",
+      borderRadius: "50%",
+      objectFit: "cover"
+    }}
+  />
+) : (
+  <div style={{ 
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    backgroundColor: "#e3f2fd",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#1565c0",
+    fontWeight: "bold"
+  }}>
+    {c.nomUtilisateur?.charAt(0)?.toUpperCase() || "C"}
+  </div>
+)}
+                
                 </div>
                 <div className="item-info">
                   <strong className="client-name">{c.nomUtilisateur || "Inconnu"}</strong>
@@ -269,9 +290,7 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
                       <FaMoneyBillAlt /> {Number(c.total_depense || 0).toLocaleString()} Ar
                     </span>
                   </div>
-                  <p className="client-produits">
-                    Produits préférés : {c.produits_preferes || "Aucun"}
-                  </p>
+                
                 </div>
                 <div className="client-donut">
                   <Doughnut data={donutData} options={donutOptions} />
@@ -281,9 +300,8 @@ export default function TopClients({ start = null, end = null, limit = 10 }) {
               <div className="progress-bar-container">
                 <div
                   className="progress-bar"
-                  style={{ width: `${c.progress_pct > 0 ? c.progress_pct : 5}%` }}
+                  style={{ background:" #8B5E3C", width: `${c.progress_pct > 0 ? c.progress_pct : 5}%` }}
                 />
-                <span className="progress-text">{Math.round(c.progress_pct || 0)}%</span>
               </div>
 
               <div className="client-action">
