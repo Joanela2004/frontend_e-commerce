@@ -228,34 +228,50 @@ const location = useLocation();
   }, [subtotal]);
 
   const handleApplyCodePromo = async () => {
-    const code = codePromo.trim().toUpperCase();
-    if (!code) {
-      showToast("warning", "Veuillez entrer un code promo.");
-      setRemise(0);
-      return;
-    }
+  const code = codePromo.trim().toUpperCase();
 
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    if (!userData?.numUtilisateur) {
-      showToast("error", "Vous devez être connecté pour utiliser un code promo.");
-      setRemise(0);
-      return;
-    }
+  // Cas vide
+  if (!code) {
+    showToast("warning", "Veuillez entrer un code promo.");
+    return;
+  }
 
-    try {
-      const result = await validerCodePromo(code, userData.numUtilisateur);
-      if (result.message === "Code promo valide") {
-        setRemise(Number(result.valeur));
-        showToast("success", `Code "${code}" appliqué ! ${result.valeur} Ar de réduction.`);
-      } else {
-        setRemise(0);
-        showToast("error", result.message || "Code promo non valide.");
-      }
-    } catch (err) {
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+
+  // Utilisateur non connecté → on montre le modal
+  if (!userData?.numUtilisateur) {
+    showToast("info", "Connexion requise pour utiliser les codes promo");
+    setShowLoginModal(true);
+    setRemise(0); // on reset au cas où une ancienne remise était affichée
+    return;
+  }
+
+  try {
+    showToast("info", "Vérification du code promo..."); // feedback immédiat
+
+    const result = await validerCodePromo(code, userData.numUtilisateur);
+
+    if (result?.message === "Code promo valide" && result.valeur > 0) {
+      setRemise(Number(result.valeur));
+      showToast(
+        "success",
+        `Super ! Code "${code}" appliqué → -${result.valeur.toLocaleString()} Ar`
+      );
+    } else {
       setRemise(0);
-      showToast("error", "Erreur lors de la validation du code promo.");
+      showToast("error", result?.message || "Code promo non valide ou expiré");
     }
-  };
+  } catch (err) {
+    console.error("Erreur validation promo:", err);
+    
+    const message =
+      err?.response?.data?.message ||
+      "Erreur lors de la vérification du code promo";
+
+    showToast("error", message);
+    setRemise(0);
+  }
+};
 
   const handleCreateCommande = async () => {
     if (!selectedLieuNum || !dateLivraison) return;
