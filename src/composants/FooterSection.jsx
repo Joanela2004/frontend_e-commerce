@@ -13,7 +13,7 @@ const FooterSection = () => {
   return (
     <footer id="footer">
       {/* Partie basse du footer */}
-      <div className="footer-bottom">
+      <div style = {{padding:"10px 80px"}}className="footer-bottom">
         <div className="footer-bottom-top">
           {/* Colonne Navigation */}
           <div className="footer-column">

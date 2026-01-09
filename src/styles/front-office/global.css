@@ -15,13 +15,20 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  
+   -webkit-user-select: none; 
+  -moz-user-select: none;    
+  -ms-user-select: none;    
+  user-select: none;
   font-family: var(--font-main);
   font-size: var(--font-size-base);
   scrollbar-width: none;
 }
+*:focus {
+  outline: none;
+}
+
 body {
-  
+  caret-color: transparent;
   overflow-x: hidden; 
   width: 100%;
   max-width: 100%;
@@ -160,13 +167,12 @@ body {
 footer {
   width: 100%;
   height: auto;
+  
   font-family: var(--font-main);
 }
-
-/* Footer Bottom (Main Content Area) */
 .footer-bottom {
   background-color: var(--color-green-primary);
-  padding: 40px 80px 20px;
+  padding: 0px 80px;
   color: var(--color-background-light);
   font-weight: 600;
   display: flex;
