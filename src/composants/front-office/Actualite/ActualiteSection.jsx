@@ -179,7 +179,7 @@ const ActualiteSection = () => {
       <div className="produits-section">
         <div className="produits-grid back-office-grid">
           {loading ? (
-            <div className="no-products">Chargement des actualités...</div>
+            <div className="no-products"></div>
           ) : articlesAffiches.length > 0 ? (
             articlesAffiches.map((article) => {
               const date = article.datePublication

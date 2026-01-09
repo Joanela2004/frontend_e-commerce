@@ -200,7 +200,7 @@ const CategorieSection = () => {
       <div className="produits-section">
         <div className="produits-grid">
           {loading ? (
-            <div className="no-products">Chargement des produits...</div>
+            <div className="no-products" ></div>
           ) : produitsAffiches.length > 0 ? (
             produitsAffiches.map((produit) => {
               const promo = produit.promotion;
@@ -281,7 +281,7 @@ const CategorieSection = () => {
               );
             })
           ) : (
-            <div className="no-products">
+            <div className="no-products" >
               <p>Aucun produit disponible pour ces critères</p>
             </div>
           )}

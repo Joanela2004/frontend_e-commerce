@@ -111,7 +111,7 @@ const location = useLocation();
   };
  const handleRedirectToLogin = () => {
     setShowLoginModal(false);
-    navigate("/profil");
+    navigate("/profil/connexion");
   };
  
   const handleContinueShopping = () => navigate('/produit');
@@ -311,8 +311,7 @@ const location = useLocation();
       const montantTotal = res.commande?.montantTotal;
 
     const dateLivraison = res.commande?.dateLivraisonSouhaitee;
-     showToast("success", `Commande envoyée ! N°${reference}`);
-      setCommandeConfirmee({ referenceCommande: reference, montantTotal,dateLivraison  });
+       setCommandeConfirmee({ referenceCommande: reference, montantTotal,dateLivraison  });
       clearCart();
       setCurrentStep(3);
     } catch (err) {
@@ -400,7 +399,7 @@ const handleConfirmCash = () => {
             <div className="panier-header">
               <div className="panier-icon-container">
                 <img src={panierImage} alt="panier" />
-                <h3>Mon Panier ({cartItems.length} article{cartItems.length > 1 ? "s" : ""})</h3>
+                <h3>Mon Panier ({cartItems.length}) </h3>
               </div>
             </div>
 

@@ -1,9 +1,6 @@
 .toast-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -139,10 +136,7 @@
   color: #333;
 }
 
-/* Types de toast - Styles améliorés */
-.toast-success {
-  border-top: 5px solid var(--color-primary, #28a458);
-}
+
 
 .toast-success .toast-icon {
   color: var(--color-primary, #28a458);

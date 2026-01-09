@@ -35,12 +35,11 @@ import FraisLivraison from "../composants/back-office/Livraison/FraisLivraison";
 import Categorie from "../composants/back-office/Produits/Categorie";
 import Decoupes from "../composants/back-office/Produits/Decoupes";
 import CommandesClient from "../composants/back-office/Client/CommandesClient"; // Corrigé le nom du fichier
-import Layout from "../pages/front-office/Layout";
+
 export default function AppRoutes() {
   return (
     <Router>
       <Routes>
-         <Route element={<Layout />}>
         {/* Pages publiques */}
         <Route path="/" element={<Accueil />} />
         <Route path="/produit" element={<Produit />} />
@@ -49,7 +48,6 @@ export default function AppRoutes() {
         <Route path="/actualite/:id" element={<ActualiteDetails />} />
         <Route path="/profil" element={<Profil />} />
         <Route path="/profil/connexion" element={<SeConnecter />} />
-        </Route>
      <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
      <Route path="/verifier-code-reset" element={<VerifierCodeReset />} />
        

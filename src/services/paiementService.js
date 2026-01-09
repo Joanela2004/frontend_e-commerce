@@ -21,7 +21,14 @@ export const createMode = async (data) => {
   const res = await api.post(MODES_PAIEMENT_URL, data, getConfig(true));
   return res.data;
 };
-
+export const confirmerPaiement = async (numCommande) => {
+  const res = await api.post(
+    `/commandes/${numCommande}/confirmer-paiement`,
+    {},
+    getConfig()
+  );
+  return res.data;
+};
 export const updateMode = async (id, data) => {
    const res = await api.post(`${MODES_PAIEMENT_URL}/${id}?_method=PUT`, data, getConfig(true));
   return res.data;

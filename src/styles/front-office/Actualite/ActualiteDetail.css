@@ -84,12 +84,9 @@
 }
 
 
-
-/* Contenu principal */
 .detail-content {
-  max-width: 900px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0rem;
 }
 
 /* Header de l'article */

@@ -15,7 +15,7 @@ import "../../../styles/back-office/global.css";
 import "../../../styles/back-office/tableau.css";
 import "../../../styles/back-office/modal.css";
 import "../../../styles/back-office/toast.css";
-import { fetchPaiements, updatePaiement } from "../../../services/paiementService";
+import { fetchPaiements, updatePaiement,confirmerPaiement } from "../../../services/paiementService";
 import { useToast } from "../../../contexts/ToastContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -85,37 +85,47 @@ const Paiements = () => {
   };
 
   const handleMarkAsPaid = async (paiement) => {
-    showModal(
-      "Confirmer le paiement",
-      `Êtes-vous sûr de vouloir marquer le paiement comme effectué ?`,
-      paiement.numPaiement,
-      async () => {
-        setLoadingAction(paiement.numPaiement);
-        try {
-          await updatePaiement(paiement.numPaiement, { statut: "effectué" });
+  const numCommande = paiement.commande?.numCommande;
+  
+  if (!numCommande) {
+    showToast("error", "Numéro de commande introuvable");
+    return;
+  }
 
-          setPaiements(prev =>
-            prev.map(p =>
-              p.numPaiement === paiement.numPaiement
-                ? { 
-                    ...p, 
-                    statut: "effectué", 
-                    datePaiement: new Date().toISOString() 
-                  }
-                : p
-            )
-          );
+  showModal(
+    "Confirmer le paiement",
+    `Marquer la commande #${paiement.commande?.referenceCommande} comme payée ?`,
+    paiement.numPaiement,
+    async () => {
+      try {
+        await confirmerPaiement(numCommande);
 
-          showToast("success", "Paiement marqué comme effectué avec succès !");
-        } catch (err) {
-          console.error(err);
-          showToast("error", "Erreur lors de la mise à jour du paiement");
-        } finally {
-          setLoadingAction(null);
-        }
+        // Mise à jour locale (optimiste)
+        setPaiements(prev => 
+          prev.map(p => 
+            p.numPaiement === paiement.numPaiement
+              ? {
+                  ...p,
+                  statut: "effectué",
+                  datePaiement: new Date().toISOString(),
+                  // Bonus : on peut aussi mettre à jour le statut commande si tu l'affiches
+                }
+              : p
+          )
+        );
+
+        showToast("success", "Paiement confirmé avec succès !");
+
+        // Option très sûre : recharger toute la liste
+        // await loadPaiements();
+
+      } catch (err) {
+        console.error("Erreur confirmation paiement:", err);
+        showToast("error", err.response?.data?.message || "Échec de la confirmation");
       }
-    );
-  };
+    }
+  );
+};
 
   // Filtrer les paiements
   const filteredPaiements = paiements.filter(paiement => {
@@ -166,16 +176,7 @@ const Paiements = () => {
   const paiementsEffectues = paiements.filter(p => p.statut === "effectué").length;
   const paiementsEnAttente = paiements.filter(p => p.statut === "en attente").length;
  
-  if (loading) {
-    return (
-      <div className="page-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Chargement des paiements...</p>
-        </div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="page-container">

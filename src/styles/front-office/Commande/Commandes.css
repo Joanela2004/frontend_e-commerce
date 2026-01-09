@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 20px;
   padding: 20px 16px;
-  margin: 20px 16px;
+  margin: 20px 40px;
   background-color: var(--color-background-white);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -32,12 +32,13 @@
     padding: 10px;
     border: 1px solid var(--color-background-light);
     border-radius: 20px;
-    width: 100%;
+    width: 100%;  
     outline: none;
     background-color: var(--color-background-white);
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
 }
+
 
 @media (min-width: 900px) {
     .filtres-commandes-conteneur {

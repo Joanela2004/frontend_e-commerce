@@ -216,6 +216,7 @@
   padding: 80px 20px;
   color: #7f8c8d;
   font-size: 1.3rem;
+  height: 100vh;
 }
 
 .pagination-container {
