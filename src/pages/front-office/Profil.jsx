@@ -4,6 +4,7 @@ import Header from "../../composants/Header";
 import Footer from "../../composants/FooterSection";
 import CarteProfil from "../../composants/front-office/Profil/CarteProfil";
 import ModifierProfil from "../../composants/front-office/Profil/ModifierProfil";
+import Authentifier from "../../composants/front-office/Profil/Authentifier";
 import SeConnecter from "../../composants/front-office/Profil/SeConnecter";
 import { logoutUser } from "../../services/AuthService";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +53,7 @@ const Profil = () => {
             <div className="profil-guest">
                         <div className="forms-grid">
                 <div className="form-card">
-                  <SeConnecter />
+                  <Authentifier />
                 </div>
                 
               </div>

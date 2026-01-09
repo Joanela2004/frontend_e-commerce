@@ -570,7 +570,7 @@ const handleConfirmCash = () => {
                   type="text"
                   value={codePromo}
                   onChange={(e) => setCodePromo(e.target.value)}
-                  placeholder="Ex: WELCOME10"
+                 
                 />
                 <button
                   className="apply-promo-btn"

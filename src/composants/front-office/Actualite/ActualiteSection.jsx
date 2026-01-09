@@ -106,7 +106,7 @@ const ActualiteSection = () => {
   return (
     <section>
       {/* Barre de recherche simple et propre */}
-      <div className="heroProduit-middle" style={{ marginTop: "100px" }}>
+      <div className="heroProduit-middle" >
         <div className="search-container">
           <div className="search-bar">
             <FaSearch style={{ marginLeft: "8px", color: "#28a458" }} />

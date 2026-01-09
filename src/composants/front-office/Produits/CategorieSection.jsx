@@ -31,7 +31,7 @@ const CategorieSection = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
 
   const produitsParPage = 8;
-  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL || "http://localhost:8000";
+  const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL ;
 
   const { cartItems, addToCart, updateQuantity } = useContext(CartContext);
   const { showToast } = useToast();

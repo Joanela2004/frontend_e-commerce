@@ -44,12 +44,12 @@ export default function Accueil() {
 
   return (
     <div>
-      <Header />
+     
       <HeroSection />
       <ProduitsSection />
       <PointsFortSection />
       <AProposSection />
-      <FooterSection />
+     
 
            <ToastContainer />
     </div>
