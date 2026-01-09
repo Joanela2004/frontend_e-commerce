@@ -46,14 +46,15 @@ const AjouterArticleModal = ({ isOpen, onClose, onSave, articleAEditer }) => {
   // Chargement des données en édition
   useEffect(() => {
     if (articleAEditer) {
-      const publicationDate = articleAEditer.datePublication
-        ? new Date(articleAEditer.datePublication)
-        : today;
+     let publicationDate = articleAEditer.datePublication
+  ? new Date(articleAEditer.datePublication)
+  : today;
 
-      // Si la date est invalide, on remet aujourd'hui
-      if (isNaN(publicationDate.getTime())) {
-        publicationDate = today;
-      }
+// Si la date est invalide, on remet aujourd'hui
+if (isNaN(publicationDate.getTime())) {
+  publicationDate = today;
+}
+
 
       setForm({
         titre: articleAEditer.titre || "",
